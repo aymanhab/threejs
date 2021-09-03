@@ -1,4 +1,4 @@
-export default `
+export default /* glsl */`
 uniform vec3 color;
 uniform float opacity;
 
@@ -14,6 +14,8 @@ void main() {
 
 	gl_FragColor = vec4( color, opacity * ( 1.0 - getShadowMask() ) );
 
+	#include <tonemapping_fragment>
+	#include <encodings_fragment>
 	#include <fog_fragment>
 
 }

@@ -1,5 +1,5 @@
-export default `
-#if defined( USE_MAP ) || defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( USE_SPECULARMAP ) || defined( USE_ALPHAMAP ) || defined( USE_EMISSIVEMAP ) || defined( USE_ROUGHNESSMAP ) || defined( USE_METALNESSMAP )
+export default /* glsl */`
+#ifdef USE_UV
 
 	vUv = ( uvTransform * vec3( uv, 1 ) ).xy;
 

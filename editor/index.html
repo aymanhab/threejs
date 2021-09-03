@@ -4,61 +4,24 @@
 		<title>OpenSim 4.0 Visualizer 041518</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<!-- Origin Trial Token, feature = WebXR Device API (For Chrome M69+), origin = https://threejs.org, expires = 2019-01-07 -->
-		<meta http-equiv="origin-trial" data-feature="WebXR Device API (For Chrome M69+)" data-expires="2019-01-07" content="ArPzyYNrUDiXsGOh647Ya7MtVUA1nM+WFMnPWu7eoF2nQHOP6mTATIbiv0w+k2kFaPofZG/04ZEQdsACq4IA0wQAAABTeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZU02OSIsImV4cGlyeSI6MTU0Njg4MzAxOH0=">
-		<!-- Origin Trial Token, feature = WebXR Gamepad Support, origin = https://threejs.org, expires = 2019-01-07 -->
-		<meta http-equiv="origin-trial" data-feature="WebXR Gamepad Support" data-expires="2019-01-07" content="Av16a8LVXasKVQV9j3u0OlXdTfz5O9qDqhROyL5Up6R3sdOPbtFuc6n6o5DHitwnb5VdirH0GyvROwvz8xxd0AkAAABYeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkdhbWVwYWRTdXBwb3J0IiwiZXhwaXJ5IjoxNTQ2ODgzMDE4fQ==">
+		<link rel="apple-touch-icon" href="images/icon.png">
+		<link rel="manifest" href="manifest.json">
+		<link rel="shortcut icon" href="../files/favicon.ico" />
 	</head>
-	<body ontouchstart="">
-		<link href="css/main.css" rel="stylesheet" />
-		<link id="theme" href="css/minimal.css" rel="stylesheet" />
+	<body>
+		<link rel="stylesheet" href="minimal/main.css">
 
+		<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.6/dist/ffmpeg.min.js" defer></script>
 		<script src="../build/three.js"></script>
 		<script src="js/SkinnedMuscle.js"></script>
 		<script src="js/OpenSimLoader.js"></script>
 		<script src="../examples/js/libs/system.min.js"></script>
 
+		<script src="../examples/js/libs/draco/draco_encoder.js"></script>
 		<script src="../examples/js/libs/dat.gui.min.js"></script>
 
 		<script src="../examples/js/controls/EditorControls.js"></script>
 		<script src="../examples/js/controls/TransformControls.js"></script>
-
-		<script src="../examples/js/libs/jszip.min.js"></script>
-		<script src="../examples/js/libs/inflate.min.js"></script> <!-- FBX -->
-
-		<script src="../examples/js/loaders/AMFLoader.js"></script>
-		<script src="../examples/js/loaders/AWDLoader.js"></script>
-		<script src="../examples/js/loaders/BabylonLoader.js"></script>
-		<script src="../examples/js/loaders/ColladaLoader.js"></script>
-		<script src="../examples/js/loaders/DRACOLoader.js"></script>
-		<script src="../examples/js/loaders/FBXLoader.js"></script>
-		<script src="../examples/js/loaders/GLTFLoader.js"></script>
-		<script src="../examples/js/loaders/deprecated/LegacyGLTFLoader.js"></script>
-		<script src="../examples/js/loaders/KMZLoader.js"></script>
-		<script src="../examples/js/loaders/MD2Loader.js"></script>
-		<script src="../examples/js/loaders/OBJLoader.js"></script>
-		<script src="../examples/js/loaders/MTLLoader.js"></script>
-		<script src="../examples/js/loaders/PlayCanvasLoader.js"></script>
-		<script src="../examples/js/loaders/PLYLoader.js"></script>
-		<script src="../examples/js/loaders/STLLoader.js"></script>
-		<script src="../examples/js/loaders/SVGLoader.js"></script>
-		<script src="../examples/js/loaders/TGALoader.js"></script>
-		<script src="../examples/js/loaders/TDSLoader.js"></script>
-		<script src="../examples/js/loaders/VRMLLoader.js"></script>
-		<script src="../examples/js/loaders/VTKLoader.js"></script>
-		<script src="../examples/js/loaders/ctm/lzma.js"></script>
-		<script src="../examples/js/loaders/ctm/ctm.js"></script>
-		<script src="../examples/js/loaders/ctm/CTMLoader.js"></script>
-
-		<script src="../examples/js/exporters/ColladaExporter.js"></script>
-		<script src="../examples/js/exporters/GLTFExporter.js"></script>
-		<script src="../examples/js/exporters/OBJExporter.js"></script>
-		<script src="../examples/js/exporters/STLExporter.js"></script>
-
-		<script src="../examples/js/renderers/Projector.js"></script>
-		<script src="../examples/js/renderers/RaytracingRenderer.js"></script>
-		<script src="../examples/js/renderers/SoftwareRenderer.js"></script>
-		<script src="../examples/js/renderers/SVGRenderer.js"></script>
 
 		<link rel="stylesheet" href="js/libs/codemirror/codemirror.css">
 		<link rel="stylesheet" href="js/libs/codemirror/theme/monokai.css">
@@ -68,12 +31,12 @@
 
 		<script src="js/libs/esprima.js"></script>
 		<script src="js/libs/jsonlint.js"></script>
-		<script src="js/libs/glslprep.min.js"></script>
 		<script src="js/libs/Tween.js"></script>
 
 		<link rel="stylesheet" href="js/libs/codemirror/addon/dialog.css">
 		<link rel="stylesheet" href="js/libs/codemirror/addon/show-hint.css">
 		<link rel="stylesheet" href="js/libs/codemirror/addon/tern.css">
+
 		<script src="js/libs/codemirror/addon/dialog.js"></script>
 		<script src="js/libs/codemirror/addon/show-hint.js"></script>
 		<script src="js/libs/codemirror/addon/tern.js"></script>
@@ -88,18 +51,21 @@
 		<script src="js/libs/ternjs/infer.js"></script>
 		<script src="js/libs/ternjs/doc_comment.js"></script>
 		<script src="js/libs/tern-threejs/threejs.js"></script>
-
 		<script src="js/libs/signals.min.js"></script>
-		<script src="js/libs/ui.js"></script>
-		<script src="js/libs/ui.three.js"></script>
 
-		<script src="js/libs/app.js"></script>
-		<script src="js/Player.js"></script>
-		<script src="js/Script.js"></script>
+		<script type="module">
 
-		<script src="../examples/js/vr/WebVR.js"></script>
+			import * as THREE from '../build/three.module.js';
 
-		<script src="js/Storage.js"></script>
+			import { Editor } from './js/Editor.js';
+			import { Viewport } from './js/Viewport.js';
+			import { Toolbar } from './js/Toolbar.js';
+			import { Script } from './js/Script.js';
+			import { Player } from './js/Player.js';
+			import { Sidebar } from './js/Sidebar.js';
+			import { Menubar } from './js/Menubar.js';
+			import { Resizer } from './js/Resizer.js';
+			import { VRButton } from '../examples/jsm/webxr/VRButton.js';
 
 		<script src="js/Editor.js"></script>
 		<script src="js/OpenSimEditor.js"></script>
@@ -195,7 +161,9 @@
 			window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
 
 			Number.prototype.format = function (){
-				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+
+				return this.toString().replace( /(\d)(?=(\d{3})+(?!\d))/g, '$1,' );
+
 			};
 
       Number.prototype.format = function (){
@@ -207,6 +175,11 @@
 
       var editor = new OpenSimEditor();
 
+			window.editor = editor; // Expose editor to Console
+			window.THREE = THREE; // Expose THREE to APP Scripts and Console
+			window.VRButton = VRButton; // Expose VRButton to APP Scripts
+
+			var viewport = new Viewport( editor );
       // Minimal ui, should move to a different file to avoid clutter
       var VisualizerKnobs = function() {
       // Backdrop
@@ -309,23 +282,19 @@
       var player = new Player( editor );
       //document.body.appendChild( player.dom );
 
+			var sidebar = new Sidebar( editor );
+			document.body.appendChild( sidebar.dom );
+
       var toolbar = new OpenSimToolbar(editor);
       document.body.appendChild( toolbar.dom );
       if (getParameterByName('expert') === "1"){
       var menubar = new Menubar( editor );
       document.body.appendChild( menubar.dom );
       }
-      var sidebar = new Sidebar( editor );
-      document.body.appendChild( sidebar.dom );
-
-      /*
-      var dialog = new UI.Dialog();
-      document.body.appendChild( dialog.dom );
-      */
+			var resizer = new Resizer( editor );
+			document.body.appendChild( resizer.dom );
 
       //
-
-      editor.setTheme( editor.config.getKey( 'theme' ) );
 
       editor.storage.init( function () {
       /*
@@ -353,7 +322,7 @@
 
       var timeout;
 
-      function saveState( scene ) {
+				function saveState() {
       /*
       if ( editor.config.getKey( 'autosave' ) === false ) {
 
@@ -377,7 +346,7 @@
 
       }, 1000 );
       */
-      };
+				}
 
       var signals = editor.signals;
 
@@ -391,13 +360,7 @@
       signals.scriptChanged.add( saveState );
       signals.historyChanged.add( saveState );
 
-      signals.showModal.add( function ( content ) {
-
-      modal.show( content );
-
-      } );
-
-      } );
+			} );
 
       document.addEventListener( 'dragover', function ( event ) {
 
@@ -410,7 +373,19 @@
 
       event.preventDefault();
 
+				if ( event.dataTransfer.types[ 0 ] === 'text/plain' ) return; // Outliner drop
+
+				if ( event.dataTransfer.items ) {
+
+					// DataTransferItemList supports folders
+
+					editor.loader.loadItemList( event.dataTransfer.items );
+
+				} else {
+
 				editor.loader.loadFiles( event.dataTransfer.files );
+
+				}
 
       }, false );
 
@@ -488,15 +463,24 @@
 
 			}
 
-			window.addEventListener( 'resize', onWindowResize, false );
+			// ServiceWorker
 
-			onWindowResize();
+			if ( 'serviceWorker' in navigator ) {
 
 			animate();
 			function animate() {
 			    requestAnimationFrame(animate);
                 if (editor.recording)
 			        editor.signals.captureFrame.dispatch();
+			}
+				try {
+
+					navigator.serviceWorker.register( 'sw.js' );
+
+				} catch ( error ) {
+
+				}
+
 			}
 
 		</script>

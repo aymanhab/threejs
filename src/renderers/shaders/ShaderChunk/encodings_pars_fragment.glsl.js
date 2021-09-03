@@ -1,4 +1,4 @@
-export default `
+export default /* glsl */`
 // For a discussion of what this is, please read this: http://lousodrome.net/blog/light/2013/05/26/gamma-correct-and-hdr-rendering-in-a-32-bits-buffer/
 
 vec4 LinearToLinear( in vec4 value ) {
@@ -29,7 +29,7 @@ vec4 LinearToRGBE( in vec4 value ) {
 	float maxComponent = max( max( value.r, value.g ), value.b );
 	float fExp = clamp( ceil( log2( maxComponent ) ), -128.0, 127.0 );
 	return vec4( value.rgb / exp2( fExp ), ( fExp + 128.0 ) / 255.0 );
-//  return vec4( value.brg, ( 3.0 + 128.0 ) / 256.0 );
+	// return vec4( value.brg, ( 3.0 + 128.0 ) / 256.0 );
 }
 
 // reference: http://iwasbeingirony.blogspot.ca/2010/06/difference-between-rgbm-and-rgbd.html
@@ -52,7 +52,11 @@ vec4 RGBDToLinear( in vec4 value, in float maxRange ) {
 vec4 LinearToRGBD( in vec4 value, in float maxRange ) {
 	float maxRGB = max( value.r, max( value.g, value.b ) );
 	float D = max( maxRange / maxRGB, 1.0 );
-	D = min( floor( D ) / 255.0, 1.0 );
+	// NOTE: The implementation with min causes the shader to not compile on
+	// a common Alcatel A502DL in Chrome 78/Android 8.1. Some research suggests 
+	// that the chipset is Mediatek MT6739 w/ IMG PowerVR GE8100 GPU.
+	// D = min( floor( D ) / 255.0, 1.0 );
+	D = clamp( floor( D ) / 255.0, 0.0, 1.0 );
 	return vec4( value.rgb * ( D * ( 255.0 / maxRange ) ), D );
 }
 
@@ -60,8 +64,8 @@ vec4 LinearToRGBD( in vec4 value, in float maxRange ) {
 
 // M matrix, for encoding
 const mat3 cLogLuvM = mat3( 0.2209, 0.3390, 0.4184, 0.1138, 0.6780, 0.7319, 0.0102, 0.1130, 0.2969 );
-vec4 LinearToLogLuv( in vec4 value )  {
-	vec3 Xp_Y_XYZp = value.rgb * cLogLuvM;
+vec4 LinearToLogLuv( in vec4 value ) {
+	vec3 Xp_Y_XYZp = cLogLuvM * value.rgb;
 	Xp_Y_XYZp = max( Xp_Y_XYZp, vec3( 1e-6, 1e-6, 1e-6 ) );
 	vec4 vResult;
 	vResult.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;
@@ -79,7 +83,7 @@ vec4 LogLuvToLinear( in vec4 value ) {
 	Xp_Y_XYZp.y = exp2( ( Le - 127.0 ) / 2.0 );
 	Xp_Y_XYZp.z = Xp_Y_XYZp.y / value.y;
 	Xp_Y_XYZp.x = value.x * Xp_Y_XYZp.z;
-	vec3 vRGB = Xp_Y_XYZp.rgb * cLogLuvInverseM;
+	vec3 vRGB = cLogLuvInverseM * Xp_Y_XYZp.rgb;
 	return vec4( max( vRGB, 0.0 ), 1.0 );
 }
 `;

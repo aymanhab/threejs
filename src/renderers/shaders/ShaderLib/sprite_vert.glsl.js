@@ -1,4 +1,4 @@
-export default `
+export default /* glsl */`
 uniform float rotation;
 uniform vec2 center;
 
@@ -20,7 +20,7 @@ void main() {
 
 	#ifndef USE_SIZEATTENUATION
 
-		bool isPerspective = ( projectionMatrix[ 2 ][ 3 ] == - 1.0 );
+		bool isPerspective = isPerspectiveMatrix( projectionMatrix );
 
 		if ( isPerspective ) scale *= - mvPosition.z;
 
