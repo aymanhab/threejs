@@ -19,23 +19,33 @@ THREE.SkinnedMuscle = function(geom, material, points, actives) {
         geom.bones.push(bone);
     }
 
-    var numVerticesPerLevel = geom.vertices.length / (2*points.length-2);
-
-    for ( var i = 0; i < geom.vertices.length; i++ ) {
+    var numVerticesPerLevel = geom.parameters.radialSegments+1;
+    const skinIndices = [];
+    const skinWeights = [];
+    //var numVertices = geom.attributes.position.count;
+    for (var i = 0; i < geom.attributes.position.count; i++) {
         var skinIndex = Math.floor(i / numVerticesPerLevel);
         var pptIndex = Math.floor((skinIndex+1)/2);
         //var activePoint = this.actives[pptIndex];
-        geom.skinIndices.push(new THREE.Vector4(skinIndex, skinIndex+1, skinIndex-1, 0));
+        skinIndices.push(skinIndex, skinIndex, skinIndex, skinIndex);
         // Will always use weight of 1, 0, 0, 0 to interpolate pathpoints
         // Changing weights will make the paths smooth but doesn't interpolate points'
-        geom.skinWeights.push( new THREE.Vector4( 1.0, 0, 0, 0 ) );
+        skinWeights.push( 1.0, 0, 0, 0);
     }
+    geom.addAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+    geom.addAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
     geom.dynamic = true;
     THREE.SkinnedMesh.call( this, geom );
     this.material = material;
     this.material.skinning = true;
     this.frustumCulled = false;
     this.userData = 'NonEditable';
+    const skeleton = new THREE.Skeleton( geom.bones );
+    const rootBone = skeleton.bones[0];
+    for (var bi = 0; bi < skeleton.bones.length; bi++)
+        this.add( skeleton.bones[bi] );
+    // bind the skeleton to the mesh
+    this.bind( skeleton );
 };
 
 THREE.SkinnedMuscle.prototype = Object.create( THREE.SkinnedMesh.prototype );
@@ -76,6 +86,7 @@ THREE.SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
             }
         }
     }
+    if (this.parent === null) return; //in initialization, bypass
     // Compute reverse transform from Ground to Scene (usually this's inverse translation)
     // This is necessary since the blending to compute vertices adds offset twice
     var mat = new THREE.Matrix4().getInverse(this.parent.matrixWorld);

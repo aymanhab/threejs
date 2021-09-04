@@ -32,22 +32,16 @@
 		var octree;
 
 		var objects = [];
-		var objectsSearch = [];
 		var totalFaces = 0;
 
-		var simpleMeshCount = 2000;
+		var simpleMeshCount = 5000;
 		var radius = 100;
 		var radiusMax = radius * 10;
 		var radiusMaxHalf = radiusMax * 0.5;
-		var radiusSearch = radius * 0.75;
 
 		var baseColor = 0x333333;
-		var foundColor = 0x12C0E3;
 		var intersectColor = 0x00D66B;
 
-		var clock = new THREE.Clock();
-		var searchDelay = 1;
-		var searchInterval = 0;
 		var useOctree = true;
 
 		var raycaster = new THREE.Raycaster();
@@ -103,7 +97,7 @@
 
 			var simpleGeometry = new THREE.BoxGeometry( 1, 1, 1 );
 
-			for ( var i = 0; i < simpleMeshCount - 1; i++ ) {
+			for ( var i = 0; i < simpleMeshCount - 1; i ++ ) {
 
 				totalFaces += simpleGeometry.faces.length;
 
@@ -113,19 +107,6 @@
 				modifyOctree( simpleGeometry, simpleMaterial, false, true, true, true );
 
 			}
-
-			var loader = new THREE.JSONLoader();
-
-			loader.load( 'obj/lucy/Lucy100k_slim.js', function ( geometry ) {
-
-				geometry.computeVertexNormals();
-				totalFaces += geometry.faces.length;
-
-				var material = new THREE.MeshPhongMaterial( { color: 0x030303, specular: 0x030303, shininess: 30 } );
-
-				modifyOctree( geometry, material, true );
-
-			} );
 
 			// camera controls
 
@@ -147,7 +128,7 @@
 			info.style.textAlign = 'center';
 			info.style.padding = '10px';
 			info.style.background = '#FFFFFF';
-			info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - octree (raycasting performance) - by <a href="http://github.com/collinhover/threeoctree" target="_blank">collinhover</a><br><small style="opacity:0.5">Lucy model from <a href="http://graphics.stanford.edu/data/3Dscanrep/">Stanford 3d scanning repository</a>(decimated with <a href="http://meshlab.sourceforge.net/">Meshlab</a>)</small>';
+			info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - octree (raycasting performance) - by <a href="http://github.com/collinhover/threeoctree" target="_blank" rel="noopener">collinhover</a>)</small>';
 			document.body.appendChild( info );
 
 			// stats
@@ -182,19 +163,19 @@
 			toggle.style.background = '#FFFFFF';
 			container.appendChild( toggle );
 
-			var checkbox = document.createElement('input');
+			var checkbox = document.createElement( 'input' );
 			checkbox.type = "checkbox";
 			checkbox.name = "octreeToggle";
 			checkbox.value = "value";
 			checkbox.id = "octreeToggle";
 			checkbox.checked = true;
 
-			var label = document.createElement('label');
+			var label = document.createElement( 'label' );
 			label.htmlFor = "octreeToggle";
-			label.appendChild(document.createTextNode('Use Octree') );
+			label.appendChild( document.createTextNode( 'Use Octree' ) );
 
-			toggle.appendChild(checkbox);
-			toggle.appendChild(label);
+			toggle.appendChild( checkbox );
+			toggle.appendChild( label );
 
 			// events
 
@@ -205,9 +186,9 @@
 
 		}
 
-		function toggleOctree () {
+		function toggleOctree() {
 
-			useOctree = !useOctree;
+			useOctree = ! useOctree;
 
 		}
 
@@ -330,14 +311,13 @@
 
 				numObjects = octreeObjects.length;
 
-				for ( var i = 0, il = numObjects; i < il; i++ ) {
+				for ( var i = 0, il = numObjects; i < il; i ++ ) {
 
 					numFaces += octreeObjects[ i ].faces.length;
 
 				}
 
-			}
-			else {
+			} else {
 
 				intersections = raycaster.intersectObjects( objects );
 				numObjects = objects.length;
@@ -358,8 +338,7 @@
 
 				document.body.style.cursor = 'pointer';
 
-			}
-			else if ( intersected ) {
+			} else if ( intersected ) {
 
 				intersected.material.color.setHex( baseColor );
 				intersected = null;

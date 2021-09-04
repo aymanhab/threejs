@@ -1,3 +1,6 @@
+import { Material } from './Material.js';
+import { Color } from '../math/Color.js';
+
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
@@ -9,34 +12,40 @@
  *
  *  size: <float>,
  *  sizeAttenuation: <bool>
+ *
+ *  morphTargets: <bool>
  * }
  */
 
-THREE.PointsMaterial = function ( parameters ) {
+function PointsMaterial( parameters ) {
 
-	THREE.Material.call( this );
+	Material.call( this );
 
 	this.type = 'PointsMaterial';
 
-	this.color = new THREE.Color( 0xffffff );
+	this.color = new Color( 0xffffff );
 
 	this.map = null;
 
 	this.size = 1;
 	this.sizeAttenuation = true;
 
+	this.morphTargets = false;
+
 	this.lights = false;
 
 	this.setValues( parameters );
 
-};
+}
 
-THREE.PointsMaterial.prototype = Object.create( THREE.Material.prototype );
-THREE.PointsMaterial.prototype.constructor = THREE.PointsMaterial;
+PointsMaterial.prototype = Object.create( Material.prototype );
+PointsMaterial.prototype.constructor = PointsMaterial;
 
-THREE.PointsMaterial.prototype.copy = function ( source ) {
+PointsMaterial.prototype.isPointsMaterial = true;
 
-	THREE.Material.prototype.copy.call( this, source );
+PointsMaterial.prototype.copy = function ( source ) {
+
+	Material.prototype.copy.call( this, source );
 
 	this.color.copy( source.color );
 
@@ -45,6 +54,11 @@ THREE.PointsMaterial.prototype.copy = function ( source ) {
 	this.size = source.size;
 	this.sizeAttenuation = source.sizeAttenuation;
 
+	this.morphTargets = source.morphTargets;
+
 	return this;
 
 };
+
+
+export { PointsMaterial };

@@ -24,18 +24,19 @@ Sidebar.SceneSettings = function (editor) {
         'wood-floor': 'Wood',
         'tile': 'Tiles'
     };
-
-    var container = new UI.CollapsiblePanel();
+	
+    var container = new UI.Panel();
+	/*
     container.setCollapsed(config.getKey('ui/sidebar/scenesettings/collapsed'));
     container.onCollapsedChange(function (boolean) {
 
         config.setKey('ui/sidebar/scenesettings/collapsed', boolean);
 
     });
-
+    
     container.addStatic(new UI.Text('SCENE SETTINGS'));
     container.add(new UI.Break());
-
+	*/
     // Background
 
     var backgroundTypeRow = new UI.Panel();

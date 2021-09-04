@@ -2,24 +2,36 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-var Config = function ( name ) {
+var Config = function () {
+
+	var name = 'threejs-editor';
 
 	var storage = {
+		'language': 'en',
+
 		'autosave': true,
 		'theme': 'css/minimal.css',
 
+		'project/title': '',
+		'project/editable': false,
+
 		'project/renderer': 'WebGLRenderer',
 		'project/renderer/antialias': true,
+		'project/renderer/gammaInput': false,
+		'project/renderer/gammaOutput': false,
 		'project/renderer/shadows': true,
-		'project/editable': false,
+
 		'project/vr': false,
 		'render/debug': true,
 		'floor': 'tile',
 		'skybox': 'nobackground',
 		'settings/history': false,
 
-		'ui/sidebar/animation/collapsed': true,
-		'ui/sidebar/script/collapsed': true
+		'settings/shortcuts/translate': 'w',
+		'settings/shortcuts/rotate': 'e',
+		'settings/shortcuts/scale': 'r',
+		'settings/shortcuts/undo': 'z',
+		'settings/shortcuts/focus': 'f'
 	};
 
 	if ( window.localStorage[ name ] === undefined ) {

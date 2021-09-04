@@ -2,18 +2,23 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.PositionalAudio = function ( listener ) {
+import { Vector3 } from '../math/Vector3.js';
+import { Quaternion } from '../math/Quaternion.js';
+import { Audio } from './Audio.js';
+import { Object3D } from '../core/Object3D.js';
 
-	THREE.Audio.call( this, listener );
+function PositionalAudio( listener ) {
+
+	Audio.call( this, listener );
 
 	this.panner = this.context.createPanner();
 	this.panner.connect( this.gain );
 
-};
+}
 
-THREE.PositionalAudio.prototype = Object.assign( Object.create( THREE.Audio.prototype ), {
+PositionalAudio.prototype = Object.assign( Object.create( Audio.prototype ), {
 
-	constructor: THREE.PositionalAudio,
+	constructor: PositionalAudio,
 
 	getOutput: function () {
 
@@ -31,6 +36,8 @@ THREE.PositionalAudio.prototype = Object.assign( Object.create( THREE.Audio.prot
 
 		this.panner.refDistance = value;
 
+		return this;
+
 	},
 
 	getRolloffFactor: function () {
@@ -42,6 +49,8 @@ THREE.PositionalAudio.prototype = Object.assign( Object.create( THREE.Audio.prot
 	setRolloffFactor: function ( value ) {
 
 		this.panner.rolloffFactor = value;
+
+		return this;
 
 	},
 
@@ -55,6 +64,8 @@ THREE.PositionalAudio.prototype = Object.assign( Object.create( THREE.Audio.prot
 
 		this.panner.distanceModel = value;
 
+		return this;
+
 	},
 
 	getMaxDistance: function () {
@@ -67,19 +78,56 @@ THREE.PositionalAudio.prototype = Object.assign( Object.create( THREE.Audio.prot
 
 		this.panner.maxDistance = value;
 
+		return this;
+
+	},
+
+	setDirectionalCone: function ( coneInnerAngle, coneOuterAngle, coneOuterGain ) {
+
+		this.panner.coneInnerAngle = coneInnerAngle;
+		this.panner.coneOuterAngle = coneOuterAngle;
+		this.panner.coneOuterGain = coneOuterGain;
+
+		return this;
+
 	},
 
 	updateMatrixWorld: ( function () {
 
-		var position = new THREE.Vector3();
+		var position = new Vector3();
+		var quaternion = new Quaternion();
+		var scale = new Vector3();
+
+		var orientation = new Vector3();
 
 		return function updateMatrixWorld( force ) {
 
-			THREE.Object3D.prototype.updateMatrixWorld.call( this, force );
+			Object3D.prototype.updateMatrixWorld.call( this, force );
 
-			position.setFromMatrixPosition( this.matrixWorld );
+			var panner = this.panner;
+			this.matrixWorld.decompose( position, quaternion, scale );
 
-			this.panner.setPosition( position.x, position.y, position.z );
+			orientation.set( 0, 0, 1 ).applyQuaternion( quaternion );
+
+			if ( panner.positionX ) {
+
+				// code path for Chrome and Firefox (see #14393)
+
+				var endTime = this.context.currentTime + this.listener.timeDelta;
+
+				panner.positionX.linearRampToValueAtTime( position.x, endTime );
+				panner.positionY.linearRampToValueAtTime( position.y, endTime );
+				panner.positionZ.linearRampToValueAtTime( position.z, endTime );
+				panner.orientationX.linearRampToValueAtTime( orientation.x, endTime );
+				panner.orientationY.linearRampToValueAtTime( orientation.y, endTime );
+				panner.orientationZ.linearRampToValueAtTime( orientation.z, endTime );
+
+			} else {
+
+				panner.setPosition( position.x, position.y, position.z );
+				panner.setOrientation( orientation.x, orientation.y, orientation.z );
+
+			}
 
 		};
 
@@ -87,3 +135,5 @@ THREE.PositionalAudio.prototype = Object.assign( Object.create( THREE.Audio.prot
 
 
 } );
+
+export { PositionalAudio };
