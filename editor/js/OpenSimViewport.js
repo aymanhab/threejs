@@ -43,6 +43,7 @@ var OpenSimViewport = function ( editor ) {
 	//
 	var clearColor = editor.config.getKey('settings/backgroundcolor');
 
+	var box = new THREE.Box3();
 	var selectionBox = new THREE.BoxHelper();
 	selectionBox.material.depthTest = false;
 	selectionBox.material.transparent = true;
@@ -63,7 +64,7 @@ var OpenSimViewport = function ( editor ) {
 
 		if ( object !== undefined ) {
 
-			selectionBox.update( object );
+			selectionBox.setFromObject( object );
 
 			if ( editor.helpers[ object.id ] !== undefined ) {
 
@@ -286,7 +287,7 @@ var OpenSimViewport = function ( editor ) {
 	var controls = new THREE.EditorControls( camera, container.dom );
 	controls.addEventListener( 'change', function () {
 
-		transformControls.update();
+		//transformControls.update();
 		signals.cameraChanged.dispatch( camera );
 
 	} );
@@ -469,11 +470,13 @@ var OpenSimViewport = function ( editor ) {
 		selectionBox.visible = false;
 		transformControls.detach();
 
-		if ( object !== null ) {
+		if ( object !== null && object !== scene && object !== camera ) {
 
-			if ( object.geometry !== undefined ) {
+			box.setFromObject( object );
 
-				selectionBox.update( object );
+			if ( box.isEmpty() === false ) {
+
+				selectionBox.setFromObject( object );
 				selectionBox.visible = true;
 
 			}
@@ -496,7 +499,7 @@ var OpenSimViewport = function ( editor ) {
 
 		if ( object !== undefined ) {
 
-			selectionBox.update( object );
+			selectionBox.setFromObject( object );
 
 		}
 
@@ -519,7 +522,7 @@ var OpenSimViewport = function ( editor ) {
 	    if (object === null) return;
 	    if (editor.selected === object) {
 
-			selectionBox.update( object );
+			selectionBox.setFromObject( object );
 			transformControls.update();
 
 		}

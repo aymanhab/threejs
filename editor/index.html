@@ -1,29 +1,62 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>Living CAD - OpenSim Viewer</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<script src="stats.min.js"></script>
+		<!-- Origin Trial Token, feature = WebXR Device API (For Chrome M69+), origin = https://threejs.org, expires = 2019-01-07 -->
+		<meta http-equiv="origin-trial" data-feature="WebXR Device API (For Chrome M69+)" data-expires="2019-01-07" content="ArPzyYNrUDiXsGOh647Ya7MtVUA1nM+WFMnPWu7eoF2nQHOP6mTATIbiv0w+k2kFaPofZG/04ZEQdsACq4IA0wQAAABTeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZU02OSIsImV4cGlyeSI6MTU0Njg4MzAxOH0=">
+		<!-- Origin Trial Token, feature = WebXR Gamepad Support, origin = https://threejs.org, expires = 2019-01-07 -->
+		<meta http-equiv="origin-trial" data-feature="WebXR Gamepad Support" data-expires="2019-01-07" content="Av16a8LVXasKVQV9j3u0OlXdTfz5O9qDqhROyL5Up6R3sdOPbtFuc6n6o5DHitwnb5VdirH0GyvROwvz8xxd0AkAAABYeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkdhbWVwYWRTdXBwb3J0IiwiZXhwaXJ5IjoxNTQ2ODgzMDE4fQ==">
 	</head>
 	<body ontouchstart="">
 		<link href="css/main.css" rel="stylesheet" />
 		<link id="theme" href="css/dark.css" rel="stylesheet" />
 
-		<script src="../build/three.min.js"></script>
+		<script src="../build/three.js"></script>
+		<script src="stats.min.js"></script>
 		<script src="js/SkinnedMuscle.js"></script>
 		<script src="js/OpenSimLoader.js"></script>
 		<script src="../examples/js/libs/system.min.js"></script>
 
-		<script src="../examples/js/Detector.js"></script>
 		<script src="../examples/js/libs/dat.gui.min.js"></script>
 
 		<script src="../examples/js/controls/EditorControls.js"></script>
 		<script src="../examples/js/controls/TransformControls.js"></script>
-		<script src="../examples/js/loaders/STLLoader.js"></script>
+
+		<script src="../examples/js/libs/jszip.min.js"></script>
+		<script src="../examples/js/libs/inflate.min.js"></script> <!-- FBX -->
+
+		<script src="../examples/js/loaders/AMFLoader.js"></script>
+		<script src="../examples/js/loaders/AWDLoader.js"></script>
+		<script src="../examples/js/loaders/BabylonLoader.js"></script>
+		<script src="../examples/js/loaders/ColladaLoader.js"></script>
+		<script src="../examples/js/loaders/DRACOLoader.js"></script>
+		<script src="../examples/js/loaders/FBXLoader.js"></script>
+		<script src="../examples/js/loaders/GLTFLoader.js"></script>
+		<script src="../examples/js/loaders/deprecated/LegacyGLTFLoader.js"></script>
+		<script src="../examples/js/loaders/KMZLoader.js"></script>
+		<script src="../examples/js/loaders/MD2Loader.js"></script>
 		<script src="../examples/js/loaders/OBJLoader.js"></script>
+		<script src="../examples/js/loaders/MTLLoader.js"></script>
+		<script src="../examples/js/loaders/PlayCanvasLoader.js"></script>
+		<script src="../examples/js/loaders/PLYLoader.js"></script>
+		<script src="../examples/js/loaders/STLLoader.js"></script>
+		<script src="../examples/js/loaders/SVGLoader.js"></script>
+		<script src="../examples/js/loaders/TGALoader.js"></script>
+		<script src="../examples/js/loaders/TDSLoader.js"></script>
+		<script src="../examples/js/loaders/VRMLLoader.js"></script>
+		<script src="../examples/js/loaders/VTKLoader.js"></script>
+		<script src="../examples/js/loaders/ctm/lzma.js"></script>
+		<script src="../examples/js/loaders/ctm/ctm.js"></script>
+		<script src="../examples/js/loaders/ctm/CTMLoader.js"></script>
+
+		<script src="../examples/js/exporters/ColladaExporter.js"></script>
+		<script src="../examples/js/exporters/GLTFExporter.js"></script>
+		<script src="../examples/js/exporters/OBJExporter.js"></script>
+		<script src="../examples/js/exporters/STLExporter.js"></script>
+
 		<script src="../examples/js/renderers/Projector.js"></script>
-		<script src="../examples/js/renderers/CanvasRenderer.js"></script>
 		<script src="../examples/js/renderers/RaytracingRenderer.js"></script>
 		<script src="../examples/js/renderers/SoftwareRenderer.js"></script>
 		<script src="../examples/js/renderers/SVGRenderer.js"></script>
@@ -65,6 +98,8 @@
 		<script src="js/Player.js"></script>
 		<script src="js/Script.js"></script>
 
+		<script src="../examples/js/vr/WebVR.js"></script>
+
 		<script src="js/Storage.js"></script>
 
 		<script src="js/Editor.js"></script>
@@ -78,6 +113,7 @@
 		<script src="js/Menubar.Add.js"></script>
 		<script src="js/Menubar.Movies.js"></script>
 		<script src="js/Menubar.View.js"></script>
+		<!-- <script src="js/Menubar.View.js"></script> -->
 		<script src="js/Menubar.Examples.js"></script>
 		<script src="js/Menubar.Help.js"></script>
 		<script src="js/Menubar.Status.js"></script>
@@ -86,6 +122,8 @@
 		<script src="js/Sidebar.SceneSettings.js"></script>
 		<script src="js/Sidebar.Project.js"></script>
 		<script src="js/Sidebar.Settings.js"></script>
+		<script src="js/Sidebar.Settings.Shortcuts.js"></script>
+		<script src="js/Sidebar.Settings.Viewport.js"></script>
 		<script src="js/Sidebar.Properties.js"></script>
 		<script src="js/Sidebar.Object.js"></script>
 		<script src="js/Sidebar.Geometry.js"></script>
@@ -100,6 +138,8 @@
 		<script src="js/Sidebar.Geometry.SphereGeometry.js"></script>
 		<script src="js/Sidebar.Geometry.TorusGeometry.js"></script>
 		<script src="js/Sidebar.Geometry.TorusKnotGeometry.js"></script>
+		<script src="../examples/js/geometries/TeapotBufferGeometry.js"></script>
+		<script src="js/Sidebar.Geometry.TeapotBufferGeometry.js"></script>
 		<script src="js/Sidebar.Geometry.LatheGeometry.js"></script>
 		<script src="js/Sidebar.Material.js"></script>
 		<script src="js/libs/Whammy.js"></script>
@@ -110,6 +150,7 @@
 		<script src="js/Sidebar.Animation.js"></script>
 		<script src="js/Sidebar.Script.js"></script>
 		<script src="js/Sidebar.History.js"></script>
+		<script src="js/Strings.js"></script>
 		<script src="js/OpenSimToolbar.js"></script>
 		<script src="js/Viewport.js"></script>
 		<script src="js/Viewport.Info.js"></script>
@@ -138,329 +179,326 @@
 		<script src="js/commands/SetMaterialMapCommand.js"></script>
 		<script src="js/commands/SetSceneCommand.js"></script>
 		<script type="text/javascript" src="websocket.js"></script>
-		<!-- <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="qyqgfqd9j8z890t"></script> -->
+		<script src="js/libs/html2canvas.js"></script>
+		<script src="js/libs/three.html.js"></script>
 
 		<script>
 			function getParameterByName(name, url) {
 				if (!url) url = window.location.href;
-					name = name.replace(/[\[\]]/g, "\\$&");
+				name = name.replace(/[\[\]]/g, "\\$&");
 				var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-      results = regex.exec(url);
-      if (!results) return null;
-      if (!results[2]) return '';
-      return decodeURIComponent(results[2].replace(/\+/g, " "));
-      }
-
-      if (!Detector.webgl) Detector.addGetWebGLMessage();
-
-      window.URL = window.URL || window.webkitURL;
-      window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
-
-      Number.prototype.format = function (){
-      return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
-      };
-      //
-      stats = new Stats();
-      document.body.appendChild( stats.domElement );
-
-      var editor = new OpenSimEditor();
-
-      // Minimal ui, should move to a different file to avoid clutter
-      var VisualizerKnobs = function() {
-      // Backdrop
-      this.backdrop = editor.config.getKey('skybox');
-      this.backdropImage = editor.config.getKey('skybox');
-      color = editor.config.getKey('settings/backgroundcolor');
-      if (color=== undefined){
-      this.backgroundColor = "#888888";
-      editor.updateBackgroundColor(this.backgroundColor);
-      }
-      else
-      this.backgroundColor = color;
-      // Floor
-      this.texture = editor.config.getKey('floor');
-      this.height = -0.001;
-      //
-      var light = editor.scene.getObjectByName('SunLight');
-      this.sceneLightIntensity = 0.2;
-      this.modelLightIntensity = editor.modelLightIntensity;
-      //
-      this.sceneLightSelect = function () { editor.select(editor.scene.getObjectByName('SunLight')); }
-      this.modelLightSelect = function () { editor.selectCurrentModelLight(); }
-      this.expertModeSelect = function () { editor.setTheme('css/dark.css'); }
-      this.showStats = function () {
-      var elem = document.getElementById("viewport");
-      if (elem.style.bottom=="20px")
-      elem.style.bottom="0px";
-      else
-      elem.style.bottom="20px";
-      window.dispatchEvent(new Event('resize'));
-      }
-      // Screen Capture
-      this.screenCaptureDPI =  editor.config.getKey('settings/captureDPI');
-      if (this.screenCaptureDPI === undefined){
-      editor.config.setKey('settings/captureDPI', 2);
-      }
-      };
-      window.onload = function () {
-          var gui = new dat.GUI({ width: 260 }); // create dat.gui
-      var knobs = new VisualizerKnobs();
-      gui.remember(knobs);
-
-      var backdrop = gui.addFolder('Backdrop');
-      var backdropColor = backdrop.addColor(knobs, 'backgroundColor').name('Background Color');
-      var backdropImage = backdrop.add(knobs, 'backdropImage', ['nobackground', 'sky', 'canyon', 'pastures', 'city']);
-      backdropColor.onChange(function (value) {
-		editor.updateBackgroundColor(value);
-		backdropImage.setValue('nobackground');
-		backdropImage.updateDisplay();
-      });
-      backdropImage.name('Image');
-      backdropImage.onChange(function(newImage){
-      editor.updateBackground(newImage);
-      editor.refresh();
-      });
-
-      var ground = gui.addFolder('Floor');
-      var texture = ground.add(knobs, 'texture', ['nofloor', 'redbricks', 'graybricks', 'wood-floor', 'tile']);
-      texture.name('Texture');
-      var floorHeight = ground.add(knobs, 'height').min(-2.01).max(2.02).step(0.01).name('Height');
-      floorHeight.onChange(function (value) {
-      editor.setFloorHeight(value);
-      });
-      texture.onChange(function (value) {
-      editor.updateGroundPlane(value);
-      });
-
-      var lights = gui.addFolder('Lighting');
-      lights.add(knobs, 'sceneLightSelect').name('Select Scene Light');
-	 /*
-      var lightIntensity = lights.add(knobs, 'sceneLightIntensity');
-      lightIntensity.name('Intensity');
-      lightIntensity.onChange(function (value) {
-      editor.updateSceneLight('intensity', value);
-      editor.refresh();
-      });*/
-      var modelLightIntensity = lights.add(knobs, 'modelLightIntensity');
-      modelLightIntensity.name('Model Light').onChange(function(value){
-      editor.updateModelLightIntensity(value);
-      });;
-      if (getParameterByName('expert') === "1"){
-        gui.add(knobs, 'expertModeSelect').name('Expert Mode');
-        gui.add(knobs, 'showStats').name('FPS');
-      }
-      var captureControl = gui.add(knobs, 'screenCaptureDPI').name('Snapshot Quality').min(1).max(4).step(1);
-      captureControl.onChange(function (value) {
-      editor.setScreenCaptureScaleup(value);
-		editor.config.setKey('settings/captureDPI', value);
-		editor.refresh();
-      });
-      gui.closed = true;
-      }
+					results = regex.exec(url);
+				if (!results) return null;
+				if (!results[2]) return '';
+				return decodeURIComponent(results[2].replace(/\+/g, " "));
+			}
+
+			window.URL = window.URL || window.webkitURL;
+			window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+
+			Number.prototype.format = function () {
+				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+			};
+
+			Number.prototype.format = function () {
+				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+			};
+			//
+			stats = new Stats();
+			document.body.appendChild(stats.domElement);
+
+			var editor = new OpenSimEditor();
+
+			// Minimal ui, should move to a different file to avoid clutter
+			var VisualizerKnobs = function () {
+				// Backdrop
+				this.backdrop = editor.config.getKey('skybox');
+				this.backdropImage = editor.config.getKey('skybox');
+				color = editor.config.getKey('settings/backgroundcolor');
+				if (color === undefined) {
+					this.backgroundColor = "#888888";
+					editor.updateBackgroundColor(this.backgroundColor);
+				}
+				else
+					this.backgroundColor = color;
+				// Floor
+				this.texture = editor.config.getKey('floor');
+				this.height = -0.001;
+				//
+				var light = editor.scene.getObjectByName('SunLight');
+				this.sceneLightIntensity = 0.2;
+				this.modelLightIntensity = editor.modelLightIntensity;
+				//
+				this.sceneLightSelect = function () { editor.select(editor.scene.getObjectByName('SunLight')); }
+				this.modelLightSelect = function () { editor.selectCurrentModelLight(); }
+				this.expertModeSelect = function () { editor.setTheme('css/dark.css'); }
+				this.showStats = function () {
+					var elem = document.getElementById("viewport");
+					if (elem.style.bottom == "20px")
+						elem.style.bottom = "0px";
+					else
+						elem.style.bottom = "20px";
+					window.dispatchEvent(new Event('resize'));
+				}
+				// Screen Capture
+				this.screenCaptureDPI = editor.config.getKey('settings/captureDPI');
+				if (this.screenCaptureDPI === undefined) {
+					editor.config.setKey('settings/captureDPI', 2);
+				}
+			};
+			window.onload = function () {
+				var gui = new dat.GUI({ width: 260 }); // create dat.gui
+				var knobs = new VisualizerKnobs();
+				gui.remember(knobs);
+
+				var backdrop = gui.addFolder('Backdrop');
+				var backdropColor = backdrop.addColor(knobs, 'backgroundColor').name('Background Color');
+				var backdropImage = backdrop.add(knobs, 'backdropImage', ['nobackground', 'sky', 'canyon', 'pastures', 'city']);
+				backdropColor.onChange(function (value) {
+					editor.updateBackgroundColor(value);
+					backdropImage.setValue('nobackground');
+					backdropImage.updateDisplay();
+				});
+				backdropImage.name('Image');
+				backdropImage.onChange(function (newImage) {
+					editor.updateBackground(newImage);
+					editor.refresh();
+				});
+
+				var ground = gui.addFolder('Floor');
+				var texture = ground.add(knobs, 'texture', ['nofloor', 'redbricks', 'graybricks', 'wood-floor', 'tile']);
+				texture.name('Texture');
+				var floorHeight = ground.add(knobs, 'height').min(-2.01).max(2.02).step(0.01).name('Height');
+				floorHeight.onChange(function (value) {
+					editor.setFloorHeight(value);
+				});
+				texture.onChange(function (value) {
+					editor.updateGroundPlane(value);
+				});
+
+				var lights = gui.addFolder('Lighting');
+				lights.add(knobs, 'sceneLightSelect').name('Select Scene Light');
+				/*
+				 var lightIntensity = lights.add(knobs, 'sceneLightIntensity');
+				 lightIntensity.name('Intensity');
+				 lightIntensity.onChange(function (value) {
+				 editor.updateSceneLight('intensity', value);
+				 editor.refresh();
+				 });*/
+				var modelLightIntensity = lights.add(knobs, 'modelLightIntensity');
+				modelLightIntensity.name('Model Light').onChange(function (value) {
+					editor.updateModelLightIntensity(value);
+				});;
+				if (getParameterByName('expert') === "1") {
+					gui.add(knobs, 'expertModeSelect').name('Expert Mode');
+					gui.add(knobs, 'showStats').name('FPS');
+				}
+				var captureControl = gui.add(knobs, 'screenCaptureDPI').name('Snapshot Quality').min(1).max(4).step(1);
+				captureControl.onChange(function (value) {
+					editor.setScreenCaptureScaleup(value);
+					editor.config.setKey('settings/captureDPI', value);
+					editor.refresh();
+				});
+				gui.closed = true;
+			}
 
-      var viewport = new OpenSimViewport( editor );
-      document.body.appendChild( viewport.dom );
+			var viewport = new OpenSimViewport(editor);
+			document.body.appendChild(viewport.dom);
 
-      var script = new Script( editor );
-      document.body.appendChild( script.dom );
+			var script = new Script(editor);
+			//document.body.appendChild( script.dom );
 
-      var player = new Player( editor );
-      document.body.appendChild( player.dom );
+			var player = new Player(editor);
+			//document.body.appendChild( player.dom );
 
-      var toolbar = new OpenSimToolbar(editor);
-      document.body.appendChild( toolbar.dom );
-      if (getParameterByName('expert') === "1"){
-      var menubar = new Menubar( editor );
-      document.body.appendChild( menubar.dom );
-      }
-      var sidebar = new Sidebar( editor );
-      document.body.appendChild( sidebar.dom );
+			var toolbar = new OpenSimToolbar(editor);
+			document.body.appendChild(toolbar.dom);
+			if (getParameterByName('expert') === "1") {
+				var menubar = new Menubar(editor);
+				document.body.appendChild(menubar.dom);
+			}
+			var sidebar = new Sidebar(editor);
+			document.body.appendChild(sidebar.dom);
 
-      /*
-      var dialog = new UI.Dialog();
-      document.body.appendChild( dialog.dom );
-      */
+			/*
+			var dialog = new UI.Dialog();
+			document.body.appendChild( dialog.dom );
+			*/
 
-      //
+			//
 
-      editor.setTheme( editor.config.getKey( 'theme' ) );
+			editor.setTheme(editor.config.getKey('theme'));
 
-      editor.storage.init( function () {
-      /*
-      editor.storage.get( function ( state ) {
+			editor.storage.init(function () {
+				/*
+				editor.storage.get( function ( state ) {
 
-      if ( isLoadingFromHash ) return;
+				if ( isLoadingFromHash ) return;
 
-      if ( state !== undefined ) {
+				if ( state !== undefined ) {
 
-      editor.fromJSON( state );
+				editor.fromJSON( state );
 
-      }
+				}
 
-      var selected = editor.config.getKey( 'selected' );
+				var selected = editor.config.getKey( 'selected' );
 
-      if ( selected !== undefined ) {
+				if ( selected !== undefined ) {
 
-      editor.selectByUuid( selected );
+				editor.selectByUuid( selected );
 
-      }
+				}
 
-      } );
-      */
-      //
+				} );
+				*/
+				//
 
-      var timeout;
+				var timeout;
 
-      function saveState( scene ) {
-      /*
-      if ( editor.config.getKey( 'autosave' ) === false ) {
+				function saveState(scene) {
+					/*
+					if ( editor.config.getKey( 'autosave' ) === false ) {
 
-      return;
+					return;
 
-      }
+					}
 
-      clearTimeout( timeout );
+					clearTimeout( timeout );
 
-      timeout = setTimeout( function () {
+					timeout = setTimeout( function () {
 
-      editor.signals.savingStarted.dispatch();
+					editor.signals.savingStarted.dispatch();
 
-      timeout = setTimeout( function () {
+					timeout = setTimeout( function () {
 
-      editor.storage.set( editor.toJSON() );
+					editor.storage.set( editor.toJSON() );
 
-      editor.signals.savingFinished.dispatch();
+					editor.signals.savingFinished.dispatch();
 
-      }, 100 );
+					}, 100 );
 
-      }, 1000 );
-      */
-      };
+					}, 1000 );
+					*/
+				};
 
-      var signals = editor.signals;
+				var signals = editor.signals;
 
-      signals.editorCleared.add( saveState );
-      signals.geometryChanged.add( saveState );
-      signals.objectAdded.add( saveState );
-      signals.objectChanged.add( saveState );
-      signals.objectRemoved.add( saveState );
-      signals.materialChanged.add( saveState );
-      signals.sceneGraphChanged.add( saveState );
-      signals.scriptChanged.add( saveState );
-      signals.historyChanged.add( saveState );
+				signals.editorCleared.add(saveState);
+				signals.geometryChanged.add(saveState);
+				signals.objectAdded.add(saveState);
+				signals.objectChanged.add(saveState);
+				signals.objectRemoved.add(saveState);
+				signals.materialChanged.add(saveState);
+				signals.sceneGraphChanged.add(saveState);
+				signals.scriptChanged.add(saveState);
+				signals.historyChanged.add(saveState);
 
-      signals.showModal.add( function ( content ) {
+				signals.showModal.add(function (content) {
 
-      modal.show( content );
+					modal.show(content);
 
-      } );
+				});
 
-      } );
+			});
 
-      //
+			document.addEventListener('dragover', function (event) {
 
-      document.addEventListener( 'dragover', function ( event ) {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = 'copy';
 
-      event.preventDefault();
-      event.dataTransfer.dropEffect = 'copy';
+			}, false);
 
-      }, false );
+			document.addEventListener('drop', function (event) {
 
-      document.addEventListener( 'drop', function ( event ) {
+				event.preventDefault();
 
-      event.preventDefault();
+				editor.loader.loadFiles(event.dataTransfer.files);
 
-      if ( event.dataTransfer.files.length > 0 ) {
+			}, false);
 
-      new Loader(editor).loadFile( event.dataTransfer.files[ 0 ] );
+			document.addEventListener('keydown', function (event) {
+				// Visualizer to ignore key combinations using "ctrl" to avoid breaking GUI hot-keys
+				if (event.ctrlKey)
+					return;
 
-      }
+				switch (event.keyCode) {
 
-      }, false );
+					case 8: // backspace
 
-      document.addEventListener( 'keydown', function ( event ) {
-	  // Visualizer to ignore key combinations using "ctrl" to avoid breaking GUI hot-keys
-	  if ( event.ctrlKey)
-	  	return;
-	  	
-      switch ( event.keyCode ) {
-
-      case 8: // backspace
-
-      //event.preventDefault(); // prevent browser back
-      break;
-/*
-      case 46: // delete
-
-      var object = editor.selected;
-
-      if ( confirm( 'Delete ' + object.name + '?' ) === false ) return;
-
-      var parent = object.parent;
-      if ( parent !== null ) editor.execute( new RemoveObjectCommand( object ) );
-
-      break;
-
-      case 90: // Register Ctrl-Z for Undo, Ctrl-Shift-Z for Redo
-
-      if ( event.ctrlKey && event.shiftKey ) {
-
-							editor.redo();
-
-						} else if ( event.ctrlKey ) {
-
-							editor.undo();
-
-						}
-
+						//event.preventDefault(); // prevent browser back
 						break;
+					/*
+						  case 46: // delete
 
-					case 87: // Register W for translation transform mode
+						  var object = editor.selected;
 
-						editor.signals.transformModeChanged.dispatch( 'translate' );
+						  if ( confirm( 'Delete ' + object.name + '?' ) === false ) return;
 
-						break;
+						  var parent = object.parent;
+						  if ( parent !== null ) editor.execute( new RemoveObjectCommand( object ) );
 
-					case 69: // Register E for rotation transform mode
+						  break;
 
-						editor.signals.transformModeChanged.dispatch( 'rotate' );
+						  case 90: // Register Ctrl-Z for Undo, Ctrl-Shift-Z for Redo
 
-						break;
+						  if ( event.ctrlKey && event.shiftKey ) {
 
-					case 82: // Register R for scaling transform mode
+												editor.redo();
 
-						editor.signals.transformModeChanged.dispatch( 'scale' );
+											} else if ( event.ctrlKey ) {
 
-						break;
-*/
+												editor.undo();
+
+											}
+
+											break;
+
+										case 87: // Register W for translation transform mode
+
+											editor.signals.transformModeChanged.dispatch( 'translate' );
+
+											break;
+
+										case 69: // Register E for rotation transform mode
+
+											editor.signals.transformModeChanged.dispatch( 'rotate' );
+
+											break;
+
+										case 82: // Register R for scaling transform mode
+
+											editor.signals.transformModeChanged.dispatch( 'scale' );
+
+											break;
+					*/
 					case 37: // Delegate ArrowKeys and OpenSim reserved keys to editor
 					case 38:
 					case 39:
 					case 40:
 					case 73:
 					case 79:
-					    editor.handleKey(event.keyCode);
-					    event.preventDefault();
-					break;
+						editor.handleKey(event.keyCode);
+						event.preventDefault();
+						break;
 				}
 
-			}, false );
+			}, false);
 
-			function onWindowResize( event ) {
+			function onWindowResize(event) {
 
 				editor.signals.windowResize.dispatch();
 
 			}
 
-			window.addEventListener( 'resize', onWindowResize, false );
+			window.addEventListener('resize', onWindowResize, false);
 
 			onWindowResize();
 
 			animate();
 			function animate() {
-			    requestAnimationFrame(animate);
-                if (editor.recording)
-			        editor.signals.captureFrame.dispatch();
+				requestAnimationFrame(animate);
+				if (editor.recording)
+					editor.signals.captureFrame.dispatch();
 			}
 
 		</script>
