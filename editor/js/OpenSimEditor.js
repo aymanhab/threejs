@@ -907,7 +907,7 @@ OpenSimEditor.prototype = {
 	},
 		createLogoSprite: function() {
 			var getLogoTexture = function () {
-				var texture = new THREE.ImageUtils.loadTexture("OpenSimWatermarkOpaqueGrayscale128x128.png");
+				var texture = new THREE.ImageUtils.loadTexture("lcadTransparent.png");
 				return texture;
 			};
 			var spriteMaterial = new THREE.SpriteMaterial({
