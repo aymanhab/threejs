@@ -3,11 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+/* NOWEBSOCKET
 var wsUri = "ws://" + document.location.host + "/visEndpoint";
 var websocket = new WebSocket(wsUri);
-
+*/
 var processing = false;
 var last_message_uuid = 0;
+/* NOWEBSOCKET
 websocket.onerror = function(evt) { onError(evt) };
 
 function onError(evt) {
@@ -15,7 +17,7 @@ function onError(evt) {
 }
 
 websocket.onopen = function(evt) { onOpen(evt) };
-
+*/
 function writeToScreen(message) {
 
 };
@@ -23,11 +25,14 @@ function writeToScreen(message) {
 function onOpen() {
 
 }
+/* NOWEBSOCKET
 websocket.onmessage = function(evt) { onMessage(evt) };
-
+*/
 function sendText(json) {
 	//console.log("sending text: " + json);
+	/* NOWEBSOCKET
 	websocket.send(json);
+	*/
 }
 				
 function onMessage(evt) {
