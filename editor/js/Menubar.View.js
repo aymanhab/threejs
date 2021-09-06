@@ -16,20 +16,60 @@ Menubar.View = function ( editor ) {
 	options.setClass( 'options' );
 	container.add( options );
 
-	// VR mode
+	// Light theme
 
-	var option = new UI.Row();
+	var option = new UI.Panel();
 	option.setClass( 'option' );
-	option.setTextContent( 'VR mode' );
+	option.setTextContent( 'Light theme' );
 	option.onClick( function () {
 
-		if ( WEBVR.isAvailable() === true ) {
+		editor.setTheme( 'css/light.css' );
+		editor.config.setKey( 'theme', 'css/light.css' );
 
-			editor.signals.enterVR.dispatch();
+	} );
+	options.add( option );
 
-		} else {
+	// Dark theme
 
-			alert( 'WebVR not available' );
+	var option = new UI.Panel();
+	option.setClass( 'option' );
+	option.setTextContent( 'Dark theme' );
+	option.onClick( function () {
+
+		editor.setTheme( 'css/dark.css' );
+		editor.config.setKey( 'theme', 'css/dark.css' );
+
+	} );
+	options.add( option );
+
+	//
+
+	options.add( new UI.HorizontalRule() );
+
+	// fullscreen
+
+	var option = new UI.Panel();
+	option.setClass( 'option' );
+	option.setTextContent( 'Fullscreen' );
+	option.onClick( function () {
+
+		var element = document.body;
+
+		if ( element.requestFullscreen ) {
+
+			element.requestFullscreen();
+
+		} else if ( element.mozRequestFullScreen ) {
+
+			element.mozRequestFullScreen();
+
+		} else if ( element.webkitRequestFullscreen ) {
+
+			element.webkitRequestFullscreen();
+
+		} else if ( element.msRequestFullscreen ) {
+
+			element.msRequestFullscreen();
 
 		}
 

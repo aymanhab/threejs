@@ -1,61 +1,53 @@
-import { Matrix4 } from '../math/Matrix4.js';
-import { _Math } from '../math/Math.js';
-import { PerspectiveCamera } from './PerspectiveCamera.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function StereoCamera() {
+THREE.StereoCamera = function () {
 
 	this.type = 'StereoCamera';
 
 	this.aspect = 1;
 
-	this.eyeSep = 0.064;
-
-	this.cameraL = new PerspectiveCamera();
+	this.cameraL = new THREE.PerspectiveCamera();
 	this.cameraL.layers.enable( 1 );
 	this.cameraL.matrixAutoUpdate = false;
 
-	this.cameraR = new PerspectiveCamera();
+	this.cameraR = new THREE.PerspectiveCamera();
 	this.cameraR.layers.enable( 2 );
 	this.cameraR.matrixAutoUpdate = false;
 
-}
+};
 
-Object.assign( StereoCamera.prototype, {
+Object.assign( THREE.StereoCamera.prototype, {
 
 	update: ( function () {
 
-		var instance, focus, fov, aspect, near, far, zoom, eyeSep;
+		var focus, fov, aspect, near, far;
 
-		var eyeRight = new Matrix4();
-		var eyeLeft = new Matrix4();
+		var eyeRight = new THREE.Matrix4();
+		var eyeLeft = new THREE.Matrix4();
 
 		return function update( camera ) {
 
-			var needsUpdate = instance !== this || focus !== camera.focus || fov !== camera.fov ||
+			var needsUpdate = focus !== camera.focus || fov !== camera.fov ||
 												aspect !== camera.aspect * this.aspect || near !== camera.near ||
-												far !== camera.far || zoom !== camera.zoom || eyeSep !== this.eyeSep;
+												far !== camera.far;
 
 			if ( needsUpdate ) {
 
-				instance = this;
 				focus = camera.focus;
 				fov = camera.fov;
 				aspect = camera.aspect * this.aspect;
 				near = camera.near;
 				far = camera.far;
-				zoom = camera.zoom;
 
 				// Off-axis stereoscopic effect based on
 				// http://paulbourke.net/stereographics/stereorender/
 
 				var projectionMatrix = camera.projectionMatrix.clone();
-				eyeSep = this.eyeSep / 2;
+				var eyeSep = 0.064 / 2;
 				var eyeSepOnProjection = eyeSep * near / focus;
-				var ymax = ( near * Math.tan( _Math.DEG2RAD * fov * 0.5 ) ) / zoom;
+				var ymax = near * Math.tan( THREE.Math.DEG2RAD * fov * 0.5 );
 				var xmin, xmax;
 
 				// translate xOffset
@@ -93,6 +85,3 @@ Object.assign( StereoCamera.prototype, {
 	} )()
 
 } );
-
-
-export { StereoCamera };

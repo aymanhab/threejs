@@ -1,102 +1,77 @@
-import { Quaternion } from './Quaternion.js';
-import { Vector3 } from './Vector3.js';
-import { Matrix4 } from './Matrix4.js';
-import { _Math } from './Math.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author WestLangley / http://github.com/WestLangley
  * @author bhouston / http://clara.io
  */
 
-function Euler( x, y, z, order ) {
+THREE.Euler = function ( x, y, z, order ) {
 
 	this._x = x || 0;
 	this._y = y || 0;
 	this._z = z || 0;
-	this._order = order || Euler.DefaultOrder;
+	this._order = order || THREE.Euler.DefaultOrder;
 
-}
+};
 
-Euler.RotationOrders = [ 'XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX' ];
+THREE.Euler.RotationOrders = [ 'XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX' ];
 
-Euler.DefaultOrder = 'XYZ';
+THREE.Euler.DefaultOrder = 'XYZ';
 
-Object.defineProperties( Euler.prototype, {
+THREE.Euler.prototype = {
 
-	x: {
+	constructor: THREE.Euler,
 
-		get: function () {
+	get x () {
 
-			return this._x;
-
-		},
-
-		set: function ( value ) {
-
-			this._x = value;
-			this.onChangeCallback();
-
-		}
+		return this._x;
 
 	},
 
-	y: {
+	set x ( value ) {
 
-		get: function () {
-
-			return this._y;
-
-		},
-
-		set: function ( value ) {
-
-			this._y = value;
-			this.onChangeCallback();
-
-		}
+		this._x = value;
+		this.onChangeCallback();
 
 	},
 
-	z: {
+	get y () {
 
-		get: function () {
-
-			return this._z;
-
-		},
-
-		set: function ( value ) {
-
-			this._z = value;
-			this.onChangeCallback();
-
-		}
+		return this._y;
 
 	},
 
-	order: {
+	set y ( value ) {
 
-		get: function () {
+		this._y = value;
+		this.onChangeCallback();
 
-			return this._order;
+	},
 
-		},
+	get z () {
 
-		set: function ( value ) {
+		return this._z;
 
-			this._order = value;
-			this.onChangeCallback();
+	},
 
-		}
+	set z ( value ) {
 
-	}
+		this._z = value;
+		this.onChangeCallback();
 
-} );
+	},
 
-Object.assign( Euler.prototype, {
+	get order () {
 
-	isEuler: true,
+		return this._order;
+
+	},
+
+	set order ( value ) {
+
+		this._order = value;
+		this.onChangeCallback();
+
+	},
 
 	set: function ( x, y, z, order ) {
 
@@ -132,7 +107,7 @@ Object.assign( Euler.prototype, {
 
 	setFromRotationMatrix: function ( m, order, update ) {
 
-		var clamp = _Math.clamp;
+		var clamp = THREE.Math.clamp;
 
 		// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
@@ -255,9 +230,11 @@ Object.assign( Euler.prototype, {
 
 	setFromQuaternion: function () {
 
-		var matrix = new Matrix4();
+		var matrix;
 
 		return function setFromQuaternion( q, order, update ) {
+
+			if ( matrix === undefined ) matrix = new THREE.Matrix4();
 
 			matrix.makeRotationFromQuaternion( q );
 
@@ -277,12 +254,12 @@ Object.assign( Euler.prototype, {
 
 		// WARNING: this discards revolution information -bhouston
 
-		var q = new Quaternion();
+		var q = new THREE.Quaternion();
 
 		return function reorder( newOrder ) {
 
 			q.setFromEuler( this );
-
+			
 			return this.setFromQuaternion( q, newOrder );
 
 		};
@@ -330,7 +307,7 @@ Object.assign( Euler.prototype, {
 
 		} else {
 
-			return new Vector3( this._x, this._y, this._z );
+			return new THREE.Vector3( this._x, this._y, this._z );
 
 		}
 
@@ -346,7 +323,4 @@ Object.assign( Euler.prototype, {
 
 	onChangeCallback: function () {}
 
-} );
-
-
-export { Euler };
+};

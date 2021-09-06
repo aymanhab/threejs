@@ -1,8 +1,3 @@
-import { TangentSpaceNormalMap } from '../constants.js';
-import { Material } from './Material.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Color } from '../math/Color.js';
-
 /**
  * @author WestLangley / http://github.com/WestLangley
  *
@@ -28,7 +23,6 @@ import { Color } from '../math/Color.js';
  *  bumpScale: <float>,
  *
  *  normalMap: new THREE.Texture( <Image> ),
- *  normalMapType: THREE.TangentSpaceNormalMap,
  *  normalScale: <Vector2>,
  *
  *  displacementMap: new THREE.Texture( <Image> ),
@@ -55,15 +49,15 @@ import { Color } from '../math/Color.js';
  * }
  */
 
-function MeshStandardMaterial( parameters ) {
+THREE.MeshStandardMaterial = function ( parameters ) {
 
-	Material.call( this );
+	THREE.Material.call( this );
 
 	this.defines = { 'STANDARD': '' };
 
 	this.type = 'MeshStandardMaterial';
 
-	this.color = new Color( 0xffffff ); // diffuse
+	this.color = new THREE.Color( 0xffffff ); // diffuse
 	this.roughness = 0.5;
 	this.metalness = 0.5;
 
@@ -75,7 +69,7 @@ function MeshStandardMaterial( parameters ) {
 	this.aoMap = null;
 	this.aoMapIntensity = 1.0;
 
-	this.emissive = new Color( 0x000000 );
+	this.emissive = new THREE.Color( 0x000000 );
 	this.emissiveIntensity = 1.0;
 	this.emissiveMap = null;
 
@@ -83,8 +77,7 @@ function MeshStandardMaterial( parameters ) {
 	this.bumpScale = 1;
 
 	this.normalMap = null;
-	this.normalMapType = TangentSpaceNormalMap;
-	this.normalScale = new Vector2( 1, 1 );
+	this.normalScale = new THREE.Vector2( 1, 1 );
 
 	this.displacementMap = null;
 	this.displacementScale = 1;
@@ -112,16 +105,14 @@ function MeshStandardMaterial( parameters ) {
 
 	this.setValues( parameters );
 
-}
+};
 
-MeshStandardMaterial.prototype = Object.create( Material.prototype );
-MeshStandardMaterial.prototype.constructor = MeshStandardMaterial;
+THREE.MeshStandardMaterial.prototype = Object.create( THREE.Material.prototype );
+THREE.MeshStandardMaterial.prototype.constructor = THREE.MeshStandardMaterial;
 
-MeshStandardMaterial.prototype.isMeshStandardMaterial = true;
+THREE.MeshStandardMaterial.prototype.copy = function ( source ) {
 
-MeshStandardMaterial.prototype.copy = function ( source ) {
-
-	Material.prototype.copy.call( this, source );
+	THREE.Material.prototype.copy.call( this, source );
 
 	this.defines = { 'STANDARD': '' };
 
@@ -145,7 +136,6 @@ MeshStandardMaterial.prototype.copy = function ( source ) {
 	this.bumpScale = source.bumpScale;
 
 	this.normalMap = source.normalMap;
-	this.normalMapType = source.normalMapType;
 	this.normalScale.copy( source.normalScale );
 
 	this.displacementMap = source.displacementMap;
@@ -175,6 +165,3 @@ MeshStandardMaterial.prototype.copy = function ( source ) {
 	return this;
 
 };
-
-
-export { MeshStandardMaterial };

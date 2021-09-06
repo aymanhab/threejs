@@ -2,10 +2,16 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { Vector2 } from '../math/Vector2.js';
+THREE.DirectGeometry = function () {
 
-function DirectGeometry() {
+	Object.defineProperty( this, 'id', { value: THREE.GeometryIdCount ++ } );
 
+	this.uuid = THREE.Math.generateUUID();
+
+	this.name = '';
+	this.type = 'DirectGeometry';
+
+	this.indices = [];
 	this.vertices = [];
 	this.normals = [];
 	this.colors = [];
@@ -32,15 +38,30 @@ function DirectGeometry() {
 	this.uvsNeedUpdate = false;
 	this.groupsNeedUpdate = false;
 
-}
+};
 
-Object.assign( DirectGeometry.prototype, {
+Object.assign( THREE.DirectGeometry.prototype, THREE.EventDispatcher.prototype, {
+
+	computeBoundingBox: THREE.Geometry.prototype.computeBoundingBox,
+	computeBoundingSphere: THREE.Geometry.prototype.computeBoundingSphere,
+
+	computeFaceNormals: function () {
+
+		console.warn( 'THREE.DirectGeometry: computeFaceNormals() is not a method of this type of geometry.' );
+
+	},
+
+	computeVertexNormals: function () {
+
+		console.warn( 'THREE.DirectGeometry: computeVertexNormals() is not a method of this type of geometry.' );
+
+	},
 
 	computeGroups: function ( geometry ) {
 
 		var group;
 		var groups = [];
-		var materialIndex = undefined;
+		var materialIndex;
 
 		var faces = geometry.faces;
 
@@ -103,10 +124,7 @@ Object.assign( DirectGeometry.prototype, {
 
 			for ( var i = 0; i < morphTargetsLength; i ++ ) {
 
-				morphTargetsPosition[ i ] = {
-					name: morphTargets[ i ].name,
-				 	data: []
-				};
+				morphTargetsPosition[ i ] = [];
 
 			}
 
@@ -125,10 +143,7 @@ Object.assign( DirectGeometry.prototype, {
 
 			for ( var i = 0; i < morphNormalsLength; i ++ ) {
 
-				morphTargetsNormal[ i ] = {
-					name: morphNormals[ i ].name,
-				 	data: []
-				};
+				morphTargetsNormal[ i ] = [];
 
 			}
 
@@ -145,12 +160,6 @@ Object.assign( DirectGeometry.prototype, {
 		var hasSkinWeights = skinWeights.length === vertices.length;
 
 		//
-
-		if ( vertices.length > 0 && faces.length === 0 ) {
-
-			console.error( 'THREE.DirectGeometry: Faceless geometries are not supported.' );
-
-		}
 
 		for ( var i = 0; i < faces.length; i ++ ) {
 
@@ -198,7 +207,7 @@ Object.assign( DirectGeometry.prototype, {
 
 					console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv ', i );
 
-					this.uvs.push( new Vector2(), new Vector2(), new Vector2() );
+					this.uvs.push( new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2() );
 
 				}
 
@@ -216,7 +225,7 @@ Object.assign( DirectGeometry.prototype, {
 
 					console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv2 ', i );
 
-					this.uvs2.push( new Vector2(), new Vector2(), new Vector2() );
+					this.uvs2.push( new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2() );
 
 				}
 
@@ -228,7 +237,7 @@ Object.assign( DirectGeometry.prototype, {
 
 				var morphTarget = morphTargets[ j ].vertices;
 
-				morphTargetsPosition[ j ].data.push( morphTarget[ face.a ], morphTarget[ face.b ], morphTarget[ face.c ] );
+				morphTargetsPosition[ j ].push( morphTarget[ face.a ], morphTarget[ face.b ], morphTarget[ face.c ] );
 
 			}
 
@@ -236,7 +245,7 @@ Object.assign( DirectGeometry.prototype, {
 
 				var morphNormal = morphNormals[ j ].vertexNormals[ i ];
 
-				morphTargetsNormal[ j ].data.push( morphNormal.a, morphNormal.b, morphNormal.c );
+				morphTargetsNormal[ j ].push( morphNormal.a, morphNormal.b, morphNormal.c );
 
 			}
 
@@ -266,9 +275,12 @@ Object.assign( DirectGeometry.prototype, {
 
 		return this;
 
+	},
+
+	dispose: function () {
+
+		this.dispatchEvent( { type: 'dispose' } );
+
 	}
 
 } );
-
-
-export { DirectGeometry };

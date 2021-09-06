@@ -4,26 +4,25 @@
 
 var Sidebar = function ( editor ) {
 
-	var strings = editor.strings;
-
 	var container = new UI.Panel();
 	container.setId( 'sidebar' );
 
 	//
 
-	var sceneTab = new UI.Text( strings.getKey( 'sidebar/scene' ) ).setTextTransform( 'uppercase' );
-	sceneTab.onClick( function () { select( 'SCENE' ) } );
-
-	var projectTab = new UI.Text( strings.getKey( 'sidebar/project' ) ).setTextTransform( 'uppercase' );
-	projectTab.onClick( function () { select( 'PROJECT' ) } );
-
-	var settingsTab = new UI.Text( strings.getKey( 'sidebar/settings' ) ).setTextTransform( 'uppercase' );
-	settingsTab.onClick( function () { select( 'SETTINGS' ) } );
+	var sceneTab = new UI.Text( 'SCENE' ).onClick( onClick );
+	var projectTab = new UI.Text( 'PROJECT' ).onClick( onClick );
+	var settingsTab = new UI.Text( 'SETTINGS' ).onClick( onClick );
 
 	var tabs = new UI.Div();
 	tabs.setId( 'tabs' );
 	tabs.add( sceneTab, /* projectTab, */ settingsTab );
 	container.add( tabs );
+
+	function onClick( event ) {
+
+		select( event.target.textContent );
+
+	}
 
 	//
 

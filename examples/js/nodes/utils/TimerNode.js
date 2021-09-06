@@ -2,104 +2,21 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { FloatNode } from '../inputs/FloatNode.js';
-import { NodeLib } from '../core/NodeLib.js';
+THREE.TimerNode = function( value, scale ) {
 
-function TimerNode( scale, scope, timeScale ) {
+	THREE.FloatNode.call( this, value );
 
-	FloatNode.call( this );
+	this.requestUpdate = true;
 
 	this.scale = scale !== undefined ? scale : 1;
-	this.scope = scope || TimerNode.GLOBAL;
-
-	this.timeScale = timeScale !== undefined ? timeScale : this.scale !== 1;
-
-}
-
-TimerNode.GLOBAL = 'global';
-TimerNode.LOCAL = 'local';
-TimerNode.DELTA = 'delta';
-
-TimerNode.prototype = Object.create( FloatNode.prototype );
-TimerNode.prototype.constructor = TimerNode;
-TimerNode.prototype.nodeType = "Timer";
-
-TimerNode.prototype.isReadonly = function () {
-
-	// never use TimerNode as readonly but aways as "uniform"
-
-	return false;
 
 };
 
-TimerNode.prototype.isUnique = function () {
+THREE.TimerNode.prototype = Object.create( THREE.FloatNode.prototype );
+THREE.TimerNode.prototype.constructor = THREE.TimerNode;
 
-	// share TimerNode "uniform" input if is used on more time with others TimerNode
+THREE.TimerNode.prototype.updateAnimation = function( delta ) {
 
-	return this.timeScale && ( this.scope === TimerNode.GLOBAL || this.scope === TimerNode.DELTA );
-
-};
-
-TimerNode.prototype.updateFrame = function ( frame ) {
-
-	var scale = this.timeScale ? this.scale : 1;
-
-	switch ( this.scope ) {
-
-		case TimerNode.LOCAL:
-
-			this.value += frame.delta * scale;
-
-			break;
-
-		case TimerNode.DELTA:
-
-			this.value = frame.delta * scale;
-
-			break;
-
-		default:
-
-			this.value = frame.time * scale;
-
-	}
+	this.number += delta * this.scale;
 
 };
-
-TimerNode.prototype.copy = function ( source ) {
-
-	FloatNode.prototype.copy.call( this, source );
-
-	this.scope = source.scope;
-	this.scale = source.scale;
-
-	this.timeScale = source.timeScale;
-
-};
-
-TimerNode.prototype.toJSON = function ( meta ) {
-
-	var data = this.getJSONNode( meta );
-
-	if ( ! data ) {
-
-		data = this.createJSONNode( meta );
-
-		data.scope = this.scope;
-		data.scale = this.scale;
-
-		data.timeScale = this.timeScale;
-
-	}
-
-	return data;
-
-};
-
-NodeLib.addKeyword( 'time', function () {
-
-	return new TimerNode();
-
-} );
-
-export { TimerNode };

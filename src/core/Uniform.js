@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-function Uniform( value ) {
+THREE.Uniform = function ( value ) {
 
 	if ( typeof value === 'string' ) {
 
@@ -13,12 +13,21 @@ function Uniform( value ) {
 
 	this.value = value;
 
-}
-
-Uniform.prototype.clone = function () {
-
-	return new Uniform( this.value.clone === undefined ? this.value : this.value.clone() );
+	this.dynamic = false;
 
 };
 
-export { Uniform };
+THREE.Uniform.prototype = {
+
+	constructor: THREE.Uniform,
+
+	onUpdate: function ( callback ) {
+
+		this.dynamic = true;
+		this.onUpdateCallback = callback;
+
+		return this;
+
+	}
+
+};

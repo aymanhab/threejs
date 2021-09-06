@@ -16,8 +16,7 @@ THREE.KMZLoader.prototype = {
 
 		var scope = this;
 
-		var loader = new THREE.FileLoader( scope.manager );
-		loader.setPath( scope.path );
+		var loader = new THREE.XHRLoader( scope.manager );
 		loader.setResponseType( 'arraybuffer' );
 		loader.load( url, function ( text ) {
 
@@ -27,85 +26,27 @@ THREE.KMZLoader.prototype = {
 
 	},
 
-	setPath: function ( value ) {
-
-		this.path = value;
-		return this;
-
-	},
-
 	parse: function ( data ) {
 
-		function findFile( url ) {
+		var zip = new JSZip( data );
 
-			for ( var path in zip.files ) {
+		// console.log( zip );
 
-				if ( path.substr( - url.length ) === url ) {
+		for ( var name in zip.files ) {
 
-					return zip.files[ path ];
+			if ( name.toLowerCase().substr( - 4 ) === '.dae' ) {
 
-				}
-
-			}
-
-		}
-
-		var manager = new THREE.LoadingManager();
-		manager.setURLModifier( function ( url ) {
-
-			var image = findFile( url );
-
-			if ( image ) {
-
-				console.log( 'Loading', url );
-
-				var blob = new Blob( [ image.asArrayBuffer() ], { type: 'application/octet-stream' } );
-				return URL.createObjectURL( blob );
-
-			}
-
-			return url;
-
-		} );
-
-		//
-
-		var zip = new JSZip( data ); // eslint-disable-line no-undef
-
-		if ( zip.files[ 'doc.kml' ] ) {
-
-			var xml = new DOMParser().parseFromString( zip.files[ 'doc.kml' ].asText(), 'application/xml' );
-
-			var model = xml.querySelector( 'Placemark Model Link href' );
-
-			if ( model ) {
-
-				var loader = new THREE.ColladaLoader( manager );
-				return loader.parse( zip.files[ model.textContent ].asText() );
-
-			}
-
-		} else {
-
-			console.warn( 'KMZLoader: Missing doc.kml file.' );
-
-			for ( var path in zip.files ) {
-
-				var extension = path.split( '.' ).pop().toLowerCase();
-
-				if ( extension === 'dae' ) {
-
-					var loader = new THREE.ColladaLoader( manager );
-					return loader.parse( zip.files[ path ].asText() );
-
-				}
+				return new THREE.ColladaLoader().parse( zip.file( name ).asText() );
 
 			}
 
 		}
 
-		console.error( 'KMZLoader: Couldn\'t find .dae file.' );
-		return { scene: new THREE.Group() };
+		console.error( 'KZMLoader: Couldn\'t find .dae file.' );
+
+		return {
+			scene: new THREE.Group()
+		}
 
 	}
 

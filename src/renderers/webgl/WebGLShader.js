@@ -1,46 +1,43 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+THREE.WebGLShader = ( function () {
 
-function addLineNumbers( string ) {
+	function addLineNumbers( string ) {
 
-	var lines = string.split( '\n' );
+		var lines = string.split( '\n' );
 
-	for ( var i = 0; i < lines.length; i ++ ) {
+		for ( var i = 0; i < lines.length; i ++ ) {
 
-		lines[ i ] = ( i + 1 ) + ': ' + lines[ i ];
+			lines[ i ] = ( i + 1 ) + ': ' + lines[ i ];
 
-	}
+		}
 
-	return lines.join( '\n' );
-
-}
-
-function WebGLShader( gl, type, string ) {
-
-	var shader = gl.createShader( type );
-
-	gl.shaderSource( shader, string );
-	gl.compileShader( shader );
-
-	if ( gl.getShaderParameter( shader, gl.COMPILE_STATUS ) === false ) {
-
-		console.error( 'THREE.WebGLShader: Shader couldn\'t compile.' );
+		return lines.join( '\n' );
 
 	}
 
-	if ( gl.getShaderInfoLog( shader ) !== '' ) {
+	return function WebGLShader( gl, type, string ) {
 
-		console.warn( 'THREE.WebGLShader: gl.getShaderInfoLog()', type === gl.VERTEX_SHADER ? 'vertex' : 'fragment', gl.getShaderInfoLog( shader ), addLineNumbers( string ) );
+		var shader = gl.createShader( type );
 
-	}
+		gl.shaderSource( shader, string );
+		gl.compileShader( shader );
 
-	// --enable-privileged-webgl-extension
-	// console.log( type, gl.getExtension( 'WEBGL_debug_shaders' ).getTranslatedShaderSource( shader ) );
+		if ( gl.getShaderParameter( shader, gl.COMPILE_STATUS ) === false ) {
 
-	return shader;
+			console.error( 'THREE.WebGLShader: Shader couldn\'t compile.' );
 
-}
+		}
 
+		if ( gl.getShaderInfoLog( shader ) !== '' ) {
 
-export { WebGLShader };
+			console.warn( 'THREE.WebGLShader: gl.getShaderInfoLog()', type === gl.VERTEX_SHADER ? 'vertex' : 'fragment', gl.getShaderInfoLog( shader ), addLineNumbers( string ) );
+
+		}
+
+		// --enable-privileged-webgl-extension
+		// console.log( type, gl.getExtension( 'WEBGL_debug_shaders' ).getTranslatedShaderSource( shader ) );
+
+		return shader;
+
+	};
+
+} )();

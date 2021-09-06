@@ -1,32 +1,24 @@
-import { AudioContext } from '../audio/AudioContext.js';
-import { FileLoader } from './FileLoader.js';
-import { DefaultLoadingManager } from './LoadingManager.js';
-
 /**
  * @author Reece Aaron Lecrivain / http://reecenotes.com/
  */
 
-function AudioLoader( manager ) {
+THREE.AudioLoader = function ( manager ) {
 
-	this.manager = ( manager !== undefined ) ? manager : DefaultLoadingManager;
+	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
-}
+};
 
-Object.assign( AudioLoader.prototype, {
+Object.assign( THREE.AudioLoader.prototype, {
 
 	load: function ( url, onLoad, onProgress, onError ) {
 
-		var loader = new FileLoader( this.manager );
+		var loader = new THREE.XHRLoader( this.manager );
 		loader.setResponseType( 'arraybuffer' );
-		loader.setPath( this.path );
 		loader.load( url, function ( buffer ) {
 
-			// Create a copy of the buffer. The `decodeAudioData` method
-			// detaches the buffer when complete, preventing reuse.
-			var bufferCopy = buffer.slice( 0 );
+			var context = THREE.AudioContext;
 
-			var context = AudioContext.getContext();
-			context.decodeAudioData( bufferCopy, function ( audioBuffer ) {
+			context.decodeAudioData( buffer, function ( audioBuffer ) {
 
 				onLoad( audioBuffer );
 
@@ -34,16 +26,6 @@ Object.assign( AudioLoader.prototype, {
 
 		}, onProgress, onError );
 
-	},
-
-	setPath: function ( value ) {
-
-		this.path = value;
-		return this;
-
 	}
 
 } );
-
-
-export { AudioLoader };

@@ -2,28 +2,25 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { TempNode } from '../core/TempNode.js';
-import { NodeUtils } from '../core/NodeUtils.js';
+THREE.JoinNode = function( x, y, z, w ) {
 
-var inputs = NodeUtils.elements;
-
-function JoinNode( x, y, z, w ) {
-
-	TempNode.call( this, 'f' );
+	THREE.TempNode.call( this, 'fv1' );
 
 	this.x = x;
 	this.y = y;
 	this.z = z;
 	this.w = w;
 
-}
+};
 
-JoinNode.prototype = Object.create( TempNode.prototype );
-JoinNode.prototype.constructor = JoinNode;
-JoinNode.prototype.nodeType = "Join";
+THREE.JoinNode.inputs = [ 'x', 'y', 'z', 'w' ];
 
-JoinNode.prototype.getNumElements = function () {
+THREE.JoinNode.prototype = Object.create( THREE.TempNode.prototype );
+THREE.JoinNode.prototype.constructor = THREE.JoinNode;
 
+THREE.JoinNode.prototype.getNumElements = function() {
+
+	var inputs = THREE.JoinNode.inputs;
 	var i = inputs.length;
 
 	while ( i -- ) {
@@ -31,7 +28,6 @@ JoinNode.prototype.getNumElements = function () {
 		if ( this[ inputs[ i ] ] !== undefined ) {
 
 			++ i;
-
 			break;
 
 		}
@@ -42,73 +38,32 @@ JoinNode.prototype.getNumElements = function () {
 
 };
 
-JoinNode.prototype.getType = function ( builder ) {
+THREE.JoinNode.prototype.getType = function( builder ) {
 
-	return builder.getTypeFromLength( this.getNumElements() );
+	return builder.getFormatByLength( this.getNumElements() );
 
 };
 
-JoinNode.prototype.generate = function ( builder, output ) {
+THREE.JoinNode.prototype.generate = function( builder, output ) {
 
-	var type = this.getType( builder ),
-		length = this.getNumElements(),
-		outputs = [];
+	var material = builder.material;
+
+	var type = this.getType( builder );
+	var length = this.getNumElements();
+
+	var inputs = THREE.JoinNode.inputs;
+	var outputs = [];
 
 	for ( var i = 0; i < length; i ++ ) {
 
-		var elm = this[ inputs[ i ] ];
+		var elm = this[ inputs[ i ]];
 
-		outputs.push( elm ? elm.build( builder, 'f' ) : '0.0' );
+		outputs.push( elm ? elm.build( builder, 'fv1' ) : '0.' );
 
 	}
 
-	var code = ( length > 1 ? builder.getConstructorFromLength( length ) : '' ) + '( ' + outputs.join( ', ' ) + ' )';
+	var code = builder.getFormatConstructor( length ) + '(' + outputs.join( ',' ) + ')';
 
 	return builder.format( code, type, output );
 
 };
-
-JoinNode.prototype.copy = function ( source ) {
-
-	TempNode.prototype.copy.call( this, source );
-
-	for ( var prop in source.inputs ) {
-
-		this[ prop ] = source.inputs[ prop ];
-
-	}
-
-};
-
-JoinNode.prototype.toJSON = function ( meta ) {
-
-	var data = this.getJSONNode( meta );
-
-	if ( ! data ) {
-
-		data = this.createJSONNode( meta );
-
-		data.inputs = {};
-
-		var length = this.getNumElements();
-
-		for ( var i = 0; i < length; i ++ ) {
-
-			var elm = this[ inputs[ i ] ];
-
-			if ( elm ) {
-
-				data.inputs[ inputs[ i ] ] = elm.toJSON( meta ).uuid;
-
-			}
-
-		}
-
-
-	}
-
-	return data;
-
-};
-
-export { JoinNode };

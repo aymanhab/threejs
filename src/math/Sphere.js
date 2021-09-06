@@ -1,19 +1,18 @@
-import { Box3 } from './Box3.js';
-import { Vector3 } from './Vector3.js';
-
 /**
  * @author bhouston / http://clara.io
  * @author mrdoob / http://mrdoob.com/
  */
 
-function Sphere( center, radius ) {
+THREE.Sphere = function ( center, radius ) {
 
-	this.center = ( center !== undefined ) ? center : new Vector3();
+	this.center = ( center !== undefined ) ? center : new THREE.Vector3();
 	this.radius = ( radius !== undefined ) ? radius : 0;
 
-}
+};
 
-Object.assign( Sphere.prototype, {
+THREE.Sphere.prototype = {
+
+	constructor: THREE.Sphere,
 
 	set: function ( center, radius ) {
 
@@ -26,7 +25,7 @@ Object.assign( Sphere.prototype, {
 
 	setFromPoints: function () {
 
-		var box = new Box3();
+		var box = new THREE.Box3();
 
 		return function setFromPoints( points, optionalCenter ) {
 
@@ -38,7 +37,7 @@ Object.assign( Sphere.prototype, {
 
 			} else {
 
-				box.setFromPoints( points ).getCenter( center );
+				box.setFromPoints( points ).center( center );
 
 			}
 
@@ -107,47 +106,45 @@ Object.assign( Sphere.prototype, {
 
 	intersectsPlane: function ( plane ) {
 
-		return Math.abs( plane.distanceToPoint( this.center ) ) <= this.radius;
+		// We use the following equation to compute the signed distance from
+		// the center of the sphere to the plane.
+		//
+		// distance = q * n - d
+		//
+		// If this distance is greater than the radius of the sphere,
+		// then there is no intersection.
+
+		return Math.abs( this.center.dot( plane.normal ) - plane.constant ) <= this.radius;
 
 	},
 
-	clampPoint: function ( point, target ) {
+	clampPoint: function ( point, optionalTarget ) {
 
 		var deltaLengthSq = this.center.distanceToSquared( point );
 
-		if ( target === undefined ) {
+		var result = optionalTarget || new THREE.Vector3();
 
-			console.warn( 'THREE.Sphere: .clampPoint() target is now required' );
-			target = new Vector3();
-
-		}
-
-		target.copy( point );
+		result.copy( point );
 
 		if ( deltaLengthSq > ( this.radius * this.radius ) ) {
 
-			target.sub( this.center ).normalize();
-			target.multiplyScalar( this.radius ).add( this.center );
+			result.sub( this.center ).normalize();
+			result.multiplyScalar( this.radius ).add( this.center );
 
 		}
 
-		return target;
+		return result;
 
 	},
 
-	getBoundingBox: function ( target ) {
+	getBoundingBox: function ( optionalTarget ) {
 
-		if ( target === undefined ) {
+		var box = optionalTarget || new THREE.Box3();
 
-			console.warn( 'THREE.Sphere: .getBoundingBox() target is now required' );
-			target = new Box3();
+		box.set( this.center, this.center );
+		box.expandByScalar( this.radius );
 
-		}
-
-		target.set( this.center, this.center );
-		target.expandByScalar( this.radius );
-
-		return target;
+		return box;
 
 	},
 
@@ -174,7 +171,4 @@ Object.assign( Sphere.prototype, {
 
 	}
 
-} );
-
-
-export { Sphere };
+};

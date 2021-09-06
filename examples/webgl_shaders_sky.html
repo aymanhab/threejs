@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js webgl - shaders - sky sun shader</title>
@@ -16,6 +16,7 @@
 				background-color: #fff;
 				margin: 0px;
 				overflow: hidden;
+				text
 			}
 
 			#info {
@@ -27,13 +28,15 @@
 
 			}
 
-			a { color: #fff; }
+			a {
+				color: #fff;
+			}
 
 		</style>
 	</head>
 	<body>
 
-		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - sky + sun shader
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> webgl - sky + sun shader
 
 			<br/><a href="https://plus.google.com/117614030945250277079/posts/MYkgKdvLhNj">More info</a> by <a href="http://twitter.com/blurspline">@blurspline</a>
 
@@ -42,18 +45,18 @@
 		<script src="../build/three.js"></script>
 
 		<script src="js/controls/OrbitControls.js"></script>
-		<script src="js/objects/Sky.js"></script>
+		<script src="js/SkyShader.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/dat.gui.min.js"></script>
+
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
 
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-			}
+			var container;
 
 			var camera, controls, scene, renderer;
 
@@ -64,10 +67,9 @@
 
 			function initSky() {
 
-				// Add Sky
+				// Add Sky Mesh
 				sky = new THREE.Sky();
-				sky.scale.setScalar( 450000 );
-				scene.add( sky );
+				scene.add( sky.mesh );
 
 				// Add Sun Helper
 				sunSphere = new THREE.Mesh(
@@ -82,7 +84,7 @@
 
 				var effectController  = {
 					turbidity: 10,
-					rayleigh: 2,
+					reileigh: 2,
 					mieCoefficient: 0.005,
 					mieDirectionalG: 0.8,
 					luminance: 1,
@@ -95,9 +97,9 @@
 
 				function guiChanged() {
 
-					var uniforms = sky.material.uniforms;
+					var uniforms = sky.uniforms;
 					uniforms.turbidity.value = effectController.turbidity;
-					uniforms.rayleigh.value = effectController.rayleigh;
+					uniforms.reileigh.value = effectController.reileigh;
 					uniforms.luminance.value = effectController.luminance;
 					uniforms.mieCoefficient.value = effectController.mieCoefficient;
 					uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
@@ -111,7 +113,7 @@
 
 					sunSphere.visible = effectController.sun;
 
-					uniforms.sunPosition.value.copy( sunSphere.position );
+					sky.uniforms.sunPosition.value.copy( sunSphere.position );
 
 					renderer.render( scene, camera );
 
@@ -120,7 +122,7 @@
 				var gui = new dat.GUI();
 
 				gui.add( effectController, "turbidity", 1.0, 20.0, 0.1 ).onChange( guiChanged );
-				gui.add( effectController, "rayleigh", 0.0, 4, 0.001 ).onChange( guiChanged );
+				gui.add( effectController, "reileigh", 0.0, 4, 0.001 ).onChange( guiChanged );
 				gui.add( effectController, "mieCoefficient", 0.0, 0.1, 0.001 ).onChange( guiChanged );
 				gui.add( effectController, "mieDirectionalG", 0.0, 1, 0.001 ).onChange( guiChanged );
 				gui.add( effectController, "luminance", 0.0, 2 ).onChange( guiChanged );
@@ -141,7 +143,7 @@
 
 				scene = new THREE.Scene();
 
-				var helper = new THREE.GridHelper( 10000, 2, 0xffffff, 0xffffff );
+				var helper = new THREE.GridHelper( 5000, 5000, 0xffffff, 0xffffff );
 				scene.add( helper );
 
 				renderer = new THREE.WebGLRenderer();

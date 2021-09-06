@@ -3,27 +3,22 @@
  * @author Reece Aaron Lecrivain / http://reecenotes.com/
  */
 
-import { Object3D } from '../core/Object3D.js';
+THREE.Audio = function ( listener ) {
 
-function Audio( listener ) {
-
-	Object3D.call( this );
+	THREE.Object3D.call( this );
 
 	this.type = 'Audio';
 
-	this.listener = listener;
 	this.context = listener.context;
+	this.source = this.context.createBufferSource();
+	this.source.onended = this.onEnded.bind( this );
 
 	this.gain = this.context.createGain();
 	this.gain.connect( listener.getInput() );
 
 	this.autoplay = false;
 
-	this.buffer = null;
-	this.detune = 0;
-	this.loop = false;
 	this.startTime = 0;
-	this.offset = 0;
 	this.playbackRate = 1;
 	this.isPlaying = false;
 	this.hasPlaybackControl = true;
@@ -31,11 +26,11 @@ function Audio( listener ) {
 
 	this.filters = [];
 
-}
+};
 
-Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
+THREE.Audio.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
 
-	constructor: Audio,
+	constructor: THREE.Audio,
 
 	getOutput: function () {
 
@@ -54,20 +49,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	},
 
-	setMediaElementSource: function ( mediaElement ) {
-
-		this.hasPlaybackControl = false;
-		this.sourceType = 'mediaNode';
-		this.source = this.context.createMediaElementSource( mediaElement );
-		this.connect();
-
-		return this;
-
-	},
-
 	setBuffer: function ( audioBuffer ) {
 
-		this.buffer = audioBuffer;
+		this.source.buffer = audioBuffer;
 		this.sourceType = 'buffer';
 
 		if ( this.autoplay ) this.play();
@@ -94,13 +78,11 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		var source = this.context.createBufferSource();
 
-		source.buffer = this.buffer;
-		source.detune.value = this.detune;
-		source.loop = this.loop;
-		source.onended = this.onEnded.bind( this );
-		source.playbackRate.setValueAtTime( this.playbackRate, this.startTime );
-		this.startTime = this.context.currentTime;
-		source.start( this.startTime, this.offset );
+		source.buffer = this.source.buffer;
+		source.loop = this.source.loop;
+		source.onended = this.source.onended;
+		source.start( 0, this.startTime );
+		source.playbackRate.value = this.playbackRate;
 
 		this.isPlaying = true;
 
@@ -119,14 +101,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		}
 
-		if ( this.isPlaying === true ) {
-
-			this.source.stop();
-			this.source.onended = null;
-			this.offset += ( this.context.currentTime - this.startTime ) * this.playbackRate;
-			this.isPlaying = false;
-
-		}
+		this.source.stop();
+		this.startTime = this.context.currentTime;
+		this.isPlaying = false;
 
 		return this;
 
@@ -142,8 +119,7 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 		}
 
 		this.source.stop();
-		this.source.onended = null;
-		this.offset = 0;
+		this.startTime = 0;
 		this.isPlaying = false;
 
 		return this;
@@ -224,26 +200,6 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	},
 
-	setDetune: function ( value ) {
-
-		this.detune = value;
-
-		if ( this.isPlaying === true ) {
-
-			this.source.detune.setTargetAtTime( this.detune, this.context.currentTime, 0.01 );
-
-		}
-
-		return this;
-
-	},
-
-	getDetune: function () {
-
-		return this.detune;
-
-	},
-
 	getFilter: function () {
 
 		return this.getFilters()[ 0 ];
@@ -269,7 +225,7 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		if ( this.isPlaying === true ) {
 
-			this.source.playbackRate.setTargetAtTime( this.playbackRate, this.context.currentTime, 0.01 );
+			this.source.playbackRate.value = this.playbackRate;
 
 		}
 
@@ -298,7 +254,7 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		}
 
-		return this.loop;
+		return this.source.loop;
 
 	},
 
@@ -311,15 +267,7 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		}
 
-		this.loop = value;
-
-		if ( this.isPlaying === true ) {
-
-			this.source.loop = this.loop;
-
-		}
-
-		return this;
+		this.source.loop = value;
 
 	},
 
@@ -329,14 +277,13 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	},
 
+
 	setVolume: function ( value ) {
 
-		this.gain.gain.setTargetAtTime( value, this.context.currentTime, 0.01 );
+		this.gain.gain.value = value;
 
 		return this;
 
 	}
 
 } );
-
-export { Audio };

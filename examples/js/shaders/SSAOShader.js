@@ -1,34 +1,28 @@
 /**
- * @author Mugen87 / https://github.com/Mugen87
+ * @author alteredq / http://alteredqualia.com/
  *
- * References:
- * http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
- * https://learnopengl.com/Advanced-Lighting/SSAO
- * https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl
+ * Screen-space ambient occlusion shader
+ * - ported from
+ *   SSAO GLSL shader v1.2
+ *   assembled by Martins Upitis (martinsh) (http://devlog-martinsh.blogspot.com)
+ *   original technique is made by ArKano22 (http://www.gamedev.net/topic/550699-ssao-no-halo-artifacts/)
+ * - modifications
+ * - modified to use RGBA packed depth texture (use clear color 1,1,1,1 for depth pass)
+ * - refactoring and optimizations
  */
 
 THREE.SSAOShader = {
 
-	defines: {
-		"PERSPECTIVE_CAMERA": 1,
-		"KERNEL_SIZE": 64
-	},
-
 	uniforms: {
 
-		"tDiffuse": { value: null },
-		"tNormal": { value: null },
-		"tDepth": { value: null },
-		"tNoise": { value: null },
-		"kernel": { value: null },
-		"cameraNear": { value: null },
-		"cameraFar": { value: null },
-		"resolution": { value: new THREE.Vector2() },
-		"cameraProjectionMatrix": { value: new THREE.Matrix4() },
-		"cameraInverseProjectionMatrix": { value: new THREE.Matrix4() },
-		"kernelRadius": { value: 8 },
-		"minDistance": { value: 0.005 },
-		"maxDistance": { value: 0.05 },
+		"tDiffuse":     { value: null },
+		"tDepth":       { value: null },
+		"size":         { value: new THREE.Vector2( 512, 512 ) },
+		"cameraNear":   { value: 1 },
+		"cameraFar":    { value: 100 },
+		"onlyAO":       { value: 0 },
+		"aoClamp":      { value: 0.5 },
+		"lumInfluence": { value: 0.5 }
 
 	},
 
@@ -38,255 +32,185 @@ THREE.SSAOShader = {
 
 		"void main() {",
 
-		"	vUv = uv;",
+			"vUv = uv;",
 
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
 		"}"
 
 	].join( "\n" ),
 
 	fragmentShader: [
-
-		"uniform sampler2D tDiffuse;",
-		"uniform sampler2D tNormal;",
-		"uniform sampler2D tDepth;",
-		"uniform sampler2D tNoise;",
-
-		"uniform vec3 kernel[ KERNEL_SIZE ];",
-
-		"uniform vec2 resolution;",
-
-		"uniform float cameraNear;",
-		"uniform float cameraFar;",
-		"uniform mat4 cameraProjectionMatrix;",
-		"uniform mat4 cameraInverseProjectionMatrix;",
-
-		"uniform float kernelRadius;",
-		"uniform float minDistance;", // avoid artifacts caused by neighbour fragments with minimal depth difference
-		"uniform float maxDistance;", // avoid the influence of fragments which are too far away
-
-		"varying vec2 vUv;",
-
-		"#include <packing>",
-
-		"float getDepth( const in vec2 screenPosition ) {",
-
-		"	return texture2D( tDepth, screenPosition ).x;",
-
-		"}",
-
-		"float getLinearDepth( const in vec2 screenPosition ) {",
-
-		"	#if PERSPECTIVE_CAMERA == 1",
-
-		"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
-		"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
-		"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
-
-		"	#else",
-
-		"		return texture2D( depthSampler, coord ).x;",
-
-		"	#endif",
-
-		"}",
-
-		"float getViewZ( const in float depth ) {",
-
-		"	#if PERSPECTIVE_CAMERA == 1",
-
-		"		return perspectiveDepthToViewZ( depth, cameraNear, cameraFar );",
-
-		"	#else",
-
-		"		return orthographicDepthToViewZ( depth, cameraNear, cameraFar );",
-
-		"	#endif",
-
-		"}",
-
-		"vec3 getViewPosition( const in vec2 screenPosition, const in float depth, const in float viewZ ) {",
-
-		"	float clipW = cameraProjectionMatrix[2][3] * viewZ + cameraProjectionMatrix[3][3];",
-
-		"	vec4 clipPosition = vec4( ( vec3( screenPosition, depth ) - 0.5 ) * 2.0, 1.0 );",
-
-		"	clipPosition *= clipW; // unprojection.",
-
-		"	return ( cameraInverseProjectionMatrix * clipPosition ).xyz;",
-
-		"}",
-
-		"vec3 getViewNormal( const in vec2 screenPosition ) {",
-
-		"	return unpackRGBToNormal( texture2D( tNormal, screenPosition ).xyz );",
-
-		"}",
-
-		"void main() {",
-
-		"	float depth = getDepth( vUv );",
-		"	float viewZ = getViewZ( depth );",
-
-		"	vec3 viewPosition = getViewPosition( vUv, depth, viewZ );",
-		"	vec3 viewNormal = getViewNormal( vUv );",
-
-		" vec2 noiseScale = vec2( resolution.x / 4.0, resolution.y / 4.0 );",
-		"	vec3 random = texture2D( tNoise, vUv * noiseScale ).xyz;",
-
-		// compute matrix used to reorient a kernel vector
-
-		"	vec3 tangent = normalize( random - viewNormal * dot( random, viewNormal ) );",
-		"	vec3 bitangent = cross( viewNormal, tangent );",
-		"	mat3 kernelMatrix = mat3( tangent, bitangent, viewNormal );",
-
-		" float occlusion = 0.0;",
-
-		" for ( int i = 0; i < KERNEL_SIZE; i ++ ) {",
-
-		"		vec3 sampleVector = kernelMatrix * kernel[ i ];", // reorient sample vector in view space
-		"		vec3 samplePoint = viewPosition + ( sampleVector * kernelRadius );", // calculate sample point
-
-		"		vec4 samplePointNDC = cameraProjectionMatrix * vec4( samplePoint, 1.0 );", // project point and calculate NDC
-		"		samplePointNDC /= samplePointNDC.w;",
-
-		"		vec2 samplePointUv = samplePointNDC.xy * 0.5 + 0.5;", // compute uv coordinates
-
-		"		float realDepth = getLinearDepth( samplePointUv );", // get linear depth from depth texture
-		"		float sampleDepth = viewZToOrthographicDepth( samplePoint.z, cameraNear, cameraFar );", // compute linear depth of the sample view Z value
-		"		float delta = sampleDepth - realDepth;",
-
-		"		if ( delta > minDistance && delta < maxDistance ) {", // if fragment is before sample point, increase occlusion
-
-		"			occlusion += 1.0;",
-
-		"		}",
-
-		"	}",
-
-		"	occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );",
-
-		"	gl_FragColor = vec4( vec3( 1.0 - occlusion ), 1.0 );",
-
-		"}"
-
-	].join( "\n" )
-
-};
-
-THREE.SSAODepthShader = {
-
-	defines: {
-		"PERSPECTIVE_CAMERA": 1
-	},
-
-	uniforms: {
-
-		"tDepth": { value: null },
-		"cameraNear": { value: null },
-		"cameraFar": { value: null },
-
-	},
-
-	vertexShader: [
-
-		"varying vec2 vUv;",
-
-		"void main() {",
-
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-
-		"}"
-
-	].join( "\n" ),
-
-	fragmentShader: [
-
-		"uniform sampler2D tDepth;",
 
 		"uniform float cameraNear;",
 		"uniform float cameraFar;",
 
+		"uniform bool onlyAO;",      // use only ambient occlusion pass?
+
+		"uniform vec2 size;",        // texture width, height
+		"uniform float aoClamp;",    // depth clamp - reduces haloing at screen edges
+
+		"uniform float lumInfluence;",  // how much luminance affects occlusion
+
+		"uniform sampler2D tDiffuse;",
+		"uniform sampler2D tDepth;",
+
 		"varying vec2 vUv;",
+
+		// "#define PI 3.14159265",
+		"#define DL 2.399963229728653",  // PI * ( 3.0 - sqrt( 5.0 ) )
+		"#define EULER 2.718281828459045",
+
+		// user variables
+
+		"const int samples = 8;",     // ao sample count
+		"const float radius = 5.0;",  // ao radius
+
+		"const bool useNoise = false;",      // use noise instead of pattern for sample dithering
+		"const float noiseAmount = 0.0003;", // dithering amount
+
+		"const float diffArea = 0.4;",   // self-shadowing reduction
+		"const float gDisplace = 0.4;",  // gauss bell center
+
+
+		// RGBA depth
 
 		"#include <packing>",
 
-		"float getLinearDepth( const in vec2 screenPosition ) {",
+		// generating noise / pattern texture for dithering
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+		"vec2 rand( const vec2 coord ) {",
 
-		"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
-		"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
-		"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
+			"vec2 noise;",
 
-		"	#else",
+			"if ( useNoise ) {",
 
-		"		return texture2D( depthSampler, coord ).x;",
+				"float nx = dot ( coord, vec2( 12.9898, 78.233 ) );",
+				"float ny = dot ( coord, vec2( 12.9898, 78.233 ) * 2.0 );",
 
-		"	#endif",
+				"noise = clamp( fract ( 43758.5453 * sin( vec2( nx, ny ) ) ), 0.0, 1.0 );",
+
+			"} else {",
+
+				"float ff = fract( 1.0 - coord.s * ( size.x / 2.0 ) );",
+				"float gg = fract( coord.t * ( size.y / 2.0 ) );",
+
+				"noise = vec2( 0.25, 0.75 ) * vec2( ff ) + vec2( 0.75, 0.25 ) * gg;",
+
+			"}",
+
+			"return ( noise * 2.0  - 1.0 ) * noiseAmount;",
+
+		"}",
+
+		"float readDepth( const in vec2 coord ) {",
+
+			"float cameraFarPlusNear = cameraFar + cameraNear;",
+			"float cameraFarMinusNear = cameraFar - cameraNear;",
+			"float cameraCoef = 2.0 * cameraNear;",
+
+			// "return ( 2.0 * cameraNear ) / ( cameraFar + cameraNear - unpackDepth( texture2D( tDepth, coord ) ) * ( cameraFar - cameraNear ) );",
+			"return cameraCoef / ( cameraFarPlusNear - unpackRGBAToDepth( texture2D( tDepth, coord ) ) * cameraFarMinusNear );",
+
+
+		"}",
+
+		"float compareDepths( const in float depth1, const in float depth2, inout int far ) {",
+
+			"float garea = 2.0;",                         // gauss bell width
+			"float diff = ( depth1 - depth2 ) * 100.0;",  // depth difference (0-100)
+
+			// reduce left bell width to avoid self-shadowing
+
+			"if ( diff < gDisplace ) {",
+
+				"garea = diffArea;",
+
+			"} else {",
+
+				"far = 1;",
+
+			"}",
+
+			"float dd = diff - gDisplace;",
+			"float gauss = pow( EULER, -2.0 * dd * dd / ( garea * garea ) );",
+			"return gauss;",
+
+		"}",
+
+		"float calcAO( float depth, float dw, float dh ) {",
+
+			"float dd = radius - depth * radius;",
+			"vec2 vv = vec2( dw, dh );",
+
+			"vec2 coord1 = vUv + dd * vv;",
+			"vec2 coord2 = vUv - dd * vv;",
+
+			"float temp1 = 0.0;",
+			"float temp2 = 0.0;",
+
+			"int far = 0;",
+			"temp1 = compareDepths( depth, readDepth( coord1 ), far );",
+
+			// DEPTH EXTRAPOLATION
+
+			"if ( far > 0 ) {",
+
+				"temp2 = compareDepths( readDepth( coord2 ), depth, far );",
+				"temp1 += ( 1.0 - temp1 ) * temp2;",
+
+			"}",
+
+			"return temp1;",
 
 		"}",
 
 		"void main() {",
 
-		"	float depth = getLinearDepth( vUv );",
-		"	gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );",
+			"vec2 noise = rand( vUv );",
+			"float depth = readDepth( vUv );",
 
-		"}"
+			"float tt = clamp( depth, aoClamp, 1.0 );",
 
-	].join( "\n" )
+			"float w = ( 1.0 / size.x )  / tt + ( noise.x * ( 1.0 - noise.x ) );",
+			"float h = ( 1.0 / size.y ) / tt + ( noise.y * ( 1.0 - noise.y ) );",
 
-};
+			"float ao = 0.0;",
 
-THREE.SSAOBlurShader = {
+			"float dz = 1.0 / float( samples );",
+			"float z = 1.0 - dz / 2.0;",
+			"float l = 0.0;",
 
-	uniforms: {
+			"for ( int i = 0; i <= samples; i ++ ) {",
 
-		"tDiffuse": { value: null },
-		"resolution": { value: new THREE.Vector2() }
+				"float r = sqrt( 1.0 - z );",
 
-	},
+				"float pw = cos( l ) * r;",
+				"float ph = sin( l ) * r;",
+				"ao += calcAO( depth, pw * w, ph * h );",
+				"z = z - dz;",
+				"l = l + DL;",
 
-	vertexShader: [
+			"}",
 
-		"varying vec2 vUv;",
+			"ao /= float( samples );",
+			"ao = 1.0 - ao;",
 
-		"void main() {",
+			"vec3 color = texture2D( tDiffuse, vUv ).rgb;",
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"vec3 lumcoeff = vec3( 0.299, 0.587, 0.114 );",
+			"float lum = dot( color.rgb, lumcoeff );",
+			"vec3 luminance = vec3( lum );",
 
-		"}"
+			"vec3 final = vec3( color * mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );",  // mix( color * ao, white, luminance )
 
-	].join( "\n" ),
+			"if ( onlyAO ) {",
 
-	fragmentShader: [
+				"final = vec3( mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );",  // ambient occlusion only
 
-		"uniform sampler2D tDiffuse;",
+			"}",
 
-		"uniform vec2 resolution;",
-
-		"varying vec2 vUv;",
-
-		"void main() {",
-
-		"	vec2 texelSize = ( 1.0 / resolution );",
-		"	float result = 0.0;",
-
-		"	for ( int i = - 2; i <= 2; i ++ ) {",
-
-		"		for ( int j = - 2; j <= 2; j ++ ) {",
-
-		"			vec2 offset = ( vec2( float( i ), float( j ) ) ) * texelSize;",
-		"			result += texture2D( tDiffuse, vUv + offset ).r;",
-
-		"		}",
-
-		"	}",
-
-		"	gl_FragColor = vec4( vec3( result / ( 5.0 * 5.0 ) ), 1.0 );",
+			"gl_FragColor = vec4( final, 1.0 );",
 
 		"}"
 

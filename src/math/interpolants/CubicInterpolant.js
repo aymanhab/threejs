@@ -1,7 +1,3 @@
-import { ZeroCurvatureEnding } from '../../constants.js';
-import { Interpolant } from '../Interpolant.js';
-import { WrapAroundEnding, ZeroSlopeEnding } from '../../constants.js';
-
 /**
  * Fast and simple cubic spline interpolant.
  *
@@ -12,29 +8,32 @@ import { WrapAroundEnding, ZeroSlopeEnding } from '../../constants.js';
  * @author tschw
  */
 
-function CubicInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+THREE.CubicInterpolant = function(
+		parameterPositions, sampleValues, sampleSize, resultBuffer ) {
 
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+	THREE.Interpolant.call(
+			this, parameterPositions, sampleValues, sampleSize, resultBuffer );
 
-	this._weightPrev = - 0;
-	this._offsetPrev = - 0;
-	this._weightNext = - 0;
-	this._offsetNext = - 0;
+	this._weightPrev = -0;
+	this._offsetPrev = -0;
+	this._weightNext = -0;
+	this._offsetNext = -0;
 
-}
+};
 
-CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+THREE.CubicInterpolant.prototype =
+		Object.assign( Object.create( THREE.Interpolant.prototype ), {
 
-	constructor: CubicInterpolant,
+	constructor: THREE.CubicInterpolant,
 
 	DefaultSettings_: {
 
-		endingStart: ZeroCurvatureEnding,
-		endingEnd: ZeroCurvatureEnding
+		endingStart: 	THREE.ZeroCurvatureEnding,
+		endingEnd:		THREE.ZeroCurvatureEnding
 
 	},
 
-	intervalChanged_: function ( i1, t0, t1 ) {
+	intervalChanged_: function( i1, t0, t1 ) {
 
 		var pp = this.parameterPositions,
 			iPrev = i1 - 2,
@@ -47,7 +46,7 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 			switch ( this.getSettings_().endingStart ) {
 
-				case ZeroSlopeEnding:
+				case THREE.ZeroSlopeEnding:
 
 					// f'(t0) = 0
 					iPrev = i1;
@@ -55,7 +54,7 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 					break;
 
-				case WrapAroundEnding:
+				case THREE.WrapAroundEnding:
 
 					// use the other end of the curve
 					iPrev = pp.length - 2;
@@ -77,7 +76,7 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 			switch ( this.getSettings_().endingEnd ) {
 
-				case ZeroSlopeEnding:
+				case THREE.ZeroSlopeEnding:
 
 					// f'(tN) = 0
 					iNext = i1;
@@ -85,7 +84,7 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 					break;
 
-				case WrapAroundEnding:
+				case THREE.WrapAroundEnding:
 
 					// use the other end of the curve
 					iNext = 1;
@@ -113,7 +112,7 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 	},
 
-	interpolate_: function ( i1, t0, t, t1 ) {
+	interpolate_: function( i1, t0, t, t1 ) {
 
 		var result = this.resultBuffer,
 			values = this.sampleValues,
@@ -129,10 +128,10 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 		// evaluate polynomials
 
-		var sP = - wP * ppp + 2 * wP * pp - wP * p;
-		var s0 = ( 1 + wP ) * ppp + ( - 1.5 - 2 * wP ) * pp + ( - 0.5 + wP ) * p + 1;
-		var s1 = ( - 1 - wN ) * ppp + ( 1.5 + wN ) * pp + 0.5 * p;
-		var sN = wN * ppp - wN * pp;
+		var sP =     - wP   * ppp   +         2 * wP    * pp    -          wP   * p;
+		var s0 = ( 1 + wP ) * ppp   + (-1.5 - 2 * wP )  * pp    + ( -0.5 + wP ) * p     + 1;
+		var s1 = (-1 - wN ) * ppp   + ( 1.5 +   wN   )  * pp    +    0.5        * p;
+		var sN =       wN   * ppp   -           wN      * pp;
 
 		// combine data linearly
 
@@ -151,6 +150,3 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 	}
 
 } );
-
-
-export { CubicInterpolant };

@@ -1,52 +1,37 @@
 /**
- * @author fordacious / fordacious.github.io
- */
+* @author fordacious / fordacious.github.io
+*/
 
-function WebGLProperties() {
+THREE.WebGLProperties = function () {
 
-	var properties = new WeakMap();
+	var properties = {};
 
-	function get( object ) {
+	this.get = function ( object ) {
 
-		var map = properties.get( object );
+		var uuid = object.uuid;
+		var map = properties[ uuid ];
 
 		if ( map === undefined ) {
 
 			map = {};
-			properties.set( object, map );
+			properties[ uuid ] = map;
 
 		}
 
 		return map;
 
-	}
-
-	function remove( object ) {
-
-		properties.delete( object );
-
-	}
-
-	function update( object, key, value ) {
-
-		properties.get( object )[ key ] = value;
-
-	}
-
-	function dispose() {
-
-		properties = new WeakMap();
-
-	}
-
-	return {
-		get: get,
-		remove: remove,
-		update: update,
-		dispose: dispose
 	};
 
-}
+	this.delete = function ( object ) {
 
+		delete properties[ object.uuid ];
 
-export { WebGLProperties };
+	};
+
+	this.clear = function () {
+
+		properties = {};
+
+	};
+
+};

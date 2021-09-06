@@ -2,39 +2,16 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { StandardNode } from './nodes/StandardNode.js';
-import { NodeMaterial } from './NodeMaterial.js';
-import { NodeUtils } from '../core/NodeUtils.js';
+THREE.StandardNodeMaterial = function() {
 
-function StandardNodeMaterial() {
+	this.node = new THREE.StandardNode();
 
-	var node = new StandardNode();
+	THREE.NodeMaterial.call( this, this.node, this.node );
 
-	NodeMaterial.call( this, node, node );
+};
 
-	this.type = "StandardNodeMaterial";
+THREE.StandardNodeMaterial.prototype = Object.create( THREE.NodeMaterial.prototype );
+THREE.StandardNodeMaterial.prototype.constructor = THREE.StandardNodeMaterial;
 
-}
-
-StandardNodeMaterial.prototype = Object.create( NodeMaterial.prototype );
-StandardNodeMaterial.prototype.constructor = StandardNodeMaterial;
-
-NodeUtils.addShortcuts( StandardNodeMaterial.prototype, 'fragment', [
-	'color',
-	'alpha',
-	'roughness',
-	'metalness',
-	'reflectivity',
-	'clearCoat',
-	'clearCoatRoughness',
-	'normal',
-	'emissive',
-	'ambient',
-	'light',
-	'shadow',
-	'ao',
-	'environment',
-	'position'
-] );
-
-export { StandardNodeMaterial };
+THREE.NodeMaterial.addShortcuts( THREE.StandardNodeMaterial.prototype, 'node',
+[ 'color', 'alpha', 'roughness', 'metalness', 'normal', 'normalScale', 'emissive', 'ambient', 'light', 'shadow', 'ao', 'environment', 'transform' ] );

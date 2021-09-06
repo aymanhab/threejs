@@ -1,25 +1,20 @@
-import { Font } from '../extras/core/Font.js';
-import { FileLoader } from './FileLoader.js';
-import { DefaultLoadingManager } from './LoadingManager.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function FontLoader( manager ) {
+THREE.FontLoader = function ( manager ) {
 
-	this.manager = ( manager !== undefined ) ? manager : DefaultLoadingManager;
+	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
-}
+};
 
-Object.assign( FontLoader.prototype, {
+Object.assign( THREE.FontLoader.prototype, {
 
 	load: function ( url, onLoad, onProgress, onError ) {
 
 		var scope = this;
 
-		var loader = new FileLoader( this.manager );
-		loader.setPath( this.path );
+		var loader = new THREE.XHRLoader( this.manager );
 		loader.load( url, function ( text ) {
 
 			var json;
@@ -45,18 +40,8 @@ Object.assign( FontLoader.prototype, {
 
 	parse: function ( json ) {
 
-		return new Font( json );
-
-	},
-
-	setPath: function ( value ) {
-
-		this.path = value;
-		return this;
+		return new THREE.Font( json );
 
 	}
 
 } );
-
-
-export { FontLoader };

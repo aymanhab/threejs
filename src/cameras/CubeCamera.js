@@ -1,9 +1,3 @@
-import { Object3D } from '../core/Object3D.js';
-import { WebGLRenderTargetCube } from '../renderers/WebGLRenderTargetCube.js';
-import { LinearFilter, RGBFormat } from '../constants.js';
-import { Vector3 } from '../math/Vector3.js';
-import { PerspectiveCamera } from './PerspectiveCamera.js';
-
 /**
  * Camera for rendering cube maps
  *	- renders scene into axis-aligned cube
@@ -11,50 +5,49 @@ import { PerspectiveCamera } from './PerspectiveCamera.js';
  * @author alteredq / http://alteredqualia.com/
  */
 
-function CubeCamera( near, far, cubeResolution, options ) {
+THREE.CubeCamera = function ( near, far, cubeResolution ) {
 
-	Object3D.call( this );
+	THREE.Object3D.call( this );
 
 	this.type = 'CubeCamera';
 
 	var fov = 90, aspect = 1;
 
-	var cameraPX = new PerspectiveCamera( fov, aspect, near, far );
+	var cameraPX = new THREE.PerspectiveCamera( fov, aspect, near, far );
 	cameraPX.up.set( 0, - 1, 0 );
-	cameraPX.lookAt( new Vector3( 1, 0, 0 ) );
+	cameraPX.lookAt( new THREE.Vector3( 1, 0, 0 ) );
 	this.add( cameraPX );
 
-	var cameraNX = new PerspectiveCamera( fov, aspect, near, far );
+	var cameraNX = new THREE.PerspectiveCamera( fov, aspect, near, far );
 	cameraNX.up.set( 0, - 1, 0 );
-	cameraNX.lookAt( new Vector3( - 1, 0, 0 ) );
+	cameraNX.lookAt( new THREE.Vector3( - 1, 0, 0 ) );
 	this.add( cameraNX );
 
-	var cameraPY = new PerspectiveCamera( fov, aspect, near, far );
+	var cameraPY = new THREE.PerspectiveCamera( fov, aspect, near, far );
 	cameraPY.up.set( 0, 0, 1 );
-	cameraPY.lookAt( new Vector3( 0, 1, 0 ) );
+	cameraPY.lookAt( new THREE.Vector3( 0, 1, 0 ) );
 	this.add( cameraPY );
 
-	var cameraNY = new PerspectiveCamera( fov, aspect, near, far );
+	var cameraNY = new THREE.PerspectiveCamera( fov, aspect, near, far );
 	cameraNY.up.set( 0, 0, - 1 );
-	cameraNY.lookAt( new Vector3( 0, - 1, 0 ) );
+	cameraNY.lookAt( new THREE.Vector3( 0, - 1, 0 ) );
 	this.add( cameraNY );
 
-	var cameraPZ = new PerspectiveCamera( fov, aspect, near, far );
+	var cameraPZ = new THREE.PerspectiveCamera( fov, aspect, near, far );
 	cameraPZ.up.set( 0, - 1, 0 );
-	cameraPZ.lookAt( new Vector3( 0, 0, 1 ) );
+	cameraPZ.lookAt( new THREE.Vector3( 0, 0, 1 ) );
 	this.add( cameraPZ );
 
-	var cameraNZ = new PerspectiveCamera( fov, aspect, near, far );
+	var cameraNZ = new THREE.PerspectiveCamera( fov, aspect, near, far );
 	cameraNZ.up.set( 0, - 1, 0 );
-	cameraNZ.lookAt( new Vector3( 0, 0, - 1 ) );
+	cameraNZ.lookAt( new THREE.Vector3( 0, 0, - 1 ) );
 	this.add( cameraNZ );
 
-	options = options || { format: RGBFormat, magFilter: LinearFilter, minFilter: LinearFilter };
+	var options = { format: THREE.RGBFormat, magFilter: THREE.LinearFilter, minFilter: THREE.LinearFilter };
 
-	this.renderTarget = new WebGLRenderTargetCube( cubeResolution, cubeResolution, options );
-	this.renderTarget.texture.name = "CubeCamera";
+	this.renderTarget = new THREE.WebGLRenderTargetCube( cubeResolution, cubeResolution, options );
 
-	this.update = function ( renderer, scene ) {
+	this.updateCubeMap = function ( renderer, scene ) {
 
 		if ( this.parent === null ) this.updateMatrixWorld();
 
@@ -87,27 +80,7 @@ function CubeCamera( near, far, cubeResolution, options ) {
 
 	};
 
-	this.clear = function ( renderer, color, depth, stencil ) {
+};
 
-		var renderTarget = this.renderTarget;
-
-		for ( var i = 0; i < 6; i ++ ) {
-
-			renderTarget.activeCubeFace = i;
-			renderer.setRenderTarget( renderTarget );
-
-			renderer.clear( color, depth, stencil );
-
-		}
-
-		renderer.setRenderTarget( null );
-
-	};
-
-}
-
-CubeCamera.prototype = Object.create( Object3D.prototype );
-CubeCamera.prototype.constructor = CubeCamera;
-
-
-export { CubeCamera };
+THREE.CubeCamera.prototype = Object.create( THREE.Object3D.prototype );
+THREE.CubeCamera.prototype.constructor = THREE.CubeCamera;

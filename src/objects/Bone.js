@@ -1,26 +1,31 @@
-import { Object3D } from '../core/Object3D.js';
-
 /**
  * @author mikael emtinger / http://gomo.se/
  * @author alteredq / http://alteredqualia.com/
  * @author ikerr / http://verold.com
  */
 
-function Bone() {
+THREE.Bone = function ( skin ) {
 
-	Object3D.call( this );
+	THREE.Object3D.call( this );
 
 	this.type = 'Bone';
 
-}
+	this.skin = skin;
 
-Bone.prototype = Object.assign( Object.create( Object3D.prototype ), {
+};
 
-	constructor: Bone,
+THREE.Bone.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
 
-	isBone: true
+	constructor: THREE.Bone,
+
+	copy: function ( source ) {
+
+		THREE.Object3D.prototype.copy.call( this, source );
+
+		this.skin = source.skin;
+
+		return this;
+
+	}
 
 } );
-
-
-export { Bone };

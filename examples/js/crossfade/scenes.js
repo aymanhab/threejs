@@ -1,75 +1,76 @@
 function generateGeometry( objectType, numObjects ) {
 
-	function applyVertexColors( geometry, color ) {
+	var geometry = new THREE.Geometry();
 
-		var position = geometry.attributes.position;
-		var colors = [];
+	function applyVertexColors( g, c ) {
 
-		for ( var i = 0; i < position.count; i ++ ) {
+		g.faces.forEach( function( f ) {
 
-			colors.push( color.r, color.g, color.b );
+			var n = ( f instanceof THREE.Face3 ) ? 3 : 4;
 
-		}
+			for ( var j = 0; j < n; j ++ ) {
 
-		geometry.addAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+				f.vertexColors[ j ] = c;
+
+			}
+
+		} );
 
 	}
 
-	var geometries = [];
-
-	var matrix = new THREE.Matrix4();
-	var position = new THREE.Vector3();
-	var rotation = new THREE.Euler();
-	var quaternion = new THREE.Quaternion();
-	var scale = new THREE.Vector3();
-	var color = new THREE.Color();
-
 	for ( var i = 0; i < numObjects; i ++ ) {
+
+		var position = new THREE.Vector3();
 
 		position.x = Math.random() * 10000 - 5000;
 		position.y = Math.random() * 6000 - 3000;
 		position.z = Math.random() * 8000 - 4000;
 
+		var rotation = new THREE.Euler();
+
 		rotation.x = Math.random() * 2 * Math.PI;
 		rotation.y = Math.random() * 2 * Math.PI;
 		rotation.z = Math.random() * 2 * Math.PI;
-		quaternion.setFromEuler( rotation, false );
+
+		var scale = new THREE.Vector3();
+
+		var geom, color = new THREE.Color();
 
 		scale.x = Math.random() * 200 + 100;
 
-		var geometry;
+		if ( objectType == "cube" ) {
 
-		if ( objectType === 'cube' ) {
-
-			geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
-			geometry = geometry.toNonIndexed(); // merging needs consistent buffer geometries
+			geom = new THREE.BoxGeometry( 1, 1, 1 );
 			scale.y = Math.random() * 200 + 100;
 			scale.z = Math.random() * 200 + 100;
-			color.setRGB( 0, 0, 0.1 + 0.9 * Math.random() );
+			color.setRGB( 0, 0, Math.random() + 0.1 );
 
-		} else if ( objectType === 'sphere' ) {
+		} else if ( objectType == "sphere" ) {
 
-			geometry = new THREE.IcosahedronBufferGeometry( 1, 1 );
+			geom = new THREE.IcosahedronGeometry( 1, 1 );
 			scale.y = scale.z = scale.x;
-			color.setRGB( 0.1 + 0.9 * Math.random(), 0, 0 );
+			color.setRGB( Math.random() + 0.1, 0, 0 );
 
 		}
 
 		// give the geom's vertices a random color, to be displayed
-		applyVertexColors( geometry, color );
+		applyVertexColors( geom, color );
 
-		matrix.compose( position, quaternion, scale );
-		geometry.applyMatrix( matrix );
+		var mesh = new THREE.Mesh( geom );
+		mesh.position.copy( position );
+		mesh.rotation.copy( rotation );
+		mesh.scale.copy( scale );
+		mesh.updateMatrix();
 
-		geometries.push( geometry );
+		geometry.merge( mesh.geometry, mesh.matrix );
 
 	}
 
-	return THREE.BufferGeometryUtils.mergeBufferGeometries( geometries );
+	return geometry;
 
 }
 
-function Scene( type, numObjects, cameraZ, fov, rotationSpeed, clearColor ) {
+function Scene ( type, numObjects, cameraZ, fov, rotationSpeed, clearColor ) {
 
 	this.clearColor = clearColor;
 
@@ -85,15 +86,14 @@ function Scene( type, numObjects, cameraZ, fov, rotationSpeed, clearColor ) {
 	this.scene.add( light );
 
 	this.rotationSpeed = rotationSpeed;
-
-	var defaultMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true, vertexColors: THREE.VertexColors } );
+	defaultMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 	this.mesh = new THREE.Mesh( generateGeometry( type, numObjects ), defaultMaterial );
 	this.scene.add( this.mesh );
 
-	var renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
+	renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
 	this.fbo = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );
 
-	this.render = function ( delta, rtt ) {
+	this.render = function( delta, rtt ) {
 
 		this.mesh.rotation.x += delta * this.rotationSpeed.x;
 		this.mesh.rotation.y += delta * this.rotationSpeed.y;

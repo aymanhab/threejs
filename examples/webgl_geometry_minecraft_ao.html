@@ -25,12 +25,12 @@
 				padding: 5px;
 			}
 
-			#webglmessage {
+			#oldie {
 				background:rgb(100,0,0) !important;
 				color:#fff !important;
 				margin-top:10em !important;
 			}
-			#webglmessage a { color:#fff }
+			#oldie a { color:#fff }
 
 		</style>
 	</head>
@@ -38,7 +38,7 @@
 
 		<div id="container"><br /><br /><br /><br /><br />Generating world...</div>
 		<div id="info">
-			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - <a href="http://www.minecraft.net/" target="_blank" rel="noopener">minecraft</a> demo [ambient occlusion]. featuring <a href="http://painterlypack.net/" target="_blank" rel="noopener">painterly pack</a><br />(left click: forward, right click: backward)
+			<a href="http://threejs.org" target="_blank">three.js</a> - <a href="http://www.minecraft.net/" target="_blank">minecraft</a> demo [ambient occlusion]. featuring <a href="http://painterlypack.net/" target="_blank">painterly pack</a><br />(left click: forward, right click: backward)
 		</div>
 
 		<script src="../build/three.js"></script>
@@ -47,26 +47,29 @@
 
 		<script src="js/ImprovedNoise.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
+			if ( ! Detector.webgl ) {
 
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
+				Detector.addGetWebGLMessage();
 				document.getElementById( 'container' ).innerHTML = "";
 
 			}
+
+			var fogExp2 = true;
 
 			var container, stats;
 
 			var camera, controls, scene, renderer;
 
-			var worldWidth = 200, worldDepth = 200;
-			var worldHalfWidth = worldWidth / 2;
-			var worldHalfDepth = worldDepth / 2;
-			var data = generateHeight( worldWidth, worldDepth );
+			var mesh, mat;
+
+			var worldWidth = 200, worldDepth = 200,
+			worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2,
+			data = generateHeight( worldWidth, worldDepth );
 
 			var clock = new THREE.Clock();
 
@@ -90,7 +93,6 @@
 				controls.verticalMax = 2.2;
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xffffff );
 				scene.fog = new THREE.FogExp2( 0xffffff, 0.00015 );
 
 				// sides
@@ -157,6 +159,7 @@
 				//
 
 				var geometry = new THREE.Geometry();
+				var dummy = new THREE.Mesh();
 
 				for ( var z = 0; z < worldDepth; z ++ ) {
 
@@ -271,16 +274,11 @@
 
 				}
 
-				geometry = new THREE.BufferGeometry().fromGeometry( geometry );
-
 				var texture = new THREE.TextureLoader().load( 'textures/minecraft/atlas.png' );
 				texture.magFilter = THREE.NearestFilter;
 				texture.minFilter = THREE.LinearMipMapLinearFilter;
 
-				var mesh = new THREE.Mesh(
-					geometry,
-					new THREE.MeshLambertMaterial( { map: texture, vertexColors: THREE.VertexColors, side: THREE.DoubleSide } )
-				);
+				var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { map: texture, vertexColors: THREE.VertexColors } ) );
 				scene.add( mesh );
 
 				var ambientLight = new THREE.AmbientLight( 0xcccccc );
@@ -291,6 +289,7 @@
 				scene.add( directionalLight );
 
 				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0xffffff );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -318,10 +317,21 @@
 
 			}
 
+			function loadTexture( path, callback ) {
+
+				var image = new Image();
+
+				image.onload = function () { callback(); };
+				image.src = path;
+
+				return image;
+
+			}
+
 			function generateHeight( width, height ) {
 
 				var data = [], perlin = new ImprovedNoise(),
-					size = width * height, quality = 2, z = Math.random() * 100;
+				size = width * height, quality = 2, z = Math.random() * 100;
 
 				for ( var j = 0; j < 4; j ++ ) {
 
@@ -334,7 +344,7 @@
 
 					}
 
-					quality *= 4;
+					quality *= 4
 
 				}
 

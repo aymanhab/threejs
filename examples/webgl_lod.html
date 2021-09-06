@@ -32,7 +32,7 @@
 
 	<body>
 		<div id="info">
-			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - level-of-details WebGL example
+			<a href="http://threejs.org" target="_blank">three.js</a> - level-of-details WebGL example
 		</div>
 
 
@@ -40,20 +40,18 @@
 
 		<script src="js/controls/FlyControls.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
-
-			}
-
-			var container;
+			var container, stats;
 
 			var camera, scene, renderer;
+
+			var geometry, objects;
 
 			var controls, clock = new THREE.Clock();
 
@@ -86,11 +84,11 @@
 
 				var geometry = [
 
-					[ new THREE.IcosahedronBufferGeometry( 100, 4 ), 50 ],
-					[ new THREE.IcosahedronBufferGeometry( 100, 3 ), 300 ],
-					[ new THREE.IcosahedronBufferGeometry( 100, 2 ), 1000 ],
-					[ new THREE.IcosahedronBufferGeometry( 100, 1 ), 2000 ],
-					[ new THREE.IcosahedronBufferGeometry( 100, 0 ), 8000 ]
+					[ new THREE.IcosahedronGeometry( 100, 4 ), 50 ],
+					[ new THREE.IcosahedronGeometry( 100, 3 ), 300 ],
+					[ new THREE.IcosahedronGeometry( 100, 2 ), 1000 ],
+					[ new THREE.IcosahedronGeometry( 100, 1 ), 2000 ],
+					[ new THREE.IcosahedronGeometry( 100, 0 ), 8000 ]
 
 				];
 
@@ -113,7 +111,7 @@
 					}
 
 					lod.position.x = 10000 * ( 0.5 - Math.random() );
-					lod.position.y = 7500 * ( 0.5 - Math.random() );
+					lod.position.y =  7500 * ( 0.5 - Math.random() );
 					lod.position.z = 10000 * ( 0.5 - Math.random() );
 					lod.updateMatrix();
 					lod.matrixAutoUpdate = false;
@@ -122,9 +120,10 @@
 				}
 
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.sortObjects = false;
 				container.appendChild( renderer.domElement );
 
 				//

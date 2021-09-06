@@ -23,9 +23,9 @@
 			#info {
 				color:#fff;
 				position: absolute;
-				top: 0px;
-				width: 100%;
+				top: 0px; width: 100%;
 				padding: 5px;
+				z-index:100;
 			}
 
 		</style>
@@ -33,25 +33,21 @@
 	<body>
 
 		<div id="info">
-			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl particle sprites example -
+			<a href="http://threejs.org" target="_blank">three.js</a> - webgl particle sprites example -
 			snowflakes by <a href="http://en.wikipedia.org/wiki/File:Sketch_of_snow_crystal_by_Ren%C3%A9_Descartes.jpg">Ren&eacute;  Descartes</a>
 		</div>
 
 		<script src="../build/three.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
-		<script src="js/libs/dat.gui.min.js"></script>
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
-
-			}
-
-			var camera, scene, renderer, stats, materials = [], parameters;
+			var container, stats;
+			var camera, scene, renderer, particles, geometry, materials = [], parameters, i, h, color, sprite, size;
 			var mouseX = 0, mouseY = 0;
 
 			var windowHalfX = window.innerWidth / 2;
@@ -62,53 +58,54 @@
 
 			function init() {
 
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.z = 1000;
 
 				scene = new THREE.Scene();
 				scene.fog = new THREE.FogExp2( 0x000000, 0.0008 );
 
-				var geometry = new THREE.BufferGeometry();
-				var vertices = [];
+				geometry = new THREE.Geometry();
 
 				var textureLoader = new THREE.TextureLoader();
 
-				var sprite1 = textureLoader.load( 'textures/sprites/snowflake1.png' );
-				var sprite2 = textureLoader.load( 'textures/sprites/snowflake2.png' );
-				var sprite3 = textureLoader.load( 'textures/sprites/snowflake3.png' );
-				var sprite4 = textureLoader.load( 'textures/sprites/snowflake4.png' );
-				var sprite5 = textureLoader.load( 'textures/sprites/snowflake5.png' );
+				sprite1 = textureLoader.load( "textures/sprites/snowflake1.png" );
+				sprite2 = textureLoader.load( "textures/sprites/snowflake2.png" );
+				sprite3 = textureLoader.load( "textures/sprites/snowflake3.png" );
+				sprite4 = textureLoader.load( "textures/sprites/snowflake4.png" );
+				sprite5 = textureLoader.load( "textures/sprites/snowflake5.png" );
 
-				for ( var i = 0; i < 10000; i ++ ) {
+				for ( i = 0; i < 10000; i ++ ) {
 
-					var x = Math.random() * 2000 - 1000;
-					var y = Math.random() * 2000 - 1000;
-					var z = Math.random() * 2000 - 1000;
+					var vertex = new THREE.Vector3();
+					vertex.x = Math.random() * 2000 - 1000;
+					vertex.y = Math.random() * 2000 - 1000;
+					vertex.z = Math.random() * 2000 - 1000;
 
-					vertices.push( x, y, z );
+					geometry.vertices.push( vertex );
 
 				}
 
-				geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
-
 				parameters = [
-					[[ 1.0, 0.2, 0.5 ], sprite2, 20 ],
-					[[ 0.95, 0.1, 0.5 ], sprite3, 15 ],
-					[[ 0.90, 0.05, 0.5 ], sprite1, 10 ],
-					[[ 0.85, 0, 0.5 ], sprite5, 8 ],
-					[[ 0.80, 0, 0.5 ], sprite4, 5 ]
+					[ [1.0, 0.2, 0.5], sprite2, 20 ],
+					[ [0.95, 0.1, 0.5], sprite3, 15 ],
+					[ [0.90, 0.05, 0.5], sprite1, 10 ],
+					[ [0.85, 0, 0.5], sprite5, 8 ],
+					[ [0.80, 0, 0.5], sprite4, 5 ]
 				];
 
-				for ( var i = 0; i < parameters.length; i ++ ) {
+				for ( i = 0; i < parameters.length; i ++ ) {
 
-					var color = parameters[ i ][ 0 ];
-					var sprite = parameters[ i ][ 1 ];
-					var size = parameters[ i ][ 2 ];
+					color  = parameters[i][0];
+					sprite = parameters[i][1];
+					size   = parameters[i][2];
 
-					materials[ i ] = new THREE.PointsMaterial( { size: size, map: sprite, blending: THREE.AdditiveBlending, depthTest: false, transparent: true } );
-					materials[ i ].color.setHSL( color[ 0 ], color[ 1 ], color[ 2 ] );
+					materials[i] = new THREE.PointsMaterial( { size: size, map: sprite, blending: THREE.AdditiveBlending, depthTest: false, transparent : true } );
+					materials[i].color.setHSL( color[0], color[1], color[2] );
 
-					var particles = new THREE.Points( geometry, materials[ i ] );
+					particles = new THREE.Points( geometry, materials[i] );
 
 					particles.rotation.x = Math.random() * 6;
 					particles.rotation.y = Math.random() * 6;
@@ -118,38 +115,13 @@
 
 				}
 
-				//
-
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
-
-				//
+				container.appendChild( renderer.domElement );
 
 				stats = new Stats();
-				document.body.appendChild( stats.dom );
-
-				//
-
-				var gui = new dat.GUI();
-
-				var params = {
-					texture: true
-				};
-
-				gui.add( params, 'texture' ).onChange( function ( value ) {
-
-					for ( var i = 0; i < materials.length; i ++ ) {
-
-						materials[ i ].map = ( value === true ) ? parameters[ i ][ 1 ] : null;
-						materials[ i ].needsUpdate = true;
-
-					}
-
-				} );
-
-				gui.open();
+				container.appendChild( stats.dom );
 
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
@@ -226,7 +198,7 @@
 
 				camera.lookAt( scene.position );
 
-				for ( var i = 0; i < scene.children.length; i ++ ) {
+				for ( i = 0; i < scene.children.length; i ++ ) {
 
 					var object = scene.children[ i ];
 
@@ -238,18 +210,19 @@
 
 				}
 
-				for ( var i = 0; i < materials.length; i ++ ) {
+				for ( i = 0; i < materials.length; i ++ ) {
 
-					var color = parameters[ i ][ 0 ];
+					color = parameters[i][0];
 
-					var h = ( 360 * ( color[ 0 ] + time ) % 360 ) / 360;
-					materials[ i ].color.setHSL( h, color[ 1 ], color[ 2 ] );
+					h = ( 360 * ( color[0] + time ) % 360 ) / 360;
+					materials[i].color.setHSL( h, color[1], color[2] );
 
 				}
 
 				renderer.render( scene, camera );
 
 			}
+
 
 		</script>
 	</body>

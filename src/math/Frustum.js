@@ -1,29 +1,27 @@
-import { Vector3 } from './Vector3.js';
-import { Sphere } from './Sphere.js';
-import { Plane } from './Plane.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
  * @author bhouston / http://clara.io
  */
 
-function Frustum( p0, p1, p2, p3, p4, p5 ) {
+THREE.Frustum = function ( p0, p1, p2, p3, p4, p5 ) {
 
 	this.planes = [
 
-		( p0 !== undefined ) ? p0 : new Plane(),
-		( p1 !== undefined ) ? p1 : new Plane(),
-		( p2 !== undefined ) ? p2 : new Plane(),
-		( p3 !== undefined ) ? p3 : new Plane(),
-		( p4 !== undefined ) ? p4 : new Plane(),
-		( p5 !== undefined ) ? p5 : new Plane()
+		( p0 !== undefined ) ? p0 : new THREE.Plane(),
+		( p1 !== undefined ) ? p1 : new THREE.Plane(),
+		( p2 !== undefined ) ? p2 : new THREE.Plane(),
+		( p3 !== undefined ) ? p3 : new THREE.Plane(),
+		( p4 !== undefined ) ? p4 : new THREE.Plane(),
+		( p5 !== undefined ) ? p5 : new THREE.Plane()
 
 	];
 
-}
+};
 
-Object.assign( Frustum.prototype, {
+THREE.Frustum.prototype = {
+
+	constructor: THREE.Frustum,
 
 	set: function ( p0, p1, p2, p3, p4, p5 ) {
 
@@ -82,7 +80,7 @@ Object.assign( Frustum.prototype, {
 
 	intersectsObject: function () {
 
-		var sphere = new Sphere();
+		var sphere = new THREE.Sphere();
 
 		return function intersectsObject( object ) {
 
@@ -102,7 +100,7 @@ Object.assign( Frustum.prototype, {
 
 	intersectsSprite: function () {
 
-		var sphere = new Sphere();
+		var sphere = new THREE.Sphere();
 
 		return function intersectsSprite( sprite ) {
 
@@ -140,23 +138,30 @@ Object.assign( Frustum.prototype, {
 
 	intersectsBox: function () {
 
-		var p = new Vector3();
+		var p1 = new THREE.Vector3(),
+			p2 = new THREE.Vector3();
 
 		return function intersectsBox( box ) {
 
 			var planes = this.planes;
 
-			for ( var i = 0; i < 6; i ++ ) {
+			for ( var i = 0; i < 6 ; i ++ ) {
 
 				var plane = planes[ i ];
 
-				// corner at max distance
+				p1.x = plane.normal.x > 0 ? box.min.x : box.max.x;
+				p2.x = plane.normal.x > 0 ? box.max.x : box.min.x;
+				p1.y = plane.normal.y > 0 ? box.min.y : box.max.y;
+				p2.y = plane.normal.y > 0 ? box.max.y : box.min.y;
+				p1.z = plane.normal.z > 0 ? box.min.z : box.max.z;
+				p2.z = plane.normal.z > 0 ? box.max.z : box.min.z;
 
-				p.x = plane.normal.x > 0 ? box.max.x : box.min.x;
-				p.y = plane.normal.y > 0 ? box.max.y : box.min.y;
-				p.z = plane.normal.z > 0 ? box.max.z : box.min.z;
+				var d1 = plane.distanceToPoint( p1 );
+				var d2 = plane.distanceToPoint( p2 );
 
-				if ( plane.distanceToPoint( p ) < 0 ) {
+				// if both outside plane, no intersection
+
+				if ( d1 < 0 && d2 < 0 ) {
 
 					return false;
 
@@ -169,6 +174,7 @@ Object.assign( Frustum.prototype, {
 		};
 
 	}(),
+
 
 	containsPoint: function ( point ) {
 
@@ -188,7 +194,4 @@ Object.assign( Frustum.prototype, {
 
 	}
 
-} );
-
-
-export { Frustum };
+};

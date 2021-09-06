@@ -14,7 +14,9 @@
 				overflow:hidden;
 			}
 
-			a { color: #ffffff; }
+			a {
+				color: #ffffff;
+			}
 
 			#info {
 				position: absolute;
@@ -27,21 +29,22 @@
 				z-index:1000;
 			}
 
-			#webglmessage {
+			#oldie {
 				background:rgb(200,100,0) !important;
 				color:#fff;
 			}
 
 			#vt { display:none }
 			#vt, #vt a { color:orange; }
+			.code { }
 
 		</style>
 	</head>
 
 	<body>
 		<div id="info">
-			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl normalmap demo.
-			<a href="http://graphics.cs.williams.edu/data/meshes.xml#14" target="_blank" rel="noopener">Lee Perry-Smith</a> head.
+			<a href="http://threejs.org" target="_blank">three.js</a> - webgl normalmap demo.
+			<a href="http://graphics.cs.williams.edu/data/meshes.xml#14" target="_blank">Lee Perry-Smith</a> head.
 
 			<div id="vt">displacement mapping needs vertex textures (GPU with Shader Model 3.0)<br/>
 			on Windows use <span class="code">Chrome --use-gl=desktop</span> or Firefox 4<br/>
@@ -50,9 +53,8 @@
 		</div>
 
 		<script src="../build/three.js"></script>
-		<script src="js/loaders/GLTFLoader.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script src="js/shaders/BleachBypassShader.js"></script>
@@ -65,27 +67,24 @@
 		<script src="js/postprocessing/ShaderPass.js"></script>
 		<script src="js/postprocessing/MaskPass.js"></script>
 
+
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
-
-			}
+			var statsEnabled = true;
 
 			var container, stats, loader;
 
 			var camera, scene, renderer;
 
-			var mesh;
+			var mesh, zmesh, lightMesh, geometry;
+			var mesh1;
 
 			var directionalLight, pointLight, ambientLight;
 
 			var mouseX = 0;
 			var mouseY = 0;
-
-			var targetX = 0;
-			var targetY = 0;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -104,7 +103,6 @@
 				camera.position.z = 1200;
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x111111 );
 
 				// LIGHTS
 
@@ -117,7 +115,7 @@
 				scene.add( pointLight );
 
 				directionalLight = new THREE.DirectionalLight( 0xffffff );
-				directionalLight.position.set( 1, - 0.5, - 1 );
+				directionalLight.position.set( 1, -0.5, -1 );
 				scene.add( directionalLight );
 
 				var textureLoader = new THREE.TextureLoader();
@@ -126,20 +124,18 @@
 					color: 0xdddddd,
 					specular: 0x222222,
 					shininess: 35,
-					map: textureLoader.load( "models/gltf/LeePerrySmith/Map-COL.jpg" ),
-					specularMap: textureLoader.load( "models/gltf/LeePerrySmith/Map-SPEC.jpg" ),
-					normalMap: textureLoader.load( "models/gltf/LeePerrySmith/Infinite-Level_02_Tangent_SmoothUV.jpg" ),
+					map: textureLoader.load( "obj/leeperrysmith/Map-COL.jpg" ),
+					specularMap: textureLoader.load( "obj/leeperrysmith/Map-SPEC.jpg" ),
+					normalMap: textureLoader.load( "obj/leeperrysmith/Infinite-Level_02_Tangent_SmoothUV.jpg" ),
 					normalScale: new THREE.Vector2( 0.8, 0.8 )
 				} );
 
-				loader = new THREE.GLTFLoader();
-				loader.load( "models/gltf/LeePerrySmith/LeePerrySmith.glb", function ( gltf ) {
+				loader = new THREE.JSONLoader();
+				loader.load( "obj/leeperrysmith/LeePerrySmith.js", function( geometry ) { createScene( geometry, 100, material ) } );
 
-					createScene( gltf.scene.children[ 0 ].geometry, 100, material );
-
-				} );
-
-				renderer = new THREE.WebGLRenderer();
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer.setClearColor( 0x111111 );
+				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
 
@@ -150,9 +146,12 @@
 
 				//
 
-				stats = new Stats();
-				container.appendChild( stats.dom );
+				if ( statsEnabled ) {
 
+					stats = new Stats();
+					container.appendChild( stats.dom );
+
+				}
 
 				// COMPOSER
 
@@ -164,21 +163,24 @@
 				var effectColor = new THREE.ShaderPass( THREE.ColorCorrectionShader );
 				effectFXAA = new THREE.ShaderPass( THREE.FXAAShader );
 
-				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
+				var canvas = renderer.context.canvas;
+
+				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / canvas.width, 1 / canvas.height );
 
 				effectBleach.uniforms[ 'opacity' ].value = 0.4;
 
 				effectColor.uniforms[ 'powRGB' ].value.set( 1.4, 1.45, 1.45 );
 				effectColor.uniforms[ 'mulRGB' ].value.set( 1.1, 1.1, 1.1 );
 
-				effectColor.renderToScreen = true;
+				effectFXAA.renderToScreen = true;
 
 				composer = new THREE.EffectComposer( renderer );
 
 				composer.addPass( renderModel );
-				composer.addPass( effectFXAA );
+
 				composer.addPass( effectBleach );
 				composer.addPass( effectColor );
+				composer.addPass( effectFXAA );
 
 				// EVENTS
 
@@ -189,36 +191,37 @@
 
 			function createScene( geometry, scale, material ) {
 
-				mesh = new THREE.Mesh( geometry, material );
+				mesh1 = new THREE.Mesh( geometry, material );
 
-				mesh.position.y = - 50;
-				mesh.scale.x = mesh.scale.y = mesh.scale.z = scale;
+				mesh1.position.y = - 50;
+				mesh1.scale.x = mesh1.scale.y = mesh1.scale.z = scale;
 
-				scene.add( mesh );
+				scene.add( mesh1 );
 
 			}
 
 			//
 
-			function onWindowResize() {
+			function onWindowResize( event ) {
 
-				var width = window.innerWidth;
-				var height = window.innerHeight;
+				SCREEN_WIDTH = window.innerWidth;
+				SCREEN_HEIGHT = window.innerHeight;
 
-				camera.aspect = width / height;
+				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+				camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 				camera.updateProjectionMatrix();
 
-				renderer.setSize( width, height );
-				composer.setSize( width, height );
+				composer.reset();
 
-				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / width, 1 / height );
+				effectFXAA.uniforms[ 'resolution' ].value.set( 1 / SCREEN_WIDTH, 1 / SCREEN_HEIGHT );
 
 			}
 
-			function onDocumentMouseMove( event ) {
+			function onDocumentMouseMove(event) {
 
-				mouseX = ( event.clientX - windowHalfX );
-				mouseY = ( event.clientY - windowHalfY );
+				mouseX = ( event.clientX - windowHalfX ) * 10;
+				mouseY = ( event.clientY - windowHalfY ) * 10;
 
 			}
 
@@ -229,23 +232,22 @@
 				requestAnimationFrame( animate );
 
 				render();
-
-				stats.update();
+				if ( statsEnabled ) stats.update();
 
 			}
 
 			function render() {
 
-				targetX = mouseX * .001;
-				targetY = mouseY * .001;
+				var ry = mouseX * 0.0003, rx = mouseY * 0.0003;
 
-				if ( mesh ) {
+				if( mesh1 ) {
 
-					mesh.rotation.y += 0.05 * ( targetX - mesh.rotation.y );
-					mesh.rotation.x += 0.05 * ( targetY - mesh.rotation.x );
+					mesh1.rotation.y = ry;
+					mesh1.rotation.x = rx;
 
 				}
 
+				//renderer.render( scene, camera );
 				composer.render();
 
 			}

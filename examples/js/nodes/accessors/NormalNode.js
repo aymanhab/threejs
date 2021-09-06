@@ -2,62 +2,58 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { TempNode } from '../core/TempNode.js';
-import { NodeLib } from '../core/NodeLib.js';
+THREE.NormalNode = function( scope ) {
 
-function NormalNode( scope ) {
+	THREE.TempNode.call( this, 'v3' );
 
-	TempNode.call( this, 'v3' );
+	this.scope = scope || THREE.NormalNode.LOCAL;
 
-	this.scope = scope || NormalNode.LOCAL;
+};
 
-}
+THREE.NormalNode.LOCAL = 'local';
+THREE.NormalNode.WORLD = 'world';
+THREE.NormalNode.VIEW = 'view';
 
-NormalNode.LOCAL = 'local';
-NormalNode.WORLD = 'world';
-NormalNode.VIEW = 'view';
+THREE.NormalNode.prototype = Object.create( THREE.TempNode.prototype );
+THREE.NormalNode.prototype.constructor = THREE.NormalNode;
 
-NormalNode.prototype = Object.create( TempNode.prototype );
-NormalNode.prototype.constructor = NormalNode;
-NormalNode.prototype.nodeType = "Normal";
-
-NormalNode.prototype.isShared = function ( builder ) {
+THREE.NormalNode.prototype.isShared = function( builder ) {
 
 	switch ( this.scope ) {
-
-		case NormalNode.WORLD:
-
+		case THREE.NormalNode.WORLD:
 			return true;
-
 	}
 
 	return false;
 
 };
 
-NormalNode.prototype.generate = function ( builder, output ) {
+THREE.NormalNode.prototype.generate = function( builder, output ) {
 
+	var material = builder.material;
 	var result;
 
 	switch ( this.scope ) {
 
-		case NormalNode.LOCAL:
+		case THREE.NormalNode.LOCAL:
 
-			builder.requires.normal = true;
+			material.requestAttrib.normal = true;
 
-			result = 'normal';
-
-			break;
-
-		case NormalNode.WORLD:
-
-			builder.requires.worldNormal = true;
-
-			result = builder.isShader( 'vertex' ) ? '( modelMatrix * vec4( objectNormal, 0.0 ) ).xyz' : 'vWNormal';
+			if ( builder.isShader( 'vertex' ) ) result = 'normal';
+			else result = 'vObjectNormal';
 
 			break;
 
-		case NormalNode.VIEW:
+		case THREE.NormalNode.WORLD:
+
+			material.requestAttrib.worldNormal = true;
+
+			if ( builder.isShader( 'vertex' ) ) result = '( modelMatrix * vec4( objectNormal, 0.0 ) ).xyz';
+			else result = 'vWNormal';
+
+			break;
+
+		case THREE.NormalNode.VIEW:
 
 			result = 'vNormal';
 
@@ -68,47 +64,3 @@ NormalNode.prototype.generate = function ( builder, output ) {
 	return builder.format( result, this.getType( builder ), output );
 
 };
-
-NormalNode.prototype.copy = function ( source ) {
-
-	TempNode.prototype.copy.call( this, source );
-
-	this.scope = source.scope;
-
-};
-
-NormalNode.prototype.toJSON = function ( meta ) {
-
-	var data = this.getJSONNode( meta );
-
-	if ( ! data ) {
-
-		data = this.createJSONNode( meta );
-
-		data.scope = this.scope;
-
-	}
-
-	return data;
-
-};
-
-NodeLib.addKeyword( 'normal', function () {
-
-	return new NormalNode();
-
-} );
-
-NodeLib.addKeyword( 'worldNormal', function () {
-
-	return new NormalNode( NormalNode.WORLD );
-
-} );
-
-NodeLib.addKeyword( 'viewNormal', function () {
-
-	return new NormalNode( NormalNode.VIEW );
-
-} );
-
-export { NormalNode };

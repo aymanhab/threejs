@@ -13,30 +13,36 @@
  * }
  */
 
-import { LineBasicMaterial } from './LineBasicMaterial.js';
+THREE.LineDashedMaterial = function ( parameters ) {
 
-function LineDashedMaterial( parameters ) {
-
-	LineBasicMaterial.call( this );
+	THREE.Material.call( this );
 
 	this.type = 'LineDashedMaterial';
+
+	this.color = new THREE.Color( 0xffffff );
+
+	this.linewidth = 1;
 
 	this.scale = 1;
 	this.dashSize = 3;
 	this.gapSize = 1;
 
+	this.lights = false;
+
 	this.setValues( parameters );
 
-}
+};
 
-LineDashedMaterial.prototype = Object.create( LineBasicMaterial.prototype );
-LineDashedMaterial.prototype.constructor = LineDashedMaterial;
+THREE.LineDashedMaterial.prototype = Object.create( THREE.Material.prototype );
+THREE.LineDashedMaterial.prototype.constructor = THREE.LineDashedMaterial;
 
-LineDashedMaterial.prototype.isLineDashedMaterial = true;
+THREE.LineDashedMaterial.prototype.copy = function ( source ) {
 
-LineDashedMaterial.prototype.copy = function ( source ) {
+	THREE.Material.prototype.copy.call( this, source );
 
-	LineBasicMaterial.prototype.copy.call( this, source );
+	this.color.copy( source.color );
+
+	this.linewidth = source.linewidth;
 
 	this.scale = source.scale;
 	this.dashSize = source.dashSize;
@@ -45,6 +51,3 @@ LineDashedMaterial.prototype.copy = function ( source ) {
 	return this;
 
 };
-
-
-export { LineDashedMaterial };

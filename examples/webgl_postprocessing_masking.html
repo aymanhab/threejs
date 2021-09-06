@@ -26,16 +26,12 @@
 		<script src="js/postprocessing/ShaderPass.js"></script>
 		<script src="js/postprocessing/MaskPass.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
-
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
-
-			}
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var composer, renderer;
 			var box, torus;
@@ -51,13 +47,13 @@
 				var scene1 = new THREE.Scene();
 				var scene2 = new THREE.Scene();
 
-				box = new THREE.Mesh( new THREE.BoxBufferGeometry( 4, 4, 4 ) );
+				box = new THREE.Mesh( new THREE.BoxGeometry( 4, 4, 4 ) );
 				scene1.add( box );
 
-				torus = new THREE.Mesh( new THREE.TorusBufferGeometry( 3, 1, 16, 32 ) );
+				torus = new THREE.Mesh( new THREE.TorusGeometry( 3, 1, 16, 32 ) );
 				scene2.add( torus );
 
-				renderer = new THREE.WebGLRenderer();
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
 				renderer.setClearColor( 0xe0e0e0 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );

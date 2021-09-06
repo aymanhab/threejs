@@ -1,12 +1,13 @@
+var worker;
 var BLOCK = 128;
-var startX, startY;
+var startX, startY, division, completed = 0;
 
 var scene, camera, renderer, loader, sceneId;
 
 importScripts( '../../../build/three.js' );
 
 
-self.onmessage = function ( e ) {
+self.onmessage = function( e ) {
 
 	var data = e.data;
 	if ( ! data ) return;
@@ -17,6 +18,7 @@ self.onmessage = function ( e ) {
 			width = data.init[ 0 ],
 			height = data.init[ 1 ];
 
+		worker = data.worker;
 		BLOCK = data.blockSize;
 
 		if ( ! renderer ) renderer = new THREE.RaytracingRendererWorker();
@@ -27,6 +29,8 @@ self.onmessage = function ( e ) {
 		// TODO fix passing maxRecursionDepth as parameter.
 		// if (data.maxRecursionDepth) maxRecursionDepth = data.maxRecursionDepth;
 
+		completed = 0;
+
 	}
 
 	if ( data.scene ) {
@@ -35,9 +39,9 @@ self.onmessage = function ( e ) {
 		camera = loader.parse( data.camera );
 
 		var meta = data.annex;
-		scene.traverse( function ( o ) {
+		scene.traverse( function( o ) {
 
-			if ( o.isPointLight ) {
+			if ( o instanceof THREE.PointLight ) {
 
 				o.physicalAttenuation = true;
 
@@ -45,11 +49,10 @@ self.onmessage = function ( e ) {
 
 			var mat = o.material;
 
-			if ( ! mat ) return;
+			if (!mat) return;
 
 			var material = meta[ mat.uuid ];
-
-			for ( var m in material ) {
+			for (var m in material) {
 
 				mat[ m ] = material[ m ];
 
@@ -58,7 +61,6 @@ self.onmessage = function ( e ) {
 		} );
 
 		sceneId = data.sceneId;
-
 	}
 
 	if ( data.render && scene && camera ) {
@@ -69,7 +71,7 @@ self.onmessage = function ( e ) {
 
 	}
 
-};
+}
 
 /**
  * DOM-less version of Raytracing Renderer
@@ -78,9 +80,13 @@ self.onmessage = function ( e ) {
  * @author zz95 / http://github.com/zz85
  */
 
-THREE.RaytracingRendererWorker = function () {
+THREE.RaytracingRendererWorker = function ( parameters ) {
 
 	console.log( 'THREE.RaytracingRendererWorker', THREE.REVISION );
+
+	parameters = parameters || {};
+
+	var scope = this;
 
 	var maxRecursionDepth = 3;
 
@@ -92,12 +98,10 @@ THREE.RaytracingRendererWorker = function () {
 	var cameraPosition = new THREE.Vector3();
 
 	var raycaster = new THREE.Raycaster( origin, direction );
-	var ray = raycaster.ray;
-
 	var raycasterLight = new THREE.Raycaster();
-	var rayLight = raycasterLight.ray;
 
 	var perspective;
+	var modelViewMatrix = new THREE.Matrix4();
 	var cameraNormalMatrix = new THREE.Matrix3();
 
 	var objects;
@@ -145,19 +149,31 @@ THREE.RaytracingRendererWorker = function () {
 
 		return function spawnRay( rayOrigin, rayDirection, outputColor, recursionDepth ) {
 
-			outputColor.setRGB( 0, 0, 0 );
-
-			//
+			var ray = raycaster.ray;
 
 			ray.origin = rayOrigin;
 			ray.direction = rayDirection;
+
+			//
+
+			var rayLight = raycasterLight.ray;
+
+			//
+
+			outputColor.setRGB( 0, 0, 0 );
+
+			//
 
 			var intersections = raycaster.intersectObjects( objects, true );
 
 			// ray didn't find anything
 			// (here should come setting of background color?)
 
-			if ( intersections.length === 0 ) return;
+			if ( intersections.length === 0 ) {
+
+				return;
+
+			}
 
 			// ray hit
 
@@ -174,13 +190,14 @@ THREE.RaytracingRendererWorker = function () {
 
 			var _object = cache[ object.id ];
 
-			eyeVector.subVectors( ray.origin, point ).normalize();
+			localPoint.copy( point ).applyMatrix4( _object.inverseMatrix );
+			eyeVector.subVectors( raycaster.ray.origin, point ).normalize();
 
 			// resolve pixel diffuse color
 
-			if ( material.isMeshLambertMaterial ||
-				 material.isMeshPhongMaterial ||
-				 material.isMeshBasicMaterial ) {
+			if ( material instanceof THREE.MeshLambertMaterial ||
+				 material instanceof THREE.MeshPhongMaterial ||
+				 material instanceof THREE.MeshBasicMaterial ) {
 
 				diffuseColor.copyGammaToLinear( material.color );
 
@@ -200,7 +217,7 @@ THREE.RaytracingRendererWorker = function () {
 
 			rayLight.origin.copy( point );
 
-			if ( material.isMeshBasicMaterial ) {
+			if ( material instanceof THREE.MeshBasicMaterial ) {
 
 				for ( var i = 0, l = lights.length; i < l; i ++ ) {
 
@@ -223,13 +240,16 @@ THREE.RaytracingRendererWorker = function () {
 
 				}
 
-			} else if ( material.isMeshLambertMaterial || material.isMeshPhongMaterial ) {
+			} else if ( material instanceof THREE.MeshLambertMaterial ||
+						material instanceof THREE.MeshPhongMaterial ) {
 
 				var normalComputed = false;
 
 				for ( var i = 0, l = lights.length; i < l; i ++ ) {
 
 					var light = lights[ i ];
+
+					lightColor.copyGammaToLinear( light.color );
 
 					lightVector.setFromMatrixPosition( light.matrixWorld );
 					lightVector.sub( point );
@@ -249,15 +269,12 @@ THREE.RaytracingRendererWorker = function () {
 						// the same normal can be reused for all lights
 						// (should be possible to cache even more)
 
-						localPoint.copy( point ).applyMatrix4( _object.inverseMatrix );
-						computePixelNormal( normalVector, localPoint, material.flatShading, face, vertices );
+						computePixelNormal( normalVector, localPoint, material.shading, face, vertices );
 						normalVector.applyMatrix3( _object.normalMatrix ).normalize();
 
 						normalComputed = true;
 
 					}
-
-					lightColor.copyGammaToLinear( light.color );
 
 					// compute attenuation
 
@@ -285,7 +302,7 @@ THREE.RaytracingRendererWorker = function () {
 
 					// compute specular
 
-					if ( material.isMeshPhongMaterial ) {
+					if ( material instanceof THREE.MeshPhongMaterial ) {
 
 						halfVector.addVectors( lightVector, eyeVector ).normalize();
 
@@ -303,9 +320,9 @@ THREE.RaytracingRendererWorker = function () {
 						schlick.b = specularColor.b + ( 1.0 - specularColor.b ) * alpha;
 
 						lightContribution.copy( schlick );
+
 						lightContribution.multiply( lightColor );
 						lightContribution.multiplyScalar( specularNormalization * specularIntensity * attenuation );
-
 						outputColor.add( lightContribution );
 
 					}
@@ -382,16 +399,16 @@ THREE.RaytracingRendererWorker = function () {
 		var tmpVec2 = new THREE.Vector3();
 		var tmpVec3 = new THREE.Vector3();
 
-		return function computePixelNormal( outputVector, point, flatShading, face, vertices ) {
+		return function computePixelNormal( outputVector, point, shading, face, vertices ) {
 
 			var faceNormal = face.normal;
 			var vertexNormals = face.vertexNormals;
 
-			if ( flatShading === true ) {
+			if ( shading === THREE.FlatShading ) {
 
 				outputVector.copy( faceNormal );
 
-			} else {
+			} else if ( shading === THREE.SmoothShading ) {
 
 				// compute barycentric coordinates
 
@@ -459,7 +476,7 @@ THREE.RaytracingRendererWorker = function () {
 
 					// convert from linear to gamma
 
-					data[ index + 0 ] = Math.sqrt( pixelColor.r ) * 255;
+					data[ index ]     = Math.sqrt( pixelColor.r ) * 255;
 					data[ index + 1 ] = Math.sqrt( pixelColor.g ) * 255;
 					data[ index + 2 ] = Math.sqrt( pixelColor.b ) * 255;
 					data[ index + 3 ] = 255;
@@ -475,16 +492,21 @@ THREE.RaytracingRendererWorker = function () {
 				blockY: blockY,
 				blockSize: blockSize,
 				sceneId: sceneId,
-				time: Date.now(), // time for this renderer
+				time: Date.now() - reallyThen, // time for this renderer
 			}, [ data.buffer ] );
 
 			data = new Uint8ClampedArray( blockSize * blockSize * 4 );
+
+			// OK Done!
+			completed ++;
 
 		};
 
 	}() );
 
 	this.render = function ( scene, camera ) {
+
+		reallyThen = Date.now()
 
 		// update scene graph
 
@@ -494,11 +516,13 @@ THREE.RaytracingRendererWorker = function () {
 
 		if ( camera.parent === null ) camera.updateMatrixWorld();
 
+		camera.matrixWorldInverse.getInverse( camera.matrixWorld );
 		cameraPosition.setFromMatrixPosition( camera.matrixWorld );
 
 		//
 
 		cameraNormalMatrix.getNormalMatrix( camera.matrixWorld );
+		origin.copy( cameraPosition );
 
 		perspective = 0.5 / Math.tan( THREE.Math.degToRad( camera.fov * 0.5 ) ) * canvasHeight;
 
@@ -510,7 +534,7 @@ THREE.RaytracingRendererWorker = function () {
 
 		scene.traverse( function ( object ) {
 
-			if ( object.isPointLight ) {
+			if ( object instanceof THREE.Light ) {
 
 				lights.push( object );
 
@@ -525,9 +549,11 @@ THREE.RaytracingRendererWorker = function () {
 
 			}
 
+			modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
+
 			var _object = cache[ object.id ];
 
-			_object.normalMatrix.getNormalMatrix( object.matrixWorld );
+			_object.normalMatrix.getNormalMatrix( modelViewMatrix );
 			_object.inverseMatrix.getInverse( object.matrixWorld );
 
 		} );

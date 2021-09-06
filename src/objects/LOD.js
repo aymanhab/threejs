@@ -1,15 +1,12 @@
-import { Vector3 } from '../math/Vector3.js';
-import { Object3D } from '../core/Object3D.js';
-
 /**
  * @author mikael emtinger / http://gomo.se/
  * @author alteredq / http://alteredqualia.com/
  * @author mrdoob / http://mrdoob.com/
  */
 
-function LOD() {
+THREE.LOD = function () {
 
-	Object3D.call( this );
+	THREE.Object3D.call( this );
 
 	this.type = 'LOD';
 
@@ -20,15 +17,16 @@ function LOD() {
 		}
 	} );
 
-}
+};
 
-LOD.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
-	constructor: LOD,
+THREE.LOD.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
+
+	constructor: THREE.LOD,
 
 	copy: function ( source ) {
 
-		Object3D.prototype.copy.call( this, source, false );
+		THREE.Object3D.prototype.copy.call( this, source, false );
 
 		var levels = source.levels;
 
@@ -88,7 +86,7 @@ LOD.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	raycast: ( function () {
 
-		var matrixPosition = new Vector3();
+		var matrixPosition = new THREE.Vector3();
 
 		return function raycast( raycaster, intersects ) {
 
@@ -104,8 +102,8 @@ LOD.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	update: function () {
 
-		var v1 = new Vector3();
-		var v2 = new Vector3();
+		var v1 = new THREE.Vector3();
+		var v2 = new THREE.Vector3();
 
 		return function update( camera ) {
 
@@ -149,7 +147,7 @@ LOD.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	toJSON: function ( meta ) {
 
-		var data = Object3D.prototype.toJSON.call( this, meta );
+		var data = THREE.Object3D.prototype.toJSON.call( this, meta );
 
 		data.object.levels = [];
 
@@ -171,6 +169,3 @@ LOD.prototype = Object.assign( Object.create( Object3D.prototype ), {
 	}
 
 } );
-
-
-export { LOD };

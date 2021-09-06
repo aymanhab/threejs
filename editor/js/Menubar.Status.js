@@ -4,12 +4,10 @@
 
 Menubar.Status = function ( editor ) {
 
-	var strings = editor.strings;
-
 	var container = new UI.Panel();
 	container.setClass( 'menu right' );
 
-	var autosave = new UI.THREE.Boolean( editor.config.getKey( 'autosave' ), strings.getKey( 'menubar/status/autosave' ) );
+	var autosave = new UI.THREE.Boolean( editor.config.getKey( 'autosave' ), 'autosave' );
 	autosave.text.setColor( '#888' );
 	autosave.onChange( function () {
 

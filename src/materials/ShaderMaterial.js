@@ -1,6 +1,3 @@
-import { Material } from './Material.js';
-import { cloneUniforms } from '../renderers/shaders/UniformsUtils.js';
-
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -22,9 +19,9 @@ import { cloneUniforms } from '../renderers/shaders/UniformsUtils.js';
  * }
  */
 
-function ShaderMaterial( parameters ) {
+THREE.ShaderMaterial = function ( parameters ) {
 
-	Material.call( this );
+	THREE.Material.call( this );
 
 	this.type = 'ShaderMaterial';
 
@@ -63,7 +60,6 @@ function ShaderMaterial( parameters ) {
 	};
 
 	this.index0AttributeName = undefined;
-	this.uniformsNeedUpdate = false;
 
 	if ( parameters !== undefined ) {
 
@@ -77,23 +73,21 @@ function ShaderMaterial( parameters ) {
 
 	}
 
-}
+};
 
-ShaderMaterial.prototype = Object.create( Material.prototype );
-ShaderMaterial.prototype.constructor = ShaderMaterial;
+THREE.ShaderMaterial.prototype = Object.create( THREE.Material.prototype );
+THREE.ShaderMaterial.prototype.constructor = THREE.ShaderMaterial;
 
-ShaderMaterial.prototype.isShaderMaterial = true;
+THREE.ShaderMaterial.prototype.copy = function ( source ) {
 
-ShaderMaterial.prototype.copy = function ( source ) {
-
-	Material.prototype.copy.call( this, source );
+	THREE.Material.prototype.copy.call( this, source );
 
 	this.fragmentShader = source.fragmentShader;
 	this.vertexShader = source.vertexShader;
 
-	this.uniforms = cloneUniforms( source.uniforms );
+	this.uniforms = THREE.UniformsUtils.clone( source.uniforms );
 
-	this.defines = Object.assign( {}, source.defines );
+	this.defines = source.defines;
 
 	this.wireframe = source.wireframe;
 	this.wireframeLinewidth = source.wireframeLinewidth;
@@ -112,79 +106,14 @@ ShaderMaterial.prototype.copy = function ( source ) {
 
 };
 
-ShaderMaterial.prototype.toJSON = function ( meta ) {
+THREE.ShaderMaterial.prototype.toJSON = function ( meta ) {
 
-	var data = Material.prototype.toJSON.call( this, meta );
+	var data = THREE.Material.prototype.toJSON.call( this, meta );
 
-	data.uniforms = {};
-
-	for ( var name in this.uniforms ) {
-
-		var uniform = this.uniforms[ name ];
-		var value = uniform.value;
-
-		if ( value.isTexture ) {
-
-			data.uniforms[ name ] = {
-				type: 't',
-				value: value.toJSON( meta ).uuid
-			};
-
-		} else if ( value.isColor ) {
-
-			data.uniforms[ name ] = {
-				type: 'c',
-				value: value.getHex()
-			};
-
-		} else if ( value.isVector2 ) {
-
-			data.uniforms[ name ] = {
-				type: 'v2',
-				value: value.toArray()
-			};
-
-		} else if ( value.isVector3 ) {
-
-			data.uniforms[ name ] = {
-				type: 'v3',
-				value: value.toArray()
-			};
-
-		} else if ( value.isVector4 ) {
-
-			data.uniforms[ name ] = {
-				type: 'v4',
-				value: value.toArray()
-			};
-
-		} else if ( value.isMatrix4 ) {
-
-			data.uniforms[ name ] = {
-				type: 'm4',
-				value: value.toArray()
-			};
-
-		} else {
-
-			data.uniforms[ name ] = {
-				value: value
-			};
-
-			// note: the array variants v2v, v3v, v4v, m4v and tv are not supported so far
-
-		}
-
-	}
-
-	if ( Object.keys( this.defines ).length > 0 ) data.defines = this.defines;
-
+	data.uniforms = this.uniforms;
 	data.vertexShader = this.vertexShader;
 	data.fragmentShader = this.fragmentShader;
 
 	return data;
 
 };
-
-
-export { ShaderMaterial };

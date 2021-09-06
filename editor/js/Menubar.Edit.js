@@ -4,14 +4,12 @@
 
 Menubar.Edit = function ( editor ) {
 
-	var strings = editor.strings;
-
 	var container = new UI.Panel();
 	container.setClass( 'menu' );
 
 	var title = new UI.Panel();
 	title.setClass( 'title' );
-	title.setTextContent( strings.getKey( 'menubar/edit' ) );
+	title.setTextContent( 'Edit' );
 	container.add( title );
 
 	var options = new UI.Panel();
@@ -22,7 +20,7 @@ Menubar.Edit = function ( editor ) {
 
 	var undo = new UI.Row();
 	undo.setClass( 'option' );
-	undo.setTextContent( strings.getKey( 'menubar/edit/undo' ) );
+	undo.setTextContent( 'Undo (Ctrl+Z)' );
 	undo.onClick( function () {
 
 		editor.undo();
@@ -34,7 +32,7 @@ Menubar.Edit = function ( editor ) {
 
 	var redo = new UI.Row();
 	redo.setClass( 'option' );
-	redo.setTextContent( strings.getKey( 'menubar/edit/redo' ) );
+	redo.setTextContent( 'Redo (Ctrl+Shift+Z)' );
 	redo.onClick( function () {
 
 		editor.redo();
@@ -46,7 +44,7 @@ Menubar.Edit = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( strings.getKey( 'menubar/edit/clear_history' ) );
+	option.setTextContent( 'Clear History' );
 	option.onClick( function () {
 
 		if ( confirm( 'The Undo/Redo History will be cleared. Are you sure?' ) ) {
@@ -88,7 +86,7 @@ Menubar.Edit = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( strings.getKey( 'menubar/edit/clone' ) );
+	option.setTextContent( 'Clone' );
 	option.onClick( function () {
 
 		var object = editor.selected;
@@ -106,10 +104,12 @@ Menubar.Edit = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( strings.getKey( 'menubar/edit/delete' ) );
+	option.setTextContent( 'Delete (Del)' );
 	option.onClick( function () {
 
 		var object = editor.selected;
+
+		if ( confirm( 'Delete ' + object.name + '?' ) === false ) return;
 
 		var parent = object.parent;
 		if ( parent === undefined ) return; // avoid deleting the camera or scene
@@ -123,7 +123,7 @@ Menubar.Edit = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( strings.getKey( 'menubar/edit/minify_shaders' ) );
+	option.setTextContent( 'Minify Shaders' );
 	option.onClick( function() {
 
 		var root = editor.selected || editor.scene;

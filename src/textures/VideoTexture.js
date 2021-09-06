@@ -2,41 +2,29 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { RGBFormat, LinearFilter } from '../constants.js';
-import { Texture } from './Texture.js';
+THREE.VideoTexture = function ( video, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy ) {
 
-function VideoTexture( video, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy ) {
-
-	Texture.call( this, video, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy );
-
-	this.format = format !== undefined ? format : RGBFormat;
-
-	this.minFilter = minFilter !== undefined ? minFilter : LinearFilter;
-	this.magFilter = magFilter !== undefined ? magFilter : LinearFilter;
+	THREE.Texture.call( this, video, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy );
 
 	this.generateMipmaps = false;
 
-}
+	var scope = this;
 
-VideoTexture.prototype = Object.assign( Object.create( Texture.prototype ), {
+	function update() {
 
-	constructor: VideoTexture,
-
-	isVideoTexture: true,
-
-	update: function () {
-
-		var video = this.image;
+		requestAnimationFrame( update );
 
 		if ( video.readyState >= video.HAVE_CURRENT_DATA ) {
 
-			this.needsUpdate = true;
+			scope.needsUpdate = true;
 
 		}
 
 	}
 
-} );
+	update();
 
+};
 
-export { VideoTexture };
+THREE.VideoTexture.prototype = Object.create( THREE.Texture.prototype );
+THREE.VideoTexture.prototype.constructor = THREE.VideoTexture;

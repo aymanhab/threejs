@@ -28,7 +28,7 @@
 				color: yellow;
 			}
 
-			#webglmessage {
+			#oldie {
 				background:rgb(0,0,50) !important;
 				color:#fff !important;
 			}
@@ -37,38 +37,45 @@
 	</head>
 	<body>
 
-		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - dynamic geometry demo - webgl<br />(left click: forward, right click: backward)</div>
+		<div id="container"></div>
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - dynamic geometry demo - webgl<br />(left click: forward, right click: backward)</div>
 
 		<script src="../build/three.js"></script>
 
 		<script src="js/controls/FirstPersonControls.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
+			if ( ! Detector.webgl ) {
 
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
+				Detector.addGetWebGLMessage();
+				document.getElementById( 'container' ).innerHTML = "";
 
 			}
 
-			var camera, controls, scene, renderer, stats;
+			var container, stats;
 
-			var mesh, geometry, material, clock;
+			var camera, controls, scene, renderer;
 
-			var worldWidth = 128, worldDepth = 128;
+			var mesh, texture, geometry, material;
+
+			var worldWidth = 128, worldDepth = 128,
+			worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
+
+			var clock = new THREE.Clock();
 
 			init();
 			animate();
 
 			function init() {
 
+				container = document.getElementById( 'container' );
+
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
 				camera.position.y = 200;
-
-				clock = new THREE.Clock();
 
 				controls = new THREE.FirstPersonControls( camera );
 
@@ -76,23 +83,18 @@
 				controls.lookSpeed = 0.1;
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xaaccff );
 				scene.fog = new THREE.FogExp2( 0xaaccff, 0.0007 );
 
-				geometry = new THREE.PlaneBufferGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
+				geometry = new THREE.PlaneGeometry( 20000, 20000, worldWidth - 1, worldDepth - 1 );
 				geometry.rotateX( - Math.PI / 2 );
 
-				var position = geometry.attributes.position;
-				position.dynamic = true;
+				for ( var i = 0, l = geometry.vertices.length; i < l; i ++ ) {
 
-				for ( var i = 0; i < position.count; i ++ ) {
-
-					var y = 35 * Math.sin( i / 2 );
-					position.setY( i, y );
+					geometry.vertices[ i ].y = 35 * Math.sin( i / 2 );
 
 				}
 
-				var texture = new THREE.TextureLoader().load( 'textures/water.jpg' );
+				var texture = new THREE.TextureLoader().load( "textures/water.jpg" );
 				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 				texture.repeat.set( 5, 5 );
 
@@ -101,13 +103,17 @@
 				mesh = new THREE.Mesh( geometry, material );
 				scene.add( mesh );
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0xaaccff );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
+
+				container.innerHTML = "";
+
+				container.appendChild( renderer.domElement );
 
 				stats = new Stats();
-				document.body.appendChild( stats.dom );
+				container.appendChild( stats.dom );
 
 				//
 
@@ -139,19 +145,16 @@
 
 			function render() {
 
-				var delta = clock.getDelta();
-				var time = clock.getElapsedTime() * 10;
+				var delta = clock.getDelta(),
+					time = clock.getElapsedTime() * 10;
 
-				var position = geometry.attributes.position;
+				for ( var i = 0, l = geometry.vertices.length; i < l; i ++ ) {
 
-				for ( var i = 0; i < position.count; i ++ ) {
-
-					var y = 35 * Math.sin( i / 5 + ( time + i ) / 7 );
-					position.setY( i, y );
+					geometry.vertices[ i ].y = 35 * Math.sin( i / 5 + ( time + i ) / 7 );
 
 				}
 
-				position.needsUpdate = true;
+				mesh.geometry.verticesNeedUpdate = true;
 
 				controls.update( delta );
 				renderer.render( scene, camera );

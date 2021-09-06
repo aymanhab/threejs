@@ -1,5 +1,3 @@
-import { MeshStandardMaterial } from './MeshStandardMaterial.js';
-
 /**
  * @author WestLangley / http://github.com/WestLangley
  *
@@ -8,9 +6,9 @@ import { MeshStandardMaterial } from './MeshStandardMaterial.js';
  * }
  */
 
-function MeshPhysicalMaterial( parameters ) {
+THREE.MeshPhysicalMaterial = function ( parameters ) {
 
-	MeshStandardMaterial.call( this );
+	THREE.MeshStandardMaterial.call( this );
 
 	this.defines = { 'PHYSICAL': '' };
 
@@ -23,16 +21,14 @@ function MeshPhysicalMaterial( parameters ) {
 
 	this.setValues( parameters );
 
-}
+};
 
-MeshPhysicalMaterial.prototype = Object.create( MeshStandardMaterial.prototype );
-MeshPhysicalMaterial.prototype.constructor = MeshPhysicalMaterial;
+THREE.MeshPhysicalMaterial.prototype = Object.create( THREE.MeshStandardMaterial.prototype );
+THREE.MeshPhysicalMaterial.prototype.constructor = THREE.MeshPhysicalMaterial;
 
-MeshPhysicalMaterial.prototype.isMeshPhysicalMaterial = true;
+THREE.MeshPhysicalMaterial.prototype.copy = function ( source ) {
 
-MeshPhysicalMaterial.prototype.copy = function ( source ) {
-
-	MeshStandardMaterial.prototype.copy.call( this, source );
+	THREE.MeshStandardMaterial.prototype.copy.call( this, source );
 
 	this.defines = { 'PHYSICAL': '' };
 
@@ -44,6 +40,3 @@ MeshPhysicalMaterial.prototype.copy = function ( source ) {
 	return this;
 
 };
-
-
-export { MeshPhysicalMaterial };

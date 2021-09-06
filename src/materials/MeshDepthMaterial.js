@@ -1,6 +1,3 @@
-import { Material } from './Material.js';
-import { BasicDepthPacking } from '../constants.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
@@ -24,13 +21,13 @@ import { BasicDepthPacking } from '../constants.js';
  * }
  */
 
-function MeshDepthMaterial( parameters ) {
+THREE.MeshDepthMaterial = function ( parameters ) {
 
-	Material.call( this );
+	THREE.Material.call( this );
 
 	this.type = 'MeshDepthMaterial';
 
-	this.depthPacking = BasicDepthPacking;
+	this.depthPacking = THREE.BasicDepthPacking;
 
 	this.skinning = false;
 	this.morphTargets = false;
@@ -51,16 +48,14 @@ function MeshDepthMaterial( parameters ) {
 
 	this.setValues( parameters );
 
-}
+};
 
-MeshDepthMaterial.prototype = Object.create( Material.prototype );
-MeshDepthMaterial.prototype.constructor = MeshDepthMaterial;
+THREE.MeshDepthMaterial.prototype = Object.create( THREE.Material.prototype );
+THREE.MeshDepthMaterial.prototype.constructor = THREE.MeshDepthMaterial;
 
-MeshDepthMaterial.prototype.isMeshDepthMaterial = true;
+THREE.MeshDepthMaterial.prototype.copy = function ( source ) {
 
-MeshDepthMaterial.prototype.copy = function ( source ) {
-
-	Material.prototype.copy.call( this, source );
+	THREE.Material.prototype.copy.call( this, source );
 
 	this.depthPacking = source.depthPacking;
 
@@ -81,6 +76,3 @@ MeshDepthMaterial.prototype.copy = function ( source ) {
 	return this;
 
 };
-
-
-export { MeshDepthMaterial };
