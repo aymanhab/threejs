@@ -115,10 +115,11 @@ var OpenSimEditor = function () {
 	this.config = new Config( 'threejs-editor' );
 	this.history = new History( this );
 	this.storage = new Storage();
+	this.strings = new Strings( this.config );
 	this.loader = new THREE.OpenSimLoader(this);
 
 	this.camera = this.DEFAULT_CAMERA.clone();
-	this.dollyPath = new THREE.ClosedSplineCurve3([
+	this.dollyPath = new THREE.CatmullRomCurve3([
 			new THREE.Vector3(0, 0, 2000),
 			new THREE.Vector3(-1400, 0, 1400),
 			new THREE.Vector3(-2000, 0, 0),
@@ -138,6 +139,7 @@ var OpenSimEditor = function () {
 	this.scene.userData = "NonEditable";
 
 	this.scene.name = 'Scene';
+	this.scene.background = new THREE.Color( 0xaaaaaa );
 
 	this.sceneHelpers = new THREE.Scene();
 
@@ -182,6 +184,7 @@ OpenSimEditor.prototype = {
 
 		this.scene.uuid = scene.uuid;
 		this.scene.name = scene.name;
+		if ( scene.background !== null ) this.scene.background = scene.background.clone();
 		this.scene.userData = JSON.parse( JSON.stringify( scene.userData ) );
 
 		// avoid render per object
@@ -409,6 +412,34 @@ OpenSimEditor.prototype = {
 
 	},
 
+	getObjectMaterial: function ( object, slot ) {
+
+		var material = object.material;
+
+		if ( Array.isArray( material ) ) {
+
+			material = material[ slot ];
+
+		}
+
+		return material;
+
+	},
+
+	setObjectMaterial: function ( object, slot, newMaterial ) {
+
+		if ( Array.isArray( object.material ) ) {
+
+			object.material[ slot ] = newMaterial;
+
+		} else {
+
+			object.material = newMaterial;
+
+		}
+
+	},
+
 	//
 
 	select: function ( object ) {
@@ -491,6 +522,8 @@ OpenSimEditor.prototype = {
 
 		this.camera.copy( this.DEFAULT_CAMERA );
 		this.dolly_camera.copy(this.DEFAULT_CAMERA);
+		this.scene.background.setHex( 0xaaaaaa );
+		this.scene.fog = null;
 
 		var objects = this.scene.children;
 
@@ -581,7 +614,7 @@ OpenSimEditor.prototype = {
 	    });
 	},
 	loadModel: function ( modelJsonFileName) {
-		var loader = new THREE.XHRLoader();
+		var loader = new THREE.FileLoader();
 		loader.crossOrigin = '';
 		loader.load( modelJsonFileName, function ( text ) {
 			var json = JSON.parse( text );
@@ -661,6 +694,8 @@ OpenSimEditor.prototype = {
 
 			metadata: {},
 			project: {
+				gammaInput: this.config.getKey( 'project/renderer/gammaInput' ),
+				gammaOutput: this.config.getKey( 'project/renderer/gammaOutput' ),
 				shadows: this.config.getKey( 'project/renderer/shadows' ),
 				editable: this.config.getKey( 'project/editable' ),
 				vr: this.config.getKey( 'project/vr' )
@@ -704,7 +739,8 @@ OpenSimEditor.prototype = {
 	createBackground: function (choice) {
 		scope = this;
 		if (choice == 'nobackground') {
-			this.scene.background = new THREE.Color(0xff0000);
+			color = this.config.getKey('settings/backgroundcolor');
+			this.scene.background = new THREE.Color(color);
 			this.signals.backgroundColorChanged.dispatch(this.scene.background.getHex());
 			return;
 		}
@@ -907,11 +943,11 @@ OpenSimEditor.prototype = {
 	},
 		createLogoSprite: function() {
 			var getLogoTexture = function () {
-				var texture = new THREE.ImageUtils.loadTexture("OpenSimWatermarkOpaqueGrayscale128x128.png");
+				var texture = new THREE.ImageUtils.loadTexture("lcadTransparent.png");
 				return texture;
 			};
 			var spriteMaterial = new THREE.SpriteMaterial({
-						opacity: 0.5,
+						opacity: 0.9,
 						color: 0xffffff,
 						transparent: false, // TODO not necessary
 						// useScreenCoordinates: true, TODO deprecated
@@ -922,7 +958,7 @@ OpenSimEditor.prototype = {
 			// This used to be AdditiveBlending, but that caused the logo to
 			// very bright white on certain backgrounds.
 			// https://threejs.org/examples/webgl_materials_blending.html
-			spriteMaterial.blending = THREE.NormalBlending;
+			spriteMaterial.transparent = true;
 
 			var sprite = new THREE.Sprite(spriteMaterial);
 			sprite.scale.set(64, 64, 1);
@@ -972,7 +1008,7 @@ OpenSimEditor.prototype = {
 		    modelbbox.setFromObject(modelObject);
 	    var radius = Math.max(modelbbox.max.x - modelbbox.min.x, modelbbox.max.y - modelbbox.min.y, modelbbox.max.z - modelbbox.min.z) / 2;
 	    var aabbCenter = new THREE.Vector3();
-	    modelbbox.center(aabbCenter);
+	    modelbbox.getCenter(aabbCenter);
 
 	    // Compute offset needed to move the camera back that much needed to center AABB (approx: better if from BB front face)
 	    var offset = radius / Math.tan(Math.PI / 180.0 * 25 * 0.5);
@@ -1068,7 +1104,7 @@ OpenSimEditor.prototype = {
 	addModelLight: function(model) {
 		var modelbbox = new THREE.Box3().setFromObject(model);
 		var modelCenter = new THREE.Vector3();
-		modelbbox.center(modelCenter);
+		modelbbox.getCenter(modelCenter);
 		modelCenterGroup = new THREE.Group();
 		modelCenterGroup.name = "ModelCenter";
 		modelCenterGroup.position.copy(new THREE.Vector3(modelCenter.x, modelCenter.y, modelCenter.z));

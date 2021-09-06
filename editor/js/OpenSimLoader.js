@@ -79,7 +79,7 @@ Object.assign( THREE.OpenSimLoader.prototype, {
 
 		if ( json !== undefined ) {
 
-			var geometryLoader = new THREE.JSONLoader();
+			var geometryLoader = new THREE.ObjectLoader();
 			var bufferGeometryLoader = new THREE.BufferGeometryLoader();
 
 			for ( var i = 0, l = json.length; i < l; i ++ ) {
@@ -255,7 +255,7 @@ Object.assign( THREE.OpenSimLoader.prototype, {
 				    case 'PathGeometry':
                 //CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded, thetaStart, thetaLength)
                 // NOTE: number of heightSegments must be equal to the number of bones in the SkinnedMuscle
-								geometry = new THREE.CylinderGeometry(data.radius, data.radius, 0.1, 8, 2*data.segments-1, true);
+								geometry = new THREE.CylinderBufferGeometry(data.radius, data.radius, 0.1, 8, 2*data.segments-1, true);
 
 				        break;
 
@@ -559,7 +559,7 @@ Object.assign( THREE.OpenSimLoader.prototype, {
 
 			    case 'Frame':
 
-                                        object = new THREE.AxisHelper(data.size);
+                                        object = new THREE.AxesHelper(data.size);
 
                                         break;
 

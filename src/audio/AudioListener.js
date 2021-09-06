@@ -2,24 +2,32 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.AudioListener = function () {
+import { Vector3 } from '../math/Vector3.js';
+import { Quaternion } from '../math/Quaternion.js';
+import { Clock } from '../core/Clock.js';
+import { Object3D } from '../core/Object3D.js';
+import { AudioContext } from './AudioContext.js';
 
-	THREE.Object3D.call( this );
+function AudioListener() {
+
+	Object3D.call( this );
 
 	this.type = 'AudioListener';
 
-	this.context = THREE.AudioContext;
+	this.context = AudioContext.getContext();
 
 	this.gain = this.context.createGain();
 	this.gain.connect( this.context.destination );
 
 	this.filter = null;
 
-};
+	this.timeDelta = 0;
 
-THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
+}
 
-	constructor: THREE.AudioListener,
+AudioListener.prototype = Object.assign( Object.create( Object3D.prototype ), {
+
+	constructor: AudioListener,
 
 	getInput: function () {
 
@@ -37,6 +45,8 @@ THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.pro
 			this.filter = null;
 
 		}
+
+		return this;
 
 	},
 
@@ -63,6 +73,8 @@ THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.pro
 		this.gain.connect( this.filter );
 		this.filter.connect( this.context.destination );
 
+		return this;
+
 	},
 
 	getMasterVolume: function () {
@@ -73,34 +85,61 @@ THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.pro
 
 	setMasterVolume: function ( value ) {
 
-		this.gain.gain.value = value;
+		this.gain.gain.setTargetAtTime( value, this.context.currentTime, 0.01 );
+
+		return this;
 
 	},
 
 	updateMatrixWorld: ( function () {
 
-		var position = new THREE.Vector3();
-		var quaternion = new THREE.Quaternion();
-		var scale = new THREE.Vector3();
+		var position = new Vector3();
+		var quaternion = new Quaternion();
+		var scale = new Vector3();
 
-		var orientation = new THREE.Vector3();
+		var orientation = new Vector3();
+		var clock = new Clock();
 
 		return function updateMatrixWorld( force ) {
 
-			THREE.Object3D.prototype.updateMatrixWorld.call( this, force );
+			Object3D.prototype.updateMatrixWorld.call( this, force );
 
 			var listener = this.context.listener;
 			var up = this.up;
+
+			this.timeDelta = clock.getDelta();
 
 			this.matrixWorld.decompose( position, quaternion, scale );
 
 			orientation.set( 0, 0, - 1 ).applyQuaternion( quaternion );
 
-			listener.setPosition( position.x, position.y, position.z );
-			listener.setOrientation( orientation.x, orientation.y, orientation.z, up.x, up.y, up.z );
+			if ( listener.positionX ) {
+
+				// code path for Chrome (see #14393)
+
+				var endTime = this.context.currentTime + this.timeDelta;
+
+				listener.positionX.linearRampToValueAtTime( position.x, endTime );
+				listener.positionY.linearRampToValueAtTime( position.y, endTime );
+				listener.positionZ.linearRampToValueAtTime( position.z, endTime );
+				listener.forwardX.linearRampToValueAtTime( orientation.x, endTime );
+				listener.forwardY.linearRampToValueAtTime( orientation.y, endTime );
+				listener.forwardZ.linearRampToValueAtTime( orientation.z, endTime );
+				listener.upX.linearRampToValueAtTime( up.x, endTime );
+				listener.upY.linearRampToValueAtTime( up.y, endTime );
+				listener.upZ.linearRampToValueAtTime( up.z, endTime );
+
+			} else {
+
+				listener.setPosition( position.x, position.y, position.z );
+				listener.setOrientation( orientation.x, orientation.y, orientation.z, up.x, up.y, up.z );
+
+			}
 
 		};
 
 	} )()
 
 } );
+
+export { AudioListener };

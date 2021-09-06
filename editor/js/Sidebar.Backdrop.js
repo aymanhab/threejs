@@ -14,13 +14,13 @@ Sidebar.Backdrop = function ( editor ) {
 
 	};
 
-	var container = new UI.CollapsiblePanel();
-	container.setCollapsed( config.getKey( 'ui/sidebar/backdrop/collapsed' ) );
+	var container = new UI.Panel();
+	/*container.setCollapsed( config.getKey( 'ui/sidebar/backdrop/collapsed' ) );
 	container.onCollapsedChange( function ( boolean ) {
 
 		config.setKey( 'ui/sidebar/backdrop/collapsed', boolean );
 
-	} );
+	} );*/
 
 	container.addStatic( new UI.Text( 'BACKDROP' ) );
 	container.add( new UI.Break() );
