@@ -30,26 +30,22 @@
 	<body>
 
 		<div id="container"></div>
-		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - buffergeometry - particles</div>
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> webgl - buffergeometry - particles</div>
 
 		<script src="../build/three.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
-
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
-
-			}
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
 
 			var camera, scene, renderer;
 
-			var points;
+			var mesh;
 
 			init();
 			animate();
@@ -64,7 +60,6 @@
 				camera.position.z = 2750;
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x050505 );
 				scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
 
 				//
@@ -73,14 +68,14 @@
 
 				var geometry = new THREE.BufferGeometry();
 
-				var positions = [];
-				var colors = [];
+				var positions = new Float32Array( particles * 3 );
+				var colors = new Float32Array( particles * 3 );
 
 				var color = new THREE.Color();
 
 				var n = 1000, n2 = n / 2; // particles spread in the cube
 
-				for ( var i = 0; i < particles; i ++ ) {
+				for ( var i = 0; i < positions.length; i += 3 ) {
 
 					// positions
 
@@ -88,7 +83,9 @@
 					var y = Math.random() * n - n2;
 					var z = Math.random() * n - n2;
 
-					positions.push( x, y, z );
+					positions[ i ]     = x;
+					positions[ i + 1 ] = y;
+					positions[ i + 2 ] = z;
 
 					// colors
 
@@ -98,12 +95,14 @@
 
 					color.setRGB( vx, vy, vz );
 
-					colors.push( color.r, color.g, color.b );
+					colors[ i ]     = color.r;
+					colors[ i + 1 ] = color.g;
+					colors[ i + 2 ] = color.b;
 
 				}
 
-				geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-				geometry.addAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+				geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+				geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 
 				geometry.computeBoundingSphere();
 
@@ -111,12 +110,13 @@
 
 				var material = new THREE.PointsMaterial( { size: 15, vertexColors: THREE.VertexColors } );
 
-				points = new THREE.Points( geometry, material );
-				scene.add( points );
+				particleSystem = new THREE.Points( geometry, material );
+				scene.add( particleSystem );
 
 				//
 
-				renderer = new THREE.WebGLRenderer();
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer.setClearColor( scene.fog.color );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -157,8 +157,8 @@
 
 				var time = Date.now() * 0.001;
 
-				points.rotation.x = time * 0.25;
-				points.rotation.y = time * 0.5;
+				particleSystem.rotation.x = time * 0.25;
+				particleSystem.rotation.y = time * 0.5;
 
 				renderer.render( scene, camera );
 

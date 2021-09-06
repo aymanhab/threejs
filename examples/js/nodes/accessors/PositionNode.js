@@ -2,86 +2,81 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { TempNode } from '../core/TempNode.js';
-import { NodeLib } from '../core/NodeLib.js';
+THREE.PositionNode = function( scope ) {
 
-function PositionNode( scope ) {
+	THREE.TempNode.call( this, 'v3' );
 
-	TempNode.call( this, 'v3' );
+	this.scope = scope || THREE.PositionNode.LOCAL;
 
-	this.scope = scope || PositionNode.LOCAL;
+};
 
-}
+THREE.PositionNode.LOCAL = 'local';
+THREE.PositionNode.WORLD = 'world';
+THREE.PositionNode.VIEW = 'view';
+THREE.PositionNode.PROJECTION = 'projection';
 
-PositionNode.LOCAL = 'local';
-PositionNode.WORLD = 'world';
-PositionNode.VIEW = 'view';
-PositionNode.PROJECTION = 'projection';
+THREE.PositionNode.prototype = Object.create( THREE.TempNode.prototype );
+THREE.PositionNode.prototype.constructor = THREE.PositionNode;
 
-PositionNode.prototype = Object.create( TempNode.prototype );
-PositionNode.prototype.constructor = PositionNode;
-PositionNode.prototype.nodeType = "Position";
-
-PositionNode.prototype.getType = function ( ) {
+THREE.PositionNode.prototype.getType = function( builder ) {
 
 	switch ( this.scope ) {
-
-		case PositionNode.PROJECTION:
-
+		case THREE.PositionNode.PROJECTION:
 			return 'v4';
-
 	}
 
 	return this.type;
 
 };
 
-PositionNode.prototype.isShared = function ( builder ) {
+THREE.PositionNode.prototype.isShared = function( builder ) {
 
 	switch ( this.scope ) {
-
-		case PositionNode.LOCAL:
-		case PositionNode.WORLD:
-
+		case THREE.PositionNode.LOCAL:
+		case THREE.PositionNode.WORLD:
 			return false;
-
 	}
 
 	return true;
 
 };
 
-PositionNode.prototype.generate = function ( builder, output ) {
+THREE.PositionNode.prototype.generate = function( builder, output ) {
 
+	var material = builder.material;
 	var result;
 
 	switch ( this.scope ) {
 
-		case PositionNode.LOCAL:
+		case THREE.PositionNode.LOCAL:
 
-			builder.requires.position = true;
+			material.requestAttrib.position = true;
 
-			result = builder.isShader( 'vertex' ) ? 'transformed' : 'vPosition';
-
-			break;
-
-		case PositionNode.WORLD:
-
-			builder.requires.worldPosition = true;
-
-			result = 'vWPosition';
+			if ( builder.isShader( 'vertex' ) ) result = 'transformed';
+			else result = 'vPosition';
 
 			break;
 
-		case PositionNode.VIEW:
+		case THREE.PositionNode.WORLD:
 
-			result = builder.isShader( 'vertex' ) ? '-mvPosition.xyz' : 'vViewPosition';
+			material.requestAttrib.worldPosition = true;
+
+			if ( builder.isShader( 'vertex' ) ) result = 'vWPosition';
+			else result = 'vWPosition';
 
 			break;
 
-		case PositionNode.PROJECTION:
+		case THREE.PositionNode.VIEW:
 
-			result = builder.isShader( 'vertex' ) ? '( projectionMatrix * modelViewMatrix * vec4( position, 1.0 ) )' : 'vec4( 0.0 )';
+			if ( builder.isShader( 'vertex' ) ) result = '-mvPosition.xyz';
+			else result = 'vViewPosition';
+
+			break;
+
+		case THREE.PositionNode.PROJECTION:
+
+			if ( builder.isShader( 'vertex' ) ) result = '(projectionMatrix * modelViewMatrix * vec4( position, 1.0 ))';
+			else result = 'vec4( 0.0 )';
 
 			break;
 
@@ -90,47 +85,3 @@ PositionNode.prototype.generate = function ( builder, output ) {
 	return builder.format( result, this.getType( builder ), output );
 
 };
-
-PositionNode.prototype.copy = function ( source ) {
-
-	TempNode.prototype.copy.call( this, source );
-
-	this.scope = source.scope;
-
-};
-
-PositionNode.prototype.toJSON = function ( meta ) {
-
-	var data = this.getJSONNode( meta );
-
-	if ( ! data ) {
-
-		data = this.createJSONNode( meta );
-
-		data.scope = this.scope;
-
-	}
-
-	return data;
-
-};
-
-NodeLib.addKeyword( 'position', function () {
-
-	return new PositionNode();
-
-} );
-
-NodeLib.addKeyword( 'worldPosition', function () {
-
-	return new PositionNode( PositionNode.WORLD );
-
-} );
-
-NodeLib.addKeyword( 'viewPosition', function () {
-
-	return new PositionNode( NormalNode.VIEW );
-
-} );
-
-export { PositionNode };

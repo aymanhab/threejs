@@ -1,30 +1,24 @@
-import { LightShadow } from './LightShadow.js';
-import { _Math } from '../math/Math.js';
-import { PerspectiveCamera } from '../cameras/PerspectiveCamera.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function SpotLightShadow() {
+THREE.SpotLightShadow = function () {
 
-	LightShadow.call( this, new PerspectiveCamera( 50, 1, 0.5, 500 ) );
+	THREE.LightShadow.call( this, new THREE.PerspectiveCamera( 50, 1, 0.5, 500 ) );
 
-}
+};
 
-SpotLightShadow.prototype = Object.assign( Object.create( LightShadow.prototype ), {
+THREE.SpotLightShadow.prototype = Object.assign( Object.create( THREE.LightShadow.prototype ), {
 
-	constructor: SpotLightShadow,
-
-	isSpotLightShadow: true,
+	constructor: THREE.SpotLightShadow,
 
 	update: function ( light ) {
 
-		var camera = this.camera;
-
-		var fov = _Math.RAD2DEG * 2 * light.angle;
+		var fov = THREE.Math.RAD2DEG * 2 * light.angle;
 		var aspect = this.mapSize.width / this.mapSize.height;
-		var far = light.distance || camera.far;
+		var far = light.distance || 500;
+
+		var camera = this.camera;
 
 		if ( fov !== camera.fov || aspect !== camera.aspect || far !== camera.far ) {
 
@@ -38,6 +32,3 @@ SpotLightShadow.prototype = Object.assign( Object.create( LightShadow.prototype 
 	}
 
 } );
-
-
-export { SpotLightShadow };

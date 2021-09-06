@@ -4,15 +4,18 @@
 
 Sidebar.Script = function ( editor ) {
 
-	var strings = editor.strings;
-
 	var signals = editor.signals;
 
-	var container = new UI.Panel();
+	var container = new UI.CollapsiblePanel();
+	container.setCollapsed( editor.config.getKey( 'ui/sidebar/script/collapsed' ) );
+	container.onCollapsedChange( function ( boolean ) {
+
+		editor.config.setKey( 'ui/sidebar/script/collapsed', boolean );
+
+	} );
 	container.setDisplay( 'none' );
 
-	container.add( new UI.Text( strings.getKey( 'sidebar/script' ) ).setTextTransform( 'uppercase' ) );
-	container.add( new UI.Break() );
+	container.addStatic( new UI.Text( 'Script' ).setTextTransform( 'uppercase' ) );
 	container.add( new UI.Break() );
 
 	//
@@ -20,7 +23,7 @@ Sidebar.Script = function ( editor ) {
 	var scriptsContainer = new UI.Row();
 	container.add( scriptsContainer );
 
-	var newScript = new UI.Button( strings.getKey( 'sidebar/script/new' ) );
+	var newScript = new UI.Button( 'New' );
 	newScript.onClick( function () {
 
 		var script = { name: '', source: 'function update( event ) {}' };
@@ -40,7 +43,6 @@ Sidebar.Script = function ( editor ) {
 	function update() {
 
 		scriptsContainer.clear();
-		scriptsContainer.setDisplay( 'none' );
 
 		var object = editor.selected;
 
@@ -52,9 +54,7 @@ Sidebar.Script = function ( editor ) {
 
 		var scripts = editor.scripts[ object.uuid ];
 
-		if ( scripts !== undefined && scripts.length > 0 ) {
-
-			scriptsContainer.setDisplay( 'block' );
+		if ( scripts !== undefined ) {
 
 			for ( var i = 0; i < scripts.length; i ++ ) {
 
@@ -68,7 +68,7 @@ Sidebar.Script = function ( editor ) {
 					} );
 					scriptsContainer.add( name );
 
-					var edit = new UI.Button( strings.getKey( 'sidebar/script/edit' ) );
+					var edit = new UI.Button( 'Edit' );
 					edit.setMarginLeft( '4px' );
 					edit.onClick( function () {
 
@@ -77,7 +77,7 @@ Sidebar.Script = function ( editor ) {
 					} );
 					scriptsContainer.add( edit );
 
-					var remove = new UI.Button( strings.getKey( 'sidebar/script/remove' ) );
+					var remove = new UI.Button( 'Remove' );
 					remove.setMarginLeft( '4px' );
 					remove.onClick( function () {
 
@@ -104,7 +104,7 @@ Sidebar.Script = function ( editor ) {
 
 	signals.objectSelected.add( function ( object ) {
 
-		if ( object !== null && editor.camera !== object ) {
+		if ( object !== null ) {
 
 			container.setDisplay( 'block' );
 

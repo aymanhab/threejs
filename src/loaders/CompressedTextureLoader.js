@@ -1,24 +1,19 @@
-import { LinearFilter } from '../constants.js';
-import { FileLoader } from './FileLoader.js';
-import { CompressedTexture } from '../textures/CompressedTexture.js';
-import { DefaultLoadingManager } from './LoadingManager.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  *
  * Abstract Base class to block based textures loader (dds, pvr, ...)
  */
 
-function CompressedTextureLoader( manager ) {
+THREE.CompressedTextureLoader = function ( manager ) {
 
-	this.manager = ( manager !== undefined ) ? manager : DefaultLoadingManager;
+	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
 	// override in sub classes
 	this._parser = null;
 
-}
+};
 
-Object.assign( CompressedTextureLoader.prototype, {
+Object.assign( THREE.CompressedTextureLoader.prototype, {
 
 	load: function ( url, onLoad, onProgress, onError ) {
 
@@ -26,10 +21,10 @@ Object.assign( CompressedTextureLoader.prototype, {
 
 		var images = [];
 
-		var texture = new CompressedTexture();
+		var texture = new THREE.CompressedTexture();
 		texture.image = images;
 
-		var loader = new FileLoader( this.manager );
+		var loader = new THREE.XHRLoader( this.manager );
 		loader.setPath( this.path );
 		loader.setResponseType( 'arraybuffer' );
 
@@ -51,7 +46,7 @@ Object.assign( CompressedTextureLoader.prototype, {
 				if ( loaded === 6 ) {
 
 					if ( texDatas.mipmapCount === 1 )
-						texture.minFilter = LinearFilter;
+						texture.minFilter = THREE.LinearFilter;
 
 					texture.format = texDatas.format;
 					texture.needsUpdate = true;
@@ -88,7 +83,7 @@ Object.assign( CompressedTextureLoader.prototype, {
 
 					for ( var f = 0; f < faces; f ++ ) {
 
-						images[ f ] = { mipmaps: [] };
+						images[ f ] = { mipmaps : [] };
 
 						for ( var i = 0; i < texDatas.mipmapCount; i ++ ) {
 
@@ -111,7 +106,7 @@ Object.assign( CompressedTextureLoader.prototype, {
 
 				if ( texDatas.mipmapCount === 1 ) {
 
-					texture.minFilter = LinearFilter;
+					texture.minFilter = THREE.LinearFilter;
 
 				}
 
@@ -136,6 +131,3 @@ Object.assign( CompressedTextureLoader.prototype, {
 	}
 
 } );
-
-
-export { CompressedTextureLoader };

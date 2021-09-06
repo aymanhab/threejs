@@ -6,18 +6,18 @@
  * @author WestLangley / http://github.com/WestLangley
  */
 
-function Vector4( x, y, z, w ) {
+THREE.Vector4 = function ( x, y, z, w ) {
 
 	this.x = x || 0;
 	this.y = y || 0;
 	this.z = z || 0;
 	this.w = ( w !== undefined ) ? w : 1;
 
-}
+};
 
-Object.assign( Vector4.prototype, {
+THREE.Vector4.prototype = {
 
-	isVector4: true,
+	constructor: THREE.Vector4,
 
 	set: function ( x, y, z, w ) {
 
@@ -84,8 +84,6 @@ Object.assign( Vector4.prototype, {
 			default: throw new Error( 'index is out of range: ' + index );
 
 		}
-
-		return this;
 
 	},
 
@@ -213,10 +211,21 @@ Object.assign( Vector4.prototype, {
 
 	multiplyScalar: function ( scalar ) {
 
-		this.x *= scalar;
-		this.y *= scalar;
-		this.z *= scalar;
-		this.w *= scalar;
+		if ( isFinite( scalar ) ) {
+
+			this.x *= scalar;
+			this.y *= scalar;
+			this.z *= scalar;
+			this.w *= scalar;
+
+		} else {
+
+			this.x = 0;
+			this.y = 0;
+			this.z = 0;
+			this.w = 0;
+
+		}
 
 		return this;
 
@@ -254,15 +263,15 @@ Object.assign( Vector4.prototype, {
 
 		if ( s < 0.0001 ) {
 
-			this.x = 1;
-			this.y = 0;
-			this.z = 0;
+			 this.x = 1;
+			 this.y = 0;
+			 this.z = 0;
 
 		} else {
 
-			this.x = q.x / s;
-			this.y = q.y / s;
-			this.z = q.z / s;
+			 this.x = q.x / s;
+			 this.y = q.y / s;
+			 this.z = q.z / s;
 
 		}
 
@@ -424,7 +433,7 @@ Object.assign( Vector4.prototype, {
 
 	clamp: function ( min, max ) {
 
-		// assumes min < max, componentwise
+		// This function assumes min < max, if this assumption isn't true it will not operate correctly
 
 		this.x = Math.max( min.x, Math.min( max.x, this.x ) );
 		this.y = Math.max( min.y, Math.min( max.y, this.y ) );
@@ -443,8 +452,8 @@ Object.assign( Vector4.prototype, {
 
 			if ( min === undefined ) {
 
-				min = new Vector4();
-				max = new Vector4();
+				min = new THREE.Vector4();
+				max = new THREE.Vector4();
 
 			}
 
@@ -456,14 +465,6 @@ Object.assign( Vector4.prototype, {
 		};
 
 	}(),
-
-	clampLength: function ( min, max ) {
-
-		var length = this.length();
-
-		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
-
-	},
 
 	floor: function () {
 
@@ -538,7 +539,7 @@ Object.assign( Vector4.prototype, {
 
 	},
 
-	manhattanLength: function () {
+	lengthManhattan: function () {
 
 		return Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z ) + Math.abs( this.w );
 
@@ -546,13 +547,13 @@ Object.assign( Vector4.prototype, {
 
 	normalize: function () {
 
-		return this.divideScalar( this.length() || 1 );
+		return this.divideScalar( this.length() );
 
 	},
 
 	setLength: function ( length ) {
 
-		return this.normalize().multiplyScalar( length );
+		return this.multiplyScalar( length / this.length() );
 
 	},
 
@@ -606,24 +607,19 @@ Object.assign( Vector4.prototype, {
 
 	},
 
-	fromBufferAttribute: function ( attribute, index, offset ) {
+	fromAttribute: function ( attribute, index, offset ) {
 
-		if ( offset !== undefined ) {
+		if ( offset === undefined ) offset = 0;
 
-			console.warn( 'THREE.Vector4: offset has been removed from .fromBufferAttribute().' );
+		index = index * attribute.itemSize + offset;
 
-		}
-
-		this.x = attribute.getX( index );
-		this.y = attribute.getY( index );
-		this.z = attribute.getZ( index );
-		this.w = attribute.getW( index );
+		this.x = attribute.array[ index ];
+		this.y = attribute.array[ index + 1 ];
+		this.z = attribute.array[ index + 2 ];
+		this.w = attribute.array[ index + 3 ];
 
 		return this;
 
 	}
 
-} );
-
-
-export { Vector4 };
+};

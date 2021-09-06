@@ -1,73 +1,32 @@
-import {
-	NoBlending,
-	NormalBlending,
-	AdditiveBlending,
-	SubtractiveBlending,
-	MultiplyBlending,
-	CustomBlending,
-
-	FaceColors,
-	VertexColors,
-
-	DoubleSide,
-	BackSide,
-
-	MirroredRepeatWrapping,
-	RepeatWrapping
-} from '../constants.js';
-import { _Math } from '../math/Math.js';
-import { MaterialLoader } from './MaterialLoader.js';
-import { TextureLoader } from './TextureLoader.js';
-import { Color } from '../math/Color.js';
-
 /**
  * @author alteredq / http://alteredqualia.com/
  */
 
-function Loader() {}
+THREE.Loader = function () {
 
-Loader.Handlers = {
-
-	handlers: [],
-
-	add: function ( regex, loader ) {
-
-		this.handlers.push( regex, loader );
-
-	},
-
-	get: function ( file ) {
-
-		var handlers = this.handlers;
-
-		for ( var i = 0, l = handlers.length; i < l; i += 2 ) {
-
-			var regex = handlers[ i ];
-			var loader = handlers[ i + 1 ];
-
-			if ( regex.test( file ) ) {
-
-				return loader;
-
-			}
-
-		}
-
-		return null;
-
-	}
+	this.onLoadStart = function () {};
+	this.onLoadProgress = function () {};
+	this.onLoadComplete = function () {};
 
 };
 
-Object.assign( Loader.prototype, {
+THREE.Loader.prototype = {
 
-	crossOrigin: 'anonymous',
+	constructor: THREE.Loader,
 
-	onLoadStart: function () {},
+	crossOrigin: undefined,
 
-	onLoadProgress: function () {},
+	extractUrlBase: function ( url ) {
 
-	onLoadComplete: function () {},
+		var parts = url.split( '/' );
+
+		if ( parts.length === 1 ) return './';
+
+		parts.pop();
+
+		return parts.join( '/' ) + '/';
+
+	},
 
 	initMaterials: function ( materials, texturePath, crossOrigin ) {
 
@@ -85,20 +44,13 @@ Object.assign( Loader.prototype, {
 
 	createMaterial: ( function () {
 
-		var BlendingMode = {
-			NoBlending: NoBlending,
-			NormalBlending: NormalBlending,
-			AdditiveBlending: AdditiveBlending,
-			SubtractiveBlending: SubtractiveBlending,
-			MultiplyBlending: MultiplyBlending,
-			CustomBlending: CustomBlending
-		};
-
-		var color = new Color();
-		var textureLoader = new TextureLoader();
-		var materialLoader = new MaterialLoader();
+		var color, textureLoader, materialLoader;
 
 		return function createMaterial( m, texturePath, crossOrigin ) {
+
+			if ( color === undefined ) color = new THREE.Color();
+			if ( textureLoader === undefined ) textureLoader = new THREE.TextureLoader();
+			if ( materialLoader === undefined ) materialLoader = new THREE.MaterialLoader();
 
 			// convert from old material format
 
@@ -107,7 +59,7 @@ Object.assign( Loader.prototype, {
 			function loadTexture( path, repeat, offset, wrap, anisotropy ) {
 
 				var fullPath = texturePath + path;
-				var loader = Loader.Handlers.get( fullPath );
+				var loader = THREE.Loader.Handlers.get( fullPath );
 
 				var texture;
 
@@ -126,8 +78,8 @@ Object.assign( Loader.prototype, {
 
 					texture.repeat.fromArray( repeat );
 
-					if ( repeat[ 0 ] !== 1 ) texture.wrapS = RepeatWrapping;
-					if ( repeat[ 1 ] !== 1 ) texture.wrapT = RepeatWrapping;
+					if ( repeat[ 0 ] !== 1 ) texture.wrapS = THREE.RepeatWrapping;
+					if ( repeat[ 1 ] !== 1 ) texture.wrapT = THREE.RepeatWrapping;
 
 				}
 
@@ -139,11 +91,11 @@ Object.assign( Loader.prototype, {
 
 				if ( wrap !== undefined ) {
 
-					if ( wrap[ 0 ] === 'repeat' ) texture.wrapS = RepeatWrapping;
-					if ( wrap[ 0 ] === 'mirror' ) texture.wrapS = MirroredRepeatWrapping;
+					if ( wrap[ 0 ] === 'repeat' ) texture.wrapS = THREE.RepeatWrapping;
+					if ( wrap[ 0 ] === 'mirror' ) texture.wrapS = THREE.MirroredRepeatWrapping;
 
-					if ( wrap[ 1 ] === 'repeat' ) texture.wrapT = RepeatWrapping;
-					if ( wrap[ 1 ] === 'mirror' ) texture.wrapT = MirroredRepeatWrapping;
+					if ( wrap[ 1 ] === 'repeat' ) texture.wrapT = THREE.RepeatWrapping;
+					if ( wrap[ 1 ] === 'mirror' ) texture.wrapT = THREE.MirroredRepeatWrapping;
 
 				}
 
@@ -153,7 +105,7 @@ Object.assign( Loader.prototype, {
 
 				}
 
-				var uuid = _Math.generateUUID();
+				var uuid = THREE.Math.generateUUID();
 
 				textures[ uuid ] = texture;
 
@@ -164,7 +116,7 @@ Object.assign( Loader.prototype, {
 			//
 
 			var json = {
-				uuid: _Math.generateUUID(),
+				uuid: THREE.Math.generateUUID(),
 				type: 'MeshLambertMaterial'
 			};
 
@@ -173,7 +125,6 @@ Object.assign( Loader.prototype, {
 				var value = m[ name ];
 
 				switch ( name ) {
-
 					case 'DbgColor':
 					case 'DbgIndex':
 					case 'opticalDensity':
@@ -183,7 +134,7 @@ Object.assign( Loader.prototype, {
 						json.name = value;
 						break;
 					case 'blending':
-						json.blending = BlendingMode[ value ];
+						json.blending = THREE[ value ];
 						break;
 					case 'colorAmbient':
 					case 'mapAmbient':
@@ -253,7 +204,7 @@ Object.assign( Loader.prototype, {
 						json.normalMap = loadTexture( value, m.mapNormalRepeat, m.mapNormalOffset, m.mapNormalWrap, m.mapNormalAnisotropy );
 						break;
 					case 'mapNormalFactor':
-						json.normalScale = value;
+						json.normalScale = [ value, value ];
 						break;
 					case 'mapNormalRepeat':
 					case 'mapNormalOffset':
@@ -293,10 +244,10 @@ Object.assign( Loader.prototype, {
 					case 'mapAlphaAnisotropy':
 						break;
 					case 'flipSided':
-						json.side = BackSide;
+						json.side = THREE.BackSide;
 						break;
 					case 'doubleSided':
-						json.side = DoubleSide;
+						json.side = THREE.DoubleSide;
 						break;
 					case 'transparency':
 						console.warn( 'THREE.Loader.createMaterial: transparency has been renamed to opacity' );
@@ -313,13 +264,12 @@ Object.assign( Loader.prototype, {
 						json[ name ] = value;
 						break;
 					case 'vertexColors':
-						if ( value === true ) json.vertexColors = VertexColors;
-						if ( value === 'face' ) json.vertexColors = FaceColors;
+						if ( value === true ) json.vertexColors = THREE.VertexColors;
+						if ( value === 'face' ) json.vertexColors = THREE.FaceColors;
 						break;
 					default:
 						console.error( 'THREE.Loader.createMaterial: Unsupported', name, value );
 						break;
-
 				}
 
 			}
@@ -337,6 +287,37 @@ Object.assign( Loader.prototype, {
 
 	} )()
 
-} );
+};
 
-export { Loader };
+THREE.Loader.Handlers = {
+
+	handlers: [],
+
+	add: function ( regex, loader ) {
+
+		this.handlers.push( regex, loader );
+
+	},
+
+	get: function ( file ) {
+
+		var handlers = this.handlers;
+
+		for ( var i = 0, l = handlers.length; i < l; i += 2 ) {
+
+			var regex = handlers[ i ];
+			var loader  = handlers[ i + 1 ];
+
+			if ( regex.test( file ) ) {
+
+				return loader;
+
+			}
+
+		}
+
+		return null;
+
+	}
+
+};

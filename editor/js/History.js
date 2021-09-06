@@ -273,7 +273,7 @@ History.prototype = {
 
 				if ( cmd === undefined || id === cmd.id ) break;
 
-				this.undo();
+				cmd = this.undo();
 
 			}
 

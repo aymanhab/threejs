@@ -37,7 +37,6 @@
 		<script src="../../build/three.min.js"></script>
 		<script src='../../examples/js/libs/dat.gui.min.js'></script>
 		<script src="../../examples/js/controls/OrbitControls.js"></script>
-		<script src="../../examples/js/ParametricGeometries.js"></script>
 
 		<script src='js/geometry.js'></script>
 
@@ -53,11 +52,13 @@
 			var renderer = new THREE.WebGLRenderer( { antialias: true } );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
-			renderer.setClearColor( 0x000000, 1 );
 			document.body.appendChild( renderer.domElement );
 
 			var orbit = new THREE.OrbitControls( camera, renderer.domElement );
 			orbit.enableZoom = false;
+
+			var ambientLight = new THREE.AmbientLight( 0x000000 );
+			scene.add( ambientLight );
 
 			var lights = [];
 			lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
@@ -72,20 +73,36 @@
 			scene.add( lights[ 1 ] );
 			scene.add( lights[ 2 ] );
 
-			var group = new THREE.Group();
+			var mesh = new THREE.Object3D()
 
-			var geometry = new THREE.BufferGeometry();
-			geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( [], 3 ) );
+			mesh.add( new THREE.LineSegments(
 
-			var lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
-			var meshMaterial = new THREE.MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+				new THREE.Geometry(),
 
-			group.add( new THREE.LineSegments( geometry, lineMaterial ) );
-			group.add( new THREE.Mesh( geometry, meshMaterial ) );
+				new THREE.LineBasicMaterial( {
+					color: 0xffffff,
+					transparent: true,
+					opacity: 0.5
+				} )
 
-			var options = chooseFromHash( group );
+			) );
 
-			scene.add( group );
+			mesh.add( new THREE.Mesh(
+
+				new THREE.Geometry(),
+
+				new THREE.MeshPhongMaterial( {
+					color: 0x156289,
+					emissive: 0x072534,
+					side: THREE.DoubleSide,
+					shading: THREE.FlatShading
+				} )
+
+			) );
+
+			var options = chooseFromHash( mesh );
+
+			scene.add( mesh );
 
 			var prevFog = false;
 
@@ -93,10 +110,12 @@
 
 				requestAnimationFrame( render );
 
+				var time = Date.now() * 0.001;
+
 				if ( ! options.fixed ) {
 
-					group.rotation.x += 0.005;
-					group.rotation.y += 0.005;
+					mesh.rotation.x += 0.005;
+					mesh.rotation.y += 0.005;
 
 				}
 

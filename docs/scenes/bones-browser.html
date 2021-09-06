@@ -40,7 +40,7 @@
 
 		<script>
 
-			var gui, scene, camera, renderer, orbit, lights, mesh, bones, skeletonHelper;
+			var gui, scene, camera, renderer, orbit, ambientLight, lights, mesh, bones, skeletonHelper;
 
 			var state = {
 
@@ -59,11 +59,13 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.setClearColor( 0x000000, 1 );
 				document.body.appendChild( renderer.domElement );
 
 				orbit = new THREE.OrbitControls( camera, renderer.domElement );
 				orbit.enableZoom = false;
+
+				ambientLight = new THREE.AmbientLight( 0x000000 );
+				scene.add( ambientLight );
 
 				lights = [];
 				lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
@@ -118,7 +120,7 @@
 
 				return geometry;
 
-			}
+			};
 
 			function createBones ( sizing ) {
 
@@ -140,7 +142,7 @@
 
 				return bones;
 
-			}
+			};
 
 			function createMesh ( geometry, bones ) {
 
@@ -149,7 +151,7 @@
 					color: 0x156289,
 					emissive: 0x072534,
 					side: THREE.DoubleSide,
-					flatShading: true
+					shading: THREE.FlatShading
 				} );
 
 				var mesh = new THREE.SkinnedMesh( geometry,	material );
@@ -165,7 +167,7 @@
 
 				return mesh;
 
-			}
+			};
 
 			function setupDatGui () {
 
@@ -234,13 +236,16 @@
 				mesh.scale.multiplyScalar( 1 );
 				scene.add( mesh );
 
-			}
+			};
 
 			function render () {
 
 				requestAnimationFrame( render );
 
 				var time = Date.now() * 0.001;
+
+				var bone = mesh;
+
 
 				//Wiggle the bones
 				if ( state.animateBones ) {
@@ -253,9 +258,11 @@
 
 				}
 
+				skeletonHelper.update();
+
 				renderer.render( scene, camera );
 
-			}
+			};
 
 			initScene();
 			render();

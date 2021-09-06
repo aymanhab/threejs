@@ -1,5 +1,5 @@
 /*
- * Cloth Simulation using a relaxed constraints solver
+ * Cloth Simulation using a relaxed constrains solver
  */
 
 // Suggested Readings
@@ -46,13 +46,13 @@ var lastTime;
 
 function plane( width, height ) {
 
-	return function ( u, v, target ) {
+	return function( u, v ) {
 
 		var x = ( u - 0.5 ) * width;
 		var y = ( v + 0.5 ) * height;
 		var z = 0;
 
-		target.set( x, y, z );
+		return new THREE.Vector3( x, y, z );
 
 	};
 
@@ -60,26 +60,20 @@ function plane( width, height ) {
 
 function Particle( x, y, z, mass ) {
 
-	this.position = new THREE.Vector3();
-	this.previous = new THREE.Vector3();
-	this.original = new THREE.Vector3();
+	this.position = clothFunction( x, y ); // position
+	this.previous = clothFunction( x, y ); // previous
+	this.original = clothFunction( x, y );
 	this.a = new THREE.Vector3( 0, 0, 0 ); // acceleration
 	this.mass = mass;
 	this.invMass = 1 / mass;
 	this.tmp = new THREE.Vector3();
 	this.tmp2 = new THREE.Vector3();
 
-	// init
-
-	clothFunction( x, y, this.position ); // position
-	clothFunction( x, y, this.previous ); // previous
-	clothFunction( x, y, this.original );
-
 }
 
 // Force -> Acceleration
 
-Particle.prototype.addForce = function ( force ) {
+Particle.prototype.addForce = function( force ) {
 
 	this.a.add(
 		this.tmp2.copy( force ).multiplyScalar( this.invMass )
@@ -88,9 +82,9 @@ Particle.prototype.addForce = function ( force ) {
 };
 
 
-// Performs Verlet integration
+// Performs verlet integration
 
-Particle.prototype.integrate = function ( timesq ) {
+Particle.prototype.integrate = function( timesq ) {
 
 	var newPos = this.tmp.subVectors( this.position, this.previous );
 	newPos.multiplyScalar( DRAG ).add( this.position );
@@ -107,7 +101,7 @@ Particle.prototype.integrate = function ( timesq ) {
 
 var diff = new THREE.Vector3();
 
-function satisfyConstraints( p1, p2, distance ) {
+function satisifyConstrains( p1, p2, distance ) {
 
 	diff.subVectors( p2.position, p1.position );
 	var currentDist = diff.length();
@@ -128,7 +122,7 @@ function Cloth( w, h ) {
 	this.h = h;
 
 	var particles = [];
-	var constraints = [];
+	var constrains = [];
 
 	var u, v;
 
@@ -151,13 +145,13 @@ function Cloth( w, h ) {
 
 		for ( u = 0; u < w; u ++ ) {
 
-			constraints.push( [
+			constrains.push( [
 				particles[ index( u, v ) ],
 				particles[ index( u, v + 1 ) ],
 				restDistance
 			] );
 
-			constraints.push( [
+			constrains.push( [
 				particles[ index( u, v ) ],
 				particles[ index( u + 1, v ) ],
 				restDistance
@@ -169,7 +163,7 @@ function Cloth( w, h ) {
 
 	for ( u = w, v = 0; v < h; v ++ ) {
 
-		constraints.push( [
+		constrains.push( [
 			particles[ index( u, v ) ],
 			particles[ index( u, v + 1 ) ],
 			restDistance
@@ -180,7 +174,7 @@ function Cloth( w, h ) {
 
 	for ( v = h, u = 0; u < w; u ++ ) {
 
-		constraints.push( [
+		constrains.push( [
 			particles[ index( u, v ) ],
 			particles[ index( u + 1, v ) ],
 			restDistance
@@ -189,8 +183,8 @@ function Cloth( w, h ) {
 	}
 
 
-	// While many systems use shear and bend springs,
-	// the relaxed constraints model seems to be just fine
+	// While many system uses shear and bend springs,
+	// the relax constrains model seem to be just fine
 	// using structural springs.
 	// Shear
 	// var diagonalDist = Math.sqrt(restDistance * restDistance * 2);
@@ -199,13 +193,13 @@ function Cloth( w, h ) {
 	// for (v=0;v<h;v++) {
 	// 	for (u=0;u<w;u++) {
 
-	// 		constraints.push([
+	// 		constrains.push([
 	// 			particles[index(u, v)],
 	// 			particles[index(u+1, v+1)],
 	// 			diagonalDist
 	// 		]);
 
-	// 		constraints.push([
+	// 		constrains.push([
 	// 			particles[index(u+1, v)],
 	// 			particles[index(u, v+1)],
 	// 			diagonalDist
@@ -216,7 +210,7 @@ function Cloth( w, h ) {
 
 
 	this.particles = particles;
-	this.constraints = constraints;
+	this.constrains = constrains;
 
 	function index( u, v ) {
 
@@ -237,29 +231,25 @@ function simulate( time ) {
 
 	}
 
-	var i, il, particles, particle, pt, constraints, constraint;
+	var i, il, particles, particle, pt, constrains, constrain;
 
 	// Aerodynamics forces
 
 	if ( wind ) {
 
-		var indx;
-		var normal = new THREE.Vector3();
-		var indices = clothGeometry.index;
-		var normals = clothGeometry.attributes.normal;
+		var face, faces = clothGeometry.faces, normal;
 
 		particles = cloth.particles;
 
-		for ( i = 0, il = indices.count; i < il; i += 3 ) {
+		for ( i = 0, il = faces.length; i < il; i ++ ) {
 
-			for ( j = 0; j < 3; j ++ ) {
+			face = faces[ i ];
+			normal = face.normal;
 
-				indx = indices.getX( i + j );
-				normal.fromBufferAttribute( normals, indx )
-				tmpForce.copy( normal ).normalize().multiplyScalar( normal.dot( windForce ) );
-				particles[ indx ].addForce( tmpForce );
-
-			}
+			tmpForce.copy( normal ).normalize().multiplyScalar( normal.dot( windForce ) );
+			particles[ face.a ].addForce( tmpForce );
+			particles[ face.b ].addForce( tmpForce );
+			particles[ face.c ].addForce( tmpForce );
 
 		}
 
@@ -274,21 +264,21 @@ function simulate( time ) {
 
 	}
 
-	// Start Constraints
+	// Start Constrains
 
-	constraints = cloth.constraints;
-	il = constraints.length;
+	constrains = cloth.constrains;
+	il = constrains.length;
 
 	for ( i = 0; i < il; i ++ ) {
 
-		constraint = constraints[ i ];
-		satisfyConstraints( constraint[ 0 ], constraint[ 1 ], constraint[ 2 ] );
+		constrain = constrains[ i ];
+		satisifyConstrains( constrain[ 0 ], constrain[ 1 ], constrain[ 2 ] );
 
 	}
 
-	// Ball Constraints
+	// Ball Constrains
 
-	ballPosition.z = - Math.sin( Date.now() / 600 ) * 90; //+ 40;
+	ballPosition.z = - Math.sin( Date.now() / 600 ) * 90 ; //+ 40;
 	ballPosition.x = Math.cos( Date.now() / 400 ) * 70;
 
 	if ( sphere.visible ) {
@@ -296,7 +286,7 @@ function simulate( time ) {
 		for ( particles = cloth.particles, i = 0, il = particles.length; i < il; i ++ ) {
 
 			particle = particles[ i ];
-			var pos = particle.position;
+			pos = particle.position;
 			diff.subVectors( pos, ballPosition );
 			if ( diff.length() < ballSize ) {
 
@@ -311,7 +301,7 @@ function simulate( time ) {
 	}
 
 
-	// Floor Constraints
+	// Floor Constains
 
 	for ( particles = cloth.particles, i = 0, il = particles.length; i < il; i ++ ) {
 
@@ -325,7 +315,7 @@ function simulate( time ) {
 
 	}
 
-	// Pin Constraints
+	// Pin Constrains
 
 	for ( i = 0, il = pins.length; i < il; i ++ ) {
 

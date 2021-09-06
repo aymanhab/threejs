@@ -5,52 +5,42 @@
  * @author zz85 / http://www.lab4games.net/zz85/blog
  */
 
-function Vector2( x, y ) {
+THREE.Vector2 = function ( x, y ) {
 
 	this.x = x || 0;
 	this.y = y || 0;
 
-}
+};
 
-Object.defineProperties( Vector2.prototype, {
+THREE.Vector2.prototype = {
 
-	"width": {
+	constructor: THREE.Vector2,
 
-		get: function () {
+	get width() {
 
-			return this.x;
-
-		},
-
-		set: function ( value ) {
-
-			this.x = value;
-
-		}
+		return this.x;
 
 	},
 
-	"height": {
+	set width( value ) {
 
-		get: function () {
+		this.x = value;
 
-			return this.y;
+	},
 
-		},
+	get height() {
 
-		set: function ( value ) {
+		return this.y;
 
-			this.y = value;
+	},
 
-		}
+	set height( value ) {
 
-	}
+		this.y = value;
 
-} );
+	},
 
-Object.assign( Vector2.prototype, {
-
-	isVector2: true,
+	//
 
 	set: function ( x, y ) {
 
@@ -95,8 +85,6 @@ Object.assign( Vector2.prototype, {
 			default: throw new Error( 'index is out of range: ' + index );
 
 		}
-
-		return this;
 
 	},
 
@@ -215,8 +203,17 @@ Object.assign( Vector2.prototype, {
 
 	multiplyScalar: function ( scalar ) {
 
-		this.x *= scalar;
-		this.y *= scalar;
+		if ( isFinite( scalar ) ) {
+
+			this.x *= scalar;
+			this.y *= scalar;
+
+		} else {
+
+			this.x = 0;
+			this.y = 0;
+
+		}
 
 		return this;
 
@@ -234,18 +231,6 @@ Object.assign( Vector2.prototype, {
 	divideScalar: function ( scalar ) {
 
 		return this.multiplyScalar( 1 / scalar );
-
-	},
-
-	applyMatrix3: function ( m ) {
-
-		var x = this.x, y = this.y;
-		var e = m.elements;
-
-		this.x = e[ 0 ] * x + e[ 3 ] * y + e[ 6 ];
-		this.y = e[ 1 ] * x + e[ 4 ] * y + e[ 7 ];
-
-		return this;
 
 	},
 
@@ -269,7 +254,7 @@ Object.assign( Vector2.prototype, {
 
 	clamp: function ( min, max ) {
 
-		// assumes min < max, componentwise
+		// This function assumes min < max, if this assumption isn't true it will not operate correctly
 
 		this.x = Math.max( min.x, Math.min( max.x, this.x ) );
 		this.y = Math.max( min.y, Math.min( max.y, this.y ) );
@@ -280,10 +265,16 @@ Object.assign( Vector2.prototype, {
 
 	clampScalar: function () {
 
-		var min = new Vector2();
-		var max = new Vector2();
+		var min, max;
 
 		return function clampScalar( minVal, maxVal ) {
+
+			if ( min === undefined ) {
+
+				min = new THREE.Vector2();
+				max = new THREE.Vector2();
+
+			}
 
 			min.set( minVal, minVal );
 			max.set( maxVal, maxVal );
@@ -298,7 +289,7 @@ Object.assign( Vector2.prototype, {
 
 		var length = this.length();
 
-		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
+		return this.multiplyScalar( Math.max( min, Math.min( max, length ) ) / length );
 
 	},
 
@@ -353,12 +344,6 @@ Object.assign( Vector2.prototype, {
 
 	},
 
-	cross: function ( v ) {
-
-		return this.x * v.y - this.y * v.x;
-
-	},
-
 	lengthSq: function () {
 
 		return this.x * this.x + this.y * this.y;
@@ -371,7 +356,7 @@ Object.assign( Vector2.prototype, {
 
 	},
 
-	manhattanLength: function () {
+	lengthManhattan: function() {
 
 		return Math.abs( this.x ) + Math.abs( this.y );
 
@@ -379,7 +364,7 @@ Object.assign( Vector2.prototype, {
 
 	normalize: function () {
 
-		return this.divideScalar( this.length() || 1 );
+		return this.divideScalar( this.length() );
 
 	},
 
@@ -408,15 +393,9 @@ Object.assign( Vector2.prototype, {
 
 	},
 
-	manhattanDistanceTo: function ( v ) {
-
-		return Math.abs( this.x - v.x ) + Math.abs( this.y - v.y );
-
-	},
-
 	setLength: function ( length ) {
 
-		return this.normalize().multiplyScalar( length );
+		return this.multiplyScalar( length / this.length() );
 
 	},
 
@@ -464,16 +443,14 @@ Object.assign( Vector2.prototype, {
 
 	},
 
-	fromBufferAttribute: function ( attribute, index, offset ) {
+	fromAttribute: function ( attribute, index, offset ) {
 
-		if ( offset !== undefined ) {
+		if ( offset === undefined ) offset = 0;
 
-			console.warn( 'THREE.Vector2: offset has been removed from .fromBufferAttribute().' );
+		index = index * attribute.itemSize + offset;
 
-		}
-
-		this.x = attribute.getX( index );
-		this.y = attribute.getY( index );
+		this.x = attribute.array[ index ];
+		this.y = attribute.array[ index + 1 ];
 
 		return this;
 
@@ -493,7 +470,4 @@ Object.assign( Vector2.prototype, {
 
 	}
 
-} );
-
-
-export { Vector2 };
+};

@@ -1,17 +1,17 @@
-import { Vector2 } from './Vector2.js';
-
 /**
  * @author bhouston / http://clara.io
  */
 
-function Box2( min, max ) {
+THREE.Box2 = function ( min, max ) {
 
-	this.min = ( min !== undefined ) ? min : new Vector2( + Infinity, + Infinity );
-	this.max = ( max !== undefined ) ? max : new Vector2( - Infinity, - Infinity );
+	this.min = ( min !== undefined ) ? min : new THREE.Vector2( + Infinity, + Infinity );
+	this.max = ( max !== undefined ) ? max : new THREE.Vector2( - Infinity, - Infinity );
 
-}
+};
 
-Object.assign( Box2.prototype, {
+THREE.Box2.prototype = {
+
+	constructor: THREE.Box2,
 
 	set: function ( min, max ) {
 
@@ -38,7 +38,7 @@ Object.assign( Box2.prototype, {
 
 	setFromCenterAndSize: function () {
 
-		var v1 = new Vector2();
+		var v1 = new THREE.Vector2();
 
 		return function setFromCenterAndSize( center, size ) {
 
@@ -84,29 +84,17 @@ Object.assign( Box2.prototype, {
 
 	},
 
-	getCenter: function ( target ) {
+	center: function ( optionalTarget ) {
 
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box2: .getCenter() target is now required' );
-			target = new Vector2();
-
-		}
-
-		return this.isEmpty() ? target.set( 0, 0 ) : target.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
+		var result = optionalTarget || new THREE.Vector2();
+		return result.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
 
 	},
 
-	getSize: function ( target ) {
+	size: function ( optionalTarget ) {
 
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box2: .getSize() target is now required' );
-			target = new Vector2();
-
-		}
-
-		return this.isEmpty() ? target.set( 0, 0 ) : target.subVectors( this.max, this.min );
+		var result = optionalTarget || new THREE.Vector2();
+		return result.subVectors( this.max, this.min );
 
 	},
 
@@ -139,31 +127,38 @@ Object.assign( Box2.prototype, {
 
 	containsPoint: function ( point ) {
 
-		return point.x < this.min.x || point.x > this.max.x ||
-			point.y < this.min.y || point.y > this.max.y ? false : true;
+		if ( point.x < this.min.x || point.x > this.max.x ||
+		     point.y < this.min.y || point.y > this.max.y ) {
+
+			return false;
+
+		}
+
+		return true;
 
 	},
 
 	containsBox: function ( box ) {
 
-		return this.min.x <= box.min.x && box.max.x <= this.max.x &&
-			this.min.y <= box.min.y && box.max.y <= this.max.y;
+		if ( ( this.min.x <= box.min.x ) && ( box.max.x <= this.max.x ) &&
+		     ( this.min.y <= box.min.y ) && ( box.max.y <= this.max.y ) ) {
+
+			return true;
+
+		}
+
+		return false;
 
 	},
 
-	getParameter: function ( point, target ) {
+	getParameter: function ( point, optionalTarget ) {
 
 		// This can potentially have a divide by zero if the box
 		// has a size dimension of 0.
 
-		if ( target === undefined ) {
+		var result = optionalTarget || new THREE.Vector2();
 
-			console.warn( 'THREE.Box2: .getParameter() target is now required' );
-			target = new Vector2();
-
-		}
-
-		return target.set(
+		return result.set(
 			( point.x - this.min.x ) / ( this.max.x - this.min.x ),
 			( point.y - this.min.y ) / ( this.max.y - this.min.y )
 		);
@@ -172,29 +167,29 @@ Object.assign( Box2.prototype, {
 
 	intersectsBox: function ( box ) {
 
-		// using 4 splitting planes to rule out intersections
+		// using 6 splitting planes to rule out intersections.
 
-		return box.max.x < this.min.x || box.min.x > this.max.x ||
-			box.max.y < this.min.y || box.min.y > this.max.y ? false : true;
+		if ( box.max.x < this.min.x || box.min.x > this.max.x ||
+		     box.max.y < this.min.y || box.min.y > this.max.y ) {
 
-	},
-
-	clampPoint: function ( point, target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box2: .clampPoint() target is now required' );
-			target = new Vector2();
+			return false;
 
 		}
 
-		return target.copy( point ).clamp( this.min, this.max );
+		return true;
+
+	},
+
+	clampPoint: function ( point, optionalTarget ) {
+
+		var result = optionalTarget || new THREE.Vector2();
+		return result.copy( point ).clamp( this.min, this.max );
 
 	},
 
 	distanceToPoint: function () {
 
-		var v1 = new Vector2();
+		var v1 = new THREE.Vector2();
 
 		return function distanceToPoint( point ) {
 
@@ -238,7 +233,4 @@ Object.assign( Box2.prototype, {
 
 	}
 
-} );
-
-
-export { Box2 };
+};

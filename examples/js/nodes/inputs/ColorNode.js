@@ -2,55 +2,15 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { InputNode } from '../core/InputNode.js';
-import { NodeUtils } from '../core/NodeUtils.js';
+THREE.ColorNode = function( color ) {
 
-function ColorNode( color, g, b ) {
+	THREE.InputNode.call( this, 'c', { share: false } );
 
-	InputNode.call( this, 'c' );
-
-	this.value = color instanceof THREE.Color ? color : new THREE.Color( color || 0, g, b );
-
-}
-
-ColorNode.prototype = Object.create( InputNode.prototype );
-ColorNode.prototype.constructor = ColorNode;
-ColorNode.prototype.nodeType = "Color";
-
-NodeUtils.addShortcuts( ColorNode.prototype, 'value', [ 'r', 'g', 'b' ] );
-
-ColorNode.prototype.generateReadonly = function ( builder, output, uuid, type, ns, needsUpdate ) {
-
-	return builder.format( "vec3( " + this.r + ", " + this.g + ", " + this.b + " )", type, output );
+	this.value = new THREE.Color( color || 0 );
 
 };
 
-ColorNode.prototype.copy = function ( source ) {
+THREE.ColorNode.prototype = Object.create( THREE.InputNode.prototype );
+THREE.ColorNode.prototype.constructor = THREE.ColorNode;
 
-	InputNode.prototype.copy.call( this, source );
-
-	this.value.copy( source );
-
-};
-
-ColorNode.prototype.toJSON = function ( meta ) {
-
-	var data = this.getJSONNode( meta );
-
-	if ( ! data ) {
-
-		data = this.createJSONNode( meta );
-
-		data.r = this.r;
-		data.g = this.g;
-		data.b = this.b;
-
-		if ( this.readonly === true ) data.readonly = true;
-
-	}
-
-	return data;
-
-};
-
-export { ColorNode };
+THREE.NodeMaterial.addShortcuts( THREE.ColorNode.prototype, 'value', [ 'r', 'g', 'b' ] );

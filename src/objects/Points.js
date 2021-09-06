@@ -1,37 +1,27 @@
-import { Sphere } from '../math/Sphere.js';
-import { Ray } from '../math/Ray.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Object3D } from '../core/Object3D.js';
-import { Vector3 } from '../math/Vector3.js';
-import { PointsMaterial } from '../materials/PointsMaterial.js';
-import { BufferGeometry } from '../core/BufferGeometry.js';
-
 /**
  * @author alteredq / http://alteredqualia.com/
  */
 
-function Points( geometry, material ) {
+THREE.Points = function ( geometry, material ) {
 
-	Object3D.call( this );
+	THREE.Object3D.call( this );
 
 	this.type = 'Points';
 
-	this.geometry = geometry !== undefined ? geometry : new BufferGeometry();
-	this.material = material !== undefined ? material : new PointsMaterial( { color: Math.random() * 0xffffff } );
+	this.geometry = geometry !== undefined ? geometry : new THREE.BufferGeometry();
+	this.material = material !== undefined ? material : new THREE.PointsMaterial( { color: Math.random() * 0xffffff } );
 
-}
+};
 
-Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
+THREE.Points.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
 
-	constructor: Points,
-
-	isPoints: true,
+	constructor: THREE.Points,
 
 	raycast: ( function () {
 
-		var inverseMatrix = new Matrix4();
-		var ray = new Ray();
-		var sphere = new Sphere();
+		var inverseMatrix = new THREE.Matrix4();
+		var ray = new THREE.Ray();
+		var sphere = new THREE.Sphere();
 
 		return function raycast( raycaster, intersects ) {
 
@@ -46,7 +36,6 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 			sphere.copy( geometry.boundingSphere );
 			sphere.applyMatrix4( matrixWorld );
-			sphere.radius += threshold;
 
 			if ( raycaster.ray.intersectsSphere( sphere ) === false ) return;
 
@@ -57,8 +46,7 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 			var localThreshold = threshold / ( ( this.scale.x + this.scale.y + this.scale.z ) / 3 );
 			var localThresholdSq = localThreshold * localThreshold;
-			var position = new Vector3();
-			var intersectPoint = new Vector3();
+			var position = new THREE.Vector3();
 
 			function testPoint( point, index ) {
 
@@ -66,7 +54,7 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 				if ( rayPointDistanceSq < localThresholdSq ) {
 
-					ray.closestPointToPoint( point, intersectPoint );
+					var intersectPoint = ray.closestPointToPoint( point );
 					intersectPoint.applyMatrix4( matrixWorld );
 
 					var distance = raycaster.ray.origin.distanceTo( intersectPoint );
@@ -88,7 +76,7 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 			}
 
-			if ( geometry.isBufferGeometry ) {
+			if ( geometry instanceof THREE.BufferGeometry ) {
 
 				var index = geometry.index;
 				var attributes = geometry.attributes;
@@ -143,6 +131,3 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 	}
 
 } );
-
-
-export { Points };

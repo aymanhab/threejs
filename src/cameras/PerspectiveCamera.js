@@ -1,7 +1,3 @@
-import { Camera } from './Camera.js';
-import { Object3D } from '../core/Object3D.js';
-import { _Math } from '../math/Math.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author greggman / http://games.greggman.com/
@@ -9,9 +5,9 @@ import { _Math } from '../math/Math.js';
  * @author tschw
  */
 
-function PerspectiveCamera( fov, aspect, near, far ) {
+THREE.PerspectiveCamera = function( fov, aspect, near, far ) {
 
-	Camera.call( this );
+	THREE.Camera.call( this );
 
 	this.type = 'PerspectiveCamera';
 
@@ -30,17 +26,15 @@ function PerspectiveCamera( fov, aspect, near, far ) {
 
 	this.updateProjectionMatrix();
 
-}
+};
 
-PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), {
+THREE.PerspectiveCamera.prototype = Object.assign( Object.create( THREE.Camera.prototype ), {
 
-	constructor: PerspectiveCamera,
+	constructor: THREE.PerspectiveCamera,
 
-	isPerspectiveCamera: true,
+	copy: function ( source ) {
 
-	copy: function ( source, recursive ) {
-
-		Camera.prototype.copy.call( this, source, recursive );
+		THREE.Camera.prototype.copy.call( this, source );
 
 		this.fov = source.fov;
 		this.zoom = source.zoom;
@@ -72,7 +66,7 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 		// see http://www.bobatkins.com/photography/technical/field_of_view.html
 		var vExtentSlope = 0.5 * this.getFilmHeight() / focalLength;
 
-		this.fov = _Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
+		this.fov = THREE.Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
 		this.updateProjectionMatrix();
 
 	},
@@ -82,7 +76,7 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 	 */
 	getFocalLength: function () {
 
-		var vExtentSlope = Math.tan( _Math.DEG2RAD * 0.5 * this.fov );
+		var vExtentSlope = Math.tan( THREE.Math.DEG2RAD * 0.5 * this.fov );
 
 		return 0.5 * this.getFilmHeight() / vExtentSlope;
 
@@ -90,8 +84,8 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 
 	getEffectiveFOV: function () {
 
-		return _Math.RAD2DEG * 2 * Math.atan(
-			Math.tan( _Math.DEG2RAD * 0.5 * this.fov ) / this.zoom );
+		return THREE.Math.RAD2DEG * 2 * Math.atan(
+				Math.tan( THREE.Math.DEG2RAD * 0.5 * this.fov ) / this.zoom );
 
 	},
 
@@ -148,40 +142,22 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 
 		this.aspect = fullWidth / fullHeight;
 
-		if ( this.view === null ) {
-
-			this.view = {
-				enabled: true,
-				fullWidth: 1,
-				fullHeight: 1,
-				offsetX: 0,
-				offsetY: 0,
-				width: 1,
-				height: 1
-			};
-
-		}
-
-		this.view.enabled = true;
-		this.view.fullWidth = fullWidth;
-		this.view.fullHeight = fullHeight;
-		this.view.offsetX = x;
-		this.view.offsetY = y;
-		this.view.width = width;
-		this.view.height = height;
+		this.view = {
+			fullWidth: fullWidth,
+			fullHeight: fullHeight,
+			offsetX: x,
+			offsetY: y,
+			width: width,
+			height: height
+		};
 
 		this.updateProjectionMatrix();
 
 	},
 
-	clearViewOffset: function () {
+	clearViewOffset: function() {
 
-		if ( this.view !== null ) {
-
-			this.view.enabled = false;
-
-		}
-
+		this.view = null;
 		this.updateProjectionMatrix();
 
 	},
@@ -189,13 +165,14 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 	updateProjectionMatrix: function () {
 
 		var near = this.near,
-			top = near * Math.tan( _Math.DEG2RAD * 0.5 * this.fov ) / this.zoom,
+			top = near * Math.tan(
+					THREE.Math.DEG2RAD * 0.5 * this.fov ) / this.zoom,
 			height = 2 * top,
 			width = this.aspect * height,
 			left = - 0.5 * width,
 			view = this.view;
 
-		if ( this.view !== null && this.view.enabled ) {
+		if ( view !== null ) {
 
 			var fullWidth = view.fullWidth,
 				fullHeight = view.fullHeight;
@@ -210,15 +187,14 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 		var skew = this.filmOffset;
 		if ( skew !== 0 ) left += near * skew / this.getFilmWidth();
 
-		this.projectionMatrix.makePerspective( left, left + width, top, top - height, near, this.far );
-
-		this.projectionMatrixInverse.getInverse( this.projectionMatrix );
+		this.projectionMatrix.makeFrustum(
+				left, left + width, top - height, top, near, this.far );
 
 	},
 
 	toJSON: function ( meta ) {
 
-		var data = Object3D.prototype.toJSON.call( this, meta );
+		var data = THREE.Object3D.prototype.toJSON.call( this, meta );
 
 		data.object.fov = this.fov;
 		data.object.zoom = this.zoom;
@@ -239,6 +215,3 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 	}
 
 } );
-
-
-export { PerspectiveCamera };

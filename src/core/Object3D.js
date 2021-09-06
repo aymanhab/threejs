@@ -1,12 +1,3 @@
-import { Quaternion } from '../math/Quaternion.js';
-import { Vector3 } from '../math/Vector3.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { EventDispatcher } from './EventDispatcher.js';
-import { Euler } from '../math/Euler.js';
-import { Layers } from './Layers.js';
-import { Matrix3 } from '../math/Matrix3.js';
-import { _Math } from '../math/Math.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author mikael emtinger / http://gomo.se/
@@ -15,13 +6,11 @@ import { _Math } from '../math/Math.js';
  * @author elephantatwork / www.elephantatwork.ch
  */
 
-var object3DId = 0;
+THREE.Object3D = function () {
 
-function Object3D() {
+	Object.defineProperty( this, 'id', { value: THREE.Object3DIdCount ++ } );
 
-	Object.defineProperty( this, 'id', { value: object3DId ++ } );
-
-	this.uuid = _Math.generateUUID();
+	this.uuid = THREE.Math.generateUUID();
 
 	this.name = '';
 	this.type = 'Object3D';
@@ -29,12 +18,12 @@ function Object3D() {
 	this.parent = null;
 	this.children = [];
 
-	this.up = Object3D.DefaultUp.clone();
+	this.up = THREE.Object3D.DefaultUp.clone();
 
-	var position = new Vector3();
-	var rotation = new Euler();
-	var quaternion = new Quaternion();
-	var scale = new Vector3( 1, 1, 1 );
+	var position = new THREE.Vector3();
+	var rotation = new THREE.Euler();
+	var quaternion = new THREE.Quaternion();
+	var scale = new THREE.Vector3( 1, 1, 1 );
 
 	function onRotationChange() {
 
@@ -53,40 +42,36 @@ function Object3D() {
 
 	Object.defineProperties( this, {
 		position: {
-			configurable: true,
 			enumerable: true,
 			value: position
 		},
 		rotation: {
-			configurable: true,
 			enumerable: true,
 			value: rotation
 		},
 		quaternion: {
-			configurable: true,
 			enumerable: true,
 			value: quaternion
 		},
 		scale: {
-			configurable: true,
 			enumerable: true,
 			value: scale
 		},
 		modelViewMatrix: {
-			value: new Matrix4()
+			value: new THREE.Matrix4()
 		},
 		normalMatrix: {
-			value: new Matrix3()
+			value: new THREE.Matrix3()
 		}
 	} );
 
-	this.matrix = new Matrix4();
-	this.matrixWorld = new Matrix4();
+	this.matrix = new THREE.Matrix4();
+	this.matrixWorld = new THREE.Matrix4();
 
-	this.matrixAutoUpdate = Object3D.DefaultMatrixAutoUpdate;
+	this.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
 	this.matrixWorldNeedsUpdate = false;
 
-	this.layers = new Layers();
+	this.layers = new THREE.Layers();
 	this.visible = true;
 
 	this.castShadow = false;
@@ -97,33 +82,18 @@ function Object3D() {
 
 	this.userData = {};
 
-}
+};
 
-Object3D.DefaultUp = new Vector3( 0, 1, 0 );
-Object3D.DefaultMatrixAutoUpdate = true;
+THREE.Object3D.DefaultUp = new THREE.Vector3( 0, 1, 0 );
+THREE.Object3D.DefaultMatrixAutoUpdate = true;
 
-Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
-
-	constructor: Object3D,
-
-	isObject3D: true,
-
-	onBeforeRender: function () {},
-	onAfterRender: function () {},
+Object.assign( THREE.Object3D.prototype, THREE.EventDispatcher.prototype, {
 
 	applyMatrix: function ( matrix ) {
 
 		this.matrix.multiplyMatrices( matrix, this.matrix );
 
 		this.matrix.decompose( this.position, this.quaternion, this.scale );
-
-	},
-
-	applyQuaternion: function ( q ) {
-
-		this.quaternion.premultiply( q );
-
-		return this;
 
 	},
 
@@ -162,7 +132,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		// rotate object on axis in object space
 		// axis is assumed to be normalized
 
-		var q1 = new Quaternion();
+		var q1 = new THREE.Quaternion();
 
 		return function rotateOnAxis( axis, angle ) {
 
@@ -176,29 +146,9 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	}(),
 
-	rotateOnWorldAxis: function () {
-
-		// rotate object on axis in world space
-		// axis is assumed to be normalized
-		// method assumes no rotated parent
-
-		var q1 = new Quaternion();
-
-		return function rotateOnWorldAxis( axis, angle ) {
-
-			q1.setFromAxisAngle( axis, angle );
-
-			this.quaternion.premultiply( q1 );
-
-			return this;
-
-		};
-
-	}(),
-
 	rotateX: function () {
 
-		var v1 = new Vector3( 1, 0, 0 );
+		var v1 = new THREE.Vector3( 1, 0, 0 );
 
 		return function rotateX( angle ) {
 
@@ -210,7 +160,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	rotateY: function () {
 
-		var v1 = new Vector3( 0, 1, 0 );
+		var v1 = new THREE.Vector3( 0, 1, 0 );
 
 		return function rotateY( angle ) {
 
@@ -222,7 +172,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	rotateZ: function () {
 
-		var v1 = new Vector3( 0, 0, 1 );
+		var v1 = new THREE.Vector3( 0, 0, 1 );
 
 		return function rotateZ( angle ) {
 
@@ -237,7 +187,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		// translate object by distance along axis in object space
 		// axis is assumed to be normalized
 
-		var v1 = new Vector3();
+		var v1 = new THREE.Vector3();
 
 		return function translateOnAxis( axis, distance ) {
 
@@ -253,7 +203,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	translateX: function () {
 
-		var v1 = new Vector3( 1, 0, 0 );
+		var v1 = new THREE.Vector3( 1, 0, 0 );
 
 		return function translateX( distance ) {
 
@@ -265,7 +215,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	translateY: function () {
 
-		var v1 = new Vector3( 0, 1, 0 );
+		var v1 = new THREE.Vector3( 0, 1, 0 );
 
 		return function translateY( distance ) {
 
@@ -277,7 +227,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	translateZ: function () {
 
-		var v1 = new Vector3( 0, 0, 1 );
+		var v1 = new THREE.Vector3( 0, 0, 1 );
 
 		return function translateZ( distance ) {
 
@@ -295,7 +245,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	worldToLocal: function () {
 
-		var m1 = new Matrix4();
+		var m1 = new THREE.Matrix4();
 
 		return function worldToLocal( vector ) {
 
@@ -307,50 +257,15 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	lookAt: function () {
 
-		// This method does not support objects having non-uniformly-scaled parent(s)
+		// This routine does not support objects with rotated and/or translated parent(s)
 
-		var q1 = new Quaternion();
-		var m1 = new Matrix4();
-		var target = new Vector3();
-		var position = new Vector3();
+		var m1 = new THREE.Matrix4();
 
-		return function lookAt( x, y, z ) {
+		return function lookAt( vector ) {
 
-			if ( x.isVector3 ) {
-
-				target.copy( x );
-
-			} else {
-
-				target.set( x, y, z );
-
-			}
-
-			var parent = this.parent;
-
-			this.updateWorldMatrix( true, false );
-
-			position.setFromMatrixPosition( this.matrixWorld );
-
-			if ( this.isCamera ) {
-
-				m1.lookAt( position, target, this.up );
-
-			} else {
-
-				m1.lookAt( target, position, this.up );
-
-			}
+			m1.lookAt( vector, this.position, this.up );
 
 			this.quaternion.setFromRotationMatrix( m1 );
-
-			if ( parent ) {
-
-				m1.extractRotation( parent.matrixWorld );
-				q1.setFromRotationMatrix( m1 );
-				this.quaternion.premultiply( q1.inverse() );
-
-			}
 
 		};
 
@@ -377,7 +292,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-		if ( ( object && object.isObject3D ) ) {
+		if ( object instanceof THREE.Object3D ) {
 
 			if ( object.parent !== null ) {
 
@@ -410,8 +325,6 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			}
 
-			return this;
-
 		}
 
 		var index = this.children.indexOf( object );
@@ -425,8 +338,6 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			this.children.splice( index, 1 );
 
 		}
-
-		return this;
 
 	},
 
@@ -463,40 +374,46 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	},
 
-	getWorldPosition: function ( target ) {
+	getWorldPosition: function ( optionalTarget ) {
 
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Object3D: .getWorldPosition() target is now required' );
-			target = new Vector3();
-
-		}
+		var result = optionalTarget || new THREE.Vector3();
 
 		this.updateMatrixWorld( true );
 
-		return target.setFromMatrixPosition( this.matrixWorld );
+		return result.setFromMatrixPosition( this.matrixWorld );
 
 	},
 
 	getWorldQuaternion: function () {
 
-		var position = new Vector3();
-		var scale = new Vector3();
+		var position = new THREE.Vector3();
+		var scale = new THREE.Vector3();
 
-		return function getWorldQuaternion( target ) {
+		return function getWorldQuaternion( optionalTarget ) {
 
-			if ( target === undefined ) {
-
-				console.warn( 'THREE.Object3D: .getWorldQuaternion() target is now required' );
-				target = new Quaternion();
-
-			}
+			var result = optionalTarget || new THREE.Quaternion();
 
 			this.updateMatrixWorld( true );
 
-			this.matrixWorld.decompose( position, target, scale );
+			this.matrixWorld.decompose( position, result, scale );
 
-			return target;
+			return result;
+
+		};
+
+	}(),
+
+	getWorldRotation: function () {
+
+		var quaternion = new THREE.Quaternion();
+
+		return function getWorldRotation( optionalTarget ) {
+
+			var result = optionalTarget || new THREE.Euler();
+
+			this.getWorldQuaternion( quaternion );
+
+			return result.setFromQuaternion( quaternion, this.rotation.order, false );
 
 		};
 
@@ -504,44 +421,38 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	getWorldScale: function () {
 
-		var position = new Vector3();
-		var quaternion = new Quaternion();
+		var position = new THREE.Vector3();
+		var quaternion = new THREE.Quaternion();
 
-		return function getWorldScale( target ) {
+		return function getWorldScale( optionalTarget ) {
 
-			if ( target === undefined ) {
-
-				console.warn( 'THREE.Object3D: .getWorldScale() target is now required' );
-				target = new Vector3();
-
-			}
+			var result = optionalTarget || new THREE.Vector3();
 
 			this.updateMatrixWorld( true );
 
-			this.matrixWorld.decompose( position, quaternion, target );
+			this.matrixWorld.decompose( position, quaternion, result );
 
-			return target;
+			return result;
 
 		};
 
 	}(),
 
-	getWorldDirection: function ( target ) {
+	getWorldDirection: function () {
 
-		if ( target === undefined ) {
+		var quaternion = new THREE.Quaternion();
 
-			console.warn( 'THREE.Object3D: .getWorldDirection() target is now required' );
-			target = new Vector3();
+		return function getWorldDirection( optionalTarget ) {
 
-		}
+			var result = optionalTarget || new THREE.Vector3();
 
-		this.updateMatrixWorld( true );
+			this.getWorldQuaternion( quaternion );
 
-		var e = this.matrixWorld.elements;
+			return result.set( 0, 0, 1 ).applyQuaternion( quaternion );
 
-		return target.set( e[ 8 ], e[ 9 ], e[ 10 ] ).normalize();
+		};
 
-	},
+	}(),
 
 	raycast: function () {},
 
@@ -599,9 +510,9 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	updateMatrixWorld: function ( force ) {
 
-		if ( this.matrixAutoUpdate ) this.updateMatrix();
+		if ( this.matrixAutoUpdate === true ) this.updateMatrix();
 
-		if ( this.matrixWorldNeedsUpdate || force ) {
+		if ( this.matrixWorldNeedsUpdate === true || force === true ) {
 
 			if ( this.parent === null ) {
 
@@ -621,49 +532,9 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		// update children
 
-		var children = this.children;
+		for ( var i = 0, l = this.children.length; i < l; i ++ ) {
 
-		for ( var i = 0, l = children.length; i < l; i ++ ) {
-
-			children[ i ].updateMatrixWorld( force );
-
-		}
-
-	},
-
-	updateWorldMatrix: function ( updateParents, updateChildren ) {
-
-		var parent = this.parent;
-
-		if ( updateParents === true && parent !== null ) {
-
-			parent.updateWorldMatrix( true, false );
-
-		}
-
-		if ( this.matrixAutoUpdate ) this.updateMatrix();
-
-		if ( this.parent === null ) {
-
-			this.matrixWorld.copy( this.matrix );
-
-		} else {
-
-			this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
-
-		}
-
-		// update children
-
-		if ( updateChildren === true ) {
-
-			var children = this.children;
-
-			for ( var i = 0, l = children.length; i < l; i ++ ) {
-
-				children[ i ].updateWorldMatrix( false, true );
-
-			}
+			this.children[ i ].updateMatrixWorld( force );
 
 		}
 
@@ -671,8 +542,8 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	toJSON: function ( meta ) {
 
-		// meta is a string when called from JSON.stringify
-		var isRootObject = ( meta === undefined || typeof meta === 'string' );
+		// meta is '' when called from JSON.stringify
+		var isRootObject = ( meta === undefined || meta === '' );
 
 		var output = {};
 
@@ -686,12 +557,11 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 				geometries: {},
 				materials: {},
 				textures: {},
-				images: {},
-				shapes: {}
+				images: {}
 			};
 
 			output.metadata = {
-				version: 4.5,
+				version: 4.4,
 				type: 'Object',
 				generator: 'Object3D.toJSON'
 			};
@@ -706,81 +576,36 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		object.type = this.type;
 
 		if ( this.name !== '' ) object.name = this.name;
+		if ( JSON.stringify( this.userData ) !== '{}' ) object.userData = this.userData;
 		if ( this.castShadow === true ) object.castShadow = true;
 		if ( this.receiveShadow === true ) object.receiveShadow = true;
 		if ( this.visible === false ) object.visible = false;
-		if ( this.frustumCulled === false ) object.frustumCulled = false;
-		if ( this.renderOrder !== 0 ) object.renderOrder = this.renderOrder;
-		if ( JSON.stringify( this.userData ) !== '{}' ) object.userData = this.userData;
 
-		object.layers = this.layers.mask;
 		object.matrix = this.matrix.toArray();
-
-		if ( this.matrixAutoUpdate === false ) object.matrixAutoUpdate = false;
 
 		//
 
-		function serialize( library, element ) {
+		if ( this.geometry !== undefined ) {
 
-			if ( library[ element.uuid ] === undefined ) {
+			if ( meta.geometries[ this.geometry.uuid ] === undefined ) {
 
-				library[ element.uuid ] = element.toJSON( meta );
-
-			}
-
-			return element.uuid;
-
-		}
-
-		if ( this.isMesh || this.isLine || this.isPoints ) {
-
-			object.geometry = serialize( meta.geometries, this.geometry );
-
-			var parameters = this.geometry.parameters;
-
-			if ( parameters !== undefined && parameters.shapes !== undefined ) {
-
-				var shapes = parameters.shapes;
-
-				if ( Array.isArray( shapes ) ) {
-
-					for ( var i = 0, l = shapes.length; i < l; i ++ ) {
-
-						var shape = shapes[ i ];
-
-						serialize( meta.shapes, shape );
-
-					}
-
-				} else {
-
-					serialize( meta.shapes, shapes );
-
-				}
+				meta.geometries[ this.geometry.uuid ] = this.geometry.toJSON( meta );
 
 			}
+
+			object.geometry = this.geometry.uuid;
 
 		}
 
 		if ( this.material !== undefined ) {
 
-			if ( Array.isArray( this.material ) ) {
+			if ( meta.materials[ this.material.uuid ] === undefined ) {
 
-				var uuids = [];
-
-				for ( var i = 0, l = this.material.length; i < l; i ++ ) {
-
-					uuids.push( serialize( meta.materials, this.material[ i ] ) );
-
-				}
-
-				object.material = uuids;
-
-			} else {
-
-				object.material = serialize( meta.materials, this.material );
+				meta.materials[ this.material.uuid ] = this.material.toJSON( meta );
 
 			}
+
+			object.material = this.material.uuid;
 
 		}
 
@@ -804,13 +629,11 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			var materials = extractFromCache( meta.materials );
 			var textures = extractFromCache( meta.textures );
 			var images = extractFromCache( meta.images );
-			var shapes = extractFromCache( meta.shapes );
 
 			if ( geometries.length > 0 ) output.geometries = geometries;
 			if ( materials.length > 0 ) output.materials = materials;
 			if ( textures.length > 0 ) output.textures = textures;
 			if ( images.length > 0 ) output.images = images;
-			if ( shapes.length > 0 ) output.shapes = shapes;
 
 		}
 
@@ -821,7 +644,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		// extract data from the cache hash
 		// remove metadata on each item
 		// and return as array
-		function extractFromCache( cache ) {
+		function extractFromCache ( cache ) {
 
 			var values = [];
 			for ( var key in cache ) {
@@ -861,7 +684,6 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		this.matrixAutoUpdate = source.matrixAutoUpdate;
 		this.matrixWorldNeedsUpdate = source.matrixWorldNeedsUpdate;
 
-		this.layers.mask = source.layers.mask;
 		this.visible = source.visible;
 
 		this.castShadow = source.castShadow;
@@ -889,5 +711,4 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 } );
 
-
-export { Object3D };
+THREE.Object3DIdCount = 0;

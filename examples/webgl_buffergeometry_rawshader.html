@@ -27,17 +27,17 @@
 				color: #ffffff;
 			}
 
-			#webglmessage a { color:#da0 }
+			#oldie a { color:#da0 }
 		</style>
 	</head>
 	<body>
 
 		<div id="container"></div>
-		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - raw shader demo</div>
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - raw shader demo</div>
 
 		<script src="../build/three.js"></script>
 
-		<script src="js/WebGL.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
 		<script id="vertexShader" type="x-shader/x-vertex">
@@ -88,11 +88,7 @@
 
 		<script>
 
-			if ( WEBGL.isWebGLAvailable() === false ) {
-
-				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
-
-			}
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
 
@@ -109,7 +105,6 @@
 				camera.position.z = 2;
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x101010 );
 
 				// geometry
 
@@ -117,29 +112,30 @@
 
 				var geometry = new THREE.BufferGeometry();
 
-				var positions = [];
-				var colors = [];
+				var vertices = new Float32Array( triangles * 3 * 3 );
 
-				for ( var i = 0; i < triangles; i ++ ) {
+				for ( var i = 0, l = triangles * 3 * 3; i < l; i += 3 ) {
 
-					positions.push( Math.random() - 0.5 );
-					positions.push( Math.random() - 0.5 );
-					positions.push( Math.random() - 0.5 );
-
-					colors.push( Math.random() * 255 );
-					colors.push( Math.random() * 255 );
-					colors.push( Math.random() * 255 );
-					colors.push( Math.random() * 255 );
+					vertices[ i     ] = Math.random() - 0.5;
+					vertices[ i + 1 ] = Math.random() - 0.5;
+					vertices[ i + 2 ] = Math.random() - 0.5;
 
 				}
 
-				var positionAttribute = new THREE.Float32BufferAttribute( positions, 3 );
-				var colorAttribute = new THREE.Uint8BufferAttribute( colors, 4 );
+				geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
-				colorAttribute.normalized = true; // this will map the buffer values to 0.0f - +1.0f in the shader
+				var colors = new Uint8Array( triangles * 3 * 4 );
 
-				geometry.addAttribute( 'position', positionAttribute );
-				geometry.addAttribute( 'color', colorAttribute );
+				for ( var i = 0, l = triangles * 3 * 4; i < l; i += 4 ) {
+
+					colors[ i     ] = Math.random() * 255;
+					colors[ i + 1 ] = Math.random() * 255;
+					colors[ i + 2 ] = Math.random() * 255;
+					colors[ i + 3 ] = Math.random() * 255;
+
+				}
+
+				geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 4, true ) );
 
 				// material
 
@@ -159,6 +155,7 @@
 				scene.add( mesh );
 
 				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0x101010 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
@@ -170,7 +167,7 @@
 
 			}
 
-			function onWindowResize() {
+			function onWindowResize( event ) {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();

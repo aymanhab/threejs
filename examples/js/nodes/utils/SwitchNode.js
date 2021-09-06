@@ -2,39 +2,37 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { Node } from '../core/Node.js';
+THREE.SwitchNode = function( node, components ) {
 
-function SwitchNode( node, components ) {
-
-	Node.call( this );
+	THREE.GLNode.call( this );
 
 	this.node = node;
 	this.components = components || 'x';
 
-}
+};
 
-SwitchNode.prototype = Object.create( Node.prototype );
-SwitchNode.prototype.constructor = SwitchNode;
-SwitchNode.prototype.nodeType = "Switch";
+THREE.SwitchNode.prototype = Object.create( THREE.GLNode.prototype );
+THREE.SwitchNode.prototype.constructor = THREE.SwitchNode;
 
-SwitchNode.prototype.getType = function ( builder ) {
+THREE.SwitchNode.prototype.getType = function( builder ) {
 
-	return builder.getTypeFromLength( this.components.length );
+	return builder.getFormatByLength( this.components.length );
 
 };
 
-SwitchNode.prototype.generate = function ( builder, output ) {
+THREE.SwitchNode.prototype.generate = function( builder, output ) {
 
-	var type = this.node.getType( builder ),
-		node = this.node.build( builder, type ),
-		inputLength = builder.getTypeLength( type ) - 1;
+	var type = this.node.getType( builder );
+	var inputLength = builder.getFormatLength( type ) - 1;
+
+	var node = this.node.build( builder, type );
 
 	if ( inputLength > 0 ) {
 
 		// get max length
 
-		var outputLength = 0,
-			components = builder.colorToVectorProperties( this.components );
+		var outputLength = 0;
+		var components = builder.colorToVector( this.components );
 
 		var i, len = components.length;
 
@@ -67,36 +65,8 @@ SwitchNode.prototype.generate = function ( builder, output ) {
 
 		// join
 
-		return builder.format( node, type, output );
+		return builder.format( node, type, output )
 
 	}
 
 };
-
-SwitchNode.prototype.copy = function ( source ) {
-
-	Node.prototype.copy.call( this, source );
-
-	this.node = source.node;
-	this.components = source.components;
-
-};
-
-SwitchNode.prototype.toJSON = function ( meta ) {
-
-	var data = this.getJSONNode( meta );
-
-	if ( ! data ) {
-
-		data = this.createJSONNode( meta );
-
-		data.node = this.node.toJSON( meta ).uuid;
-		data.components = this.components;
-
-	}
-
-	return data;
-
-};
-
-export { SwitchNode };

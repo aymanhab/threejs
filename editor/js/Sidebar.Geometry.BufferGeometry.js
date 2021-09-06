@@ -4,8 +4,6 @@
 
 Sidebar.Geometry.BufferGeometry = function ( editor ) {
 
-	var strings = editor.strings;
-
 	var signals = editor.signals;
 
 	var container = new UI.Row();
@@ -22,19 +20,14 @@ Sidebar.Geometry.BufferGeometry = function ( editor ) {
 			container.clear();
 			container.setDisplay( 'block' );
 
-			var text = new UI.Text( strings.getKey( 'sidebar/geometry/buffer_geometry/attributes' ) ).setWidth( '90px' );
-			container.add( text );
-
-			var container2 = new UI.Span().setDisplay( 'inline-block' ).setWidth( '160px' );
-			container.add( container2 );
-
 			var index = geometry.index;
 
 			if ( index !== null ) {
 
-				container2.add( new UI.Text( strings.getKey( 'sidebar/geometry/buffer_geometry/index' ) ).setWidth( '80px' ) );
-				container2.add( new UI.Text( ( index.count ).format() ).setFontSize( '12px' ) );
-				container2.add( new UI.Break() );
+				var panel = new UI.Row();
+				panel.add( new UI.Text( 'index' ).setWidth( '90px' ) );
+				panel.add( new UI.Text( ( index.count ).format() ).setFontSize( '12px' ) );
+				container.add( panel );
 
 			}
 
@@ -44,9 +37,10 @@ Sidebar.Geometry.BufferGeometry = function ( editor ) {
 
 				var attribute = attributes[ name ];
 
-				container2.add( new UI.Text( name ).setWidth( '80px' ) );
-				container2.add( new UI.Text( ( attribute.count ).format() + ' (' + attribute.itemSize + ')' ).setFontSize( '12px' ) );
-				container2.add( new UI.Break() );
+				var panel = new UI.Row();
+				panel.add( new UI.Text( name ).setWidth( '90px' ) );
+				panel.add( new UI.Text( ( attribute.count ).format() + ' (' + attribute.itemSize + ')' ).setFontSize( '12px' ) );
+				container.add( panel );
 
 			}
 

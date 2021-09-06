@@ -20,7 +20,7 @@ THREE.ShaderPass = function ( shader, textureID ) {
 
 		this.material = new THREE.ShaderMaterial( {
 
-			defines: Object.assign( {}, shader.defines ),
+			defines: shader.defines || {},
 			uniforms: this.uniforms,
 			vertexShader: shader.vertexShader,
 			fragmentShader: shader.fragmentShader
@@ -33,7 +33,6 @@ THREE.ShaderPass = function ( shader, textureID ) {
 	this.scene = new THREE.Scene();
 
 	this.quad = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), null );
-	this.quad.frustumCulled = false; // Avoid getting clipped
 	this.scene.add( this.quad );
 
 };

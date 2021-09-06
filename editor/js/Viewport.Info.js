@@ -5,7 +5,6 @@
 Viewport.Info = function ( editor ) {
 
 	var signals = editor.signals;
-	var strings = editor.strings;
 
 	var container = new UI.Panel();
 	container.setId( 'info' );
@@ -32,12 +31,9 @@ Viewport.Info = function ( editor ) {
 	var verticesText = new UI.Text( '0' ).setMarginLeft( '6px' );
 	var trianglesText = new UI.Text( '0' ).setMarginLeft( '6px' );
 
-	container.add( new UI.Text( strings.getKey( 'viewport/info/objects' ) ).setTextTransform( 'lowercase' ) );
-	container.add( objectsText, new UI.Break() );
-	container.add( new UI.Text( strings.getKey( 'viewport/info/vertices' ) ).setTextTransform( 'lowercase' ) );
-	container.add( verticesText, new UI.Break() );
-	container.add( new UI.Text( strings.getKey( 'viewport/info/triangles' ) ).setTextTransform( 'lowercase' ) );
-	container.add( trianglesText, new UI.Break() );
+	container.add( new UI.Text( 'objects' ), objectsText, new UI.Break() );
+	container.add( new UI.Text( 'vertices' ), verticesText, new UI.Break() );
+	container.add( new UI.Text( 'triangles' ), trianglesText, new UI.Break() );
 
 	signals.objectAdded.add( update );
 	signals.objectRemoved.add( update );
@@ -70,14 +66,14 @@ Viewport.Info = function ( editor ) {
 
 					} else if ( geometry instanceof THREE.BufferGeometry ) {
 
-						vertices += geometry.attributes.position.count;
-
 						if ( geometry.index !== null ) {
 
-							triangles += geometry.index.count / 3;
+							vertices += geometry.index.count * 3;
+							triangles += geometry.index.count;
 
 						} else {
 
+							vertices += geometry.attributes.position.count;
 							triangles += geometry.attributes.position.count / 3;
 
 						}
@@ -98,4 +94,4 @@ Viewport.Info = function ( editor ) {
 
 	return container;
 
-};
+}

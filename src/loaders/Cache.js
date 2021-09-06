@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-var Cache = {
+THREE.Cache = {
 
 	enabled: false,
 
@@ -41,6 +41,3 @@ var Cache = {
 	}
 
 };
-
-
-export { Cache };

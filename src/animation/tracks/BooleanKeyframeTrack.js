@@ -1,6 +1,3 @@
-import { InterpolateDiscrete } from '../../constants.js';
-import { KeyframeTrack } from '../KeyframeTrack.js';
-
 /**
  *
  * A Track of Boolean keyframe values.
@@ -11,20 +8,21 @@ import { KeyframeTrack } from '../KeyframeTrack.js';
  * @author tschw
  */
 
-function BooleanKeyframeTrack( name, times, values ) {
+THREE.BooleanKeyframeTrack = function ( name, times, values ) {
 
-	KeyframeTrack.call( this, name, times, values );
+	THREE.KeyframeTrack.call( this, name, times, values );
 
-}
+};
 
-BooleanKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
+THREE.BooleanKeyframeTrack.prototype =
+		Object.assign( Object.create( THREE.KeyframeTrack.prototype ), {
 
-	constructor: BooleanKeyframeTrack,
+	constructor: THREE.BooleanKeyframeTrack,
 
 	ValueTypeName: 'bool',
 	ValueBufferType: Array,
 
-	DefaultInterpolation: InterpolateDiscrete,
+	DefaultInterpolation: THREE.InterpolateDiscrete,
 
 	InterpolantFactoryMethodLinear: undefined,
 	InterpolantFactoryMethodSmooth: undefined
@@ -34,5 +32,3 @@ BooleanKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.pro
 	// computes "firstValue ^ isOdd( index )".
 
 } );
-
-export { BooleanKeyframeTrack };

@@ -1,6 +1,5 @@
 /**
  * @author mrdoob / http://mrdoob.com/
- * @author Mugen87 / https://github.com/Mugen87
  */
 
 THREE.PlayCanvasLoader = function ( manager ) {
@@ -17,20 +16,12 @@ THREE.PlayCanvasLoader.prototype = {
 
 		var scope = this;
 
-		var loader = new THREE.FileLoader( scope.manager );
-		loader.setPath( scope.path );
+		var loader = new THREE.XHRLoader( scope.manager );
 		loader.load( url, function ( text ) {
 
 			onLoad( scope.parse( JSON.parse( text ) ) );
 
 		}, onProgress, onError );
-
-	},
-
-	setPath: function ( value ) {
-
-		this.path = value;
-		return this;
 
 	},
 
@@ -40,37 +31,19 @@ THREE.PlayCanvasLoader.prototype = {
 
 			var attributes = {};
 
-			// create a buffer attribute for each array that contains vertex information
-
 			for ( var name in data ) {
 
-				var array = data[ name ];
+				var attribute = data[ name ];
 
-				var type = array.type;
-				var size = array.components;
+				var type = attribute.type;
+				var size = attribute.components;
 
-				var attribute;
+				var array;
 
-				switch ( type ) {
+				if ( type === 'float32' ) array = new Float32Array( attribute.data );
+				if ( array === undefined ) console.log( 'PlayCanvasLoader: TODO', type );
 
-					case 'float32':
-						attribute = new THREE.Float32BufferAttribute( array.data, size );
-						break;
-
-					case 'uint8':
-						attribute = new THREE.Uint8BufferAttribute( array.data, size );
-						break;
-
-					case 'uint16':
-						attribute = new THREE.Uint16BufferAttribute( array.data, size );
-						break;
-
-					default:
-						console.log( 'THREE.PlayCanvasLoader: Array type "%s" not yet supported.', type );
-
-				}
-
-				attributes[ name ] = attribute;
+				attributes[ name ] = new THREE.BufferAttribute( array, size );
 
 			}
 
@@ -80,11 +53,9 @@ THREE.PlayCanvasLoader.prototype = {
 
 		function parseMeshes( data ) {
 
-			// create buffer geometry
-
 			var geometry = new THREE.BufferGeometry();
 
-			geometry.setIndex( data.indices );
+			geometry.setIndex( new THREE.Uint16Attribute( data.indices, 1 ) );
 
 			var attributes = model.vertices[ data.vertices ]._attributes;
 
@@ -120,16 +91,15 @@ THREE.PlayCanvasLoader.prototype = {
 		function parseNodes( data ) {
 
 			var object = new THREE.Group();
+			object.name = data.name;
 
-			var geometries = data._geometries;
-
-			if ( geometries !== undefined ) {
+			if ( data._geometries !== undefined ) {
 
 				var material = new THREE.MeshPhongMaterial();
 
-				for ( var i = 0, l = geometries.length; i < l; i ++ ) {
+				for ( var i = 0; i < data._geometries.length; i ++ ) {
 
-					var geometry = geometries[ i ];
+					var geometry = data._geometries[ i ];
 
 					object.add( new THREE.Mesh( geometry, material ) );
 
@@ -137,18 +107,14 @@ THREE.PlayCanvasLoader.prototype = {
 
 			}
 
-			for ( var i = 0, l = data.rotation.length; i < l; i ++ ) {
+			for ( var i = 0; i < data.rotation.length; i ++ ) {
 
 				data.rotation[ i ] *= Math.PI / 180;
 
 			}
 
-			//
-
-			object.name = data.name;
-
 			object.position.fromArray( data.position );
-			object.quaternion.setFromEuler( new THREE.Euler().fromArray( data.rotation ) );
+			object.rotation.fromArray( data.rotation );
 			object.scale.fromArray( data.scale );
 
 			data._object = object;
@@ -157,39 +123,39 @@ THREE.PlayCanvasLoader.prototype = {
 
 		//
 
+		console.log( json );
+
 		var model = json.model;
 
-		for ( var i = 0, l = model.vertices.length; i < l; i ++ ) {
+		for ( var i = 0; i < model.vertices.length; i ++ ) {
 
 			parseVertices( model.vertices[ i ] );
 
 		}
 
-		for ( var i = 0, l = model.meshes.length; i < l; i ++ ) {
+		for ( var i = 0; i < model.meshes.length; i ++ ) {
 
 			parseMeshes( model.meshes[ i ] );
 
 		}
 
-		for ( var i = 0, l = model.meshInstances.length; i < l; i ++ ) {
+		for ( var i = 0; i < model.meshInstances.length; i ++ ) {
 
 			parseMeshInstances( model.meshInstances[ i ] );
 
 		}
 
-		for ( var i = 0, l = model.nodes.length; i < l; i ++ ) {
+		for ( var i = 0; i < model.nodes.length; i ++ ) {
 
 			parseNodes( model.nodes[ i ] );
 
 		}
 
-		// setup scene hierarchy
-
-		for ( var i = 0, l = model.parents.length; i < l; i ++ ) {
+		for ( var i = 0; i < model.parents.length; i ++ ) {
 
 			var parent = model.parents[ i ];
 
-			if ( parent === - 1 ) continue;
+			if ( parent === -1 ) continue;
 
 			model.nodes[ parent ]._object.add( model.nodes[ i ]._object );
 

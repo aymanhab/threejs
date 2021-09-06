@@ -2,90 +2,31 @@
  * @author sunag / http://www.sunag.com.br/
  */
 
-import { NodeMaterial } from '../materials/NodeMaterial.js';
-import { ScreenNode } from '../inputs/ScreenNode.js';
-
-function NodePass() {
+THREE.NodePass = function() {
 
 	THREE.ShaderPass.call( this );
 
-	this.name = "";
-	this.uuid = THREE.Math.generateUUID();
-
-	this.userData = {};
-
 	this.textureID = 'renderTexture';
 
-	this.input = new ScreenNode();
+	this.fragment = new THREE.RawNode( new THREE.ScreenNode() );
 
-	this.material = new NodeMaterial();
+	this.node = new THREE.NodeMaterial();
+	this.node.fragment = this.fragment;
 
-	this.needsUpdate = true;
-
-}
-
-NodePass.prototype = Object.create( THREE.ShaderPass.prototype );
-NodePass.prototype.constructor = NodePass;
-
-NodePass.prototype.render = function () {
-
-	if ( this.needsUpdate ) {
-
-		this.material.dispose();
-
-		this.material.fragment.value = this.input;
-
-		this.needsUpdate = false;
-
-	}
-
-	this.uniforms = this.material.uniforms;
-
-	THREE.ShaderPass.prototype.render.apply( this, arguments );
+	this.build();
 
 };
 
-NodePass.prototype.copy = function ( source ) {
+THREE.NodePass.prototype = Object.create( THREE.ShaderPass.prototype );
+THREE.NodePass.prototype.constructor = THREE.NodePass;
 
-	this.input = source.input;
+THREE.NodeMaterial.addShortcuts( THREE.NodePass.prototype, 'fragment', [ 'value' ] );
 
-};
+THREE.NodePass.prototype.build = function() {
 
-NodePass.prototype.toJSON = function ( meta ) {
+	this.node.build();
 
-	var isRootObject = ( meta === undefined || typeof meta === 'string' );
-
-	if ( isRootObject ) {
-
-		meta = {
-			nodes: {}
-		};
-
-	}
-
-	if ( meta && ! meta.passes ) meta.passes = {};
-
-	if ( ! meta.passes[ this.uuid ] ) {
-
-		var data = {};
-
-		data.uuid = this.uuid;
-		data.type = "NodePass";
-
-		meta.passes[ this.uuid ] = data;
-
-		if ( this.name !== "" ) data.name = this.name;
-
-		if ( JSON.stringify( this.userData ) !== '{}' ) data.userData = this.userData;
-
-		data.input = this.input.toJSON( meta ).uuid;
-
-	}
-
-	meta.pass = this.uuid;
-
-	return meta;
+	this.uniforms = this.node.uniforms;
+	this.material = this.node;
 
 };
-
-export { NodePass };

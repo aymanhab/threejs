@@ -14,9 +14,10 @@ var Player = function ( editor ) {
 	//
 
 	var player = new APP.Player();
-	container.dom.appendChild( player.dom );
 
 	window.addEventListener( 'resize', function () {
+
+		if ( player.dom === undefined ) return;
 
 		player.setSize( container.dom.clientWidth, container.dom.clientHeight );
 
@@ -30,6 +31,8 @@ var Player = function ( editor ) {
 		player.setSize( container.dom.clientWidth, container.dom.clientHeight );
 		player.play();
 
+		container.dom.appendChild( player.dom );
+
 	} );
 
 	signals.stopPlayer.add( function () {
@@ -37,7 +40,8 @@ var Player = function ( editor ) {
 		container.setDisplay( 'none' );
 
 		player.stop();
-		player.dispose();
+
+		container.dom.removeChild( player.dom );
 
 	} );
 

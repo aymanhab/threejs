@@ -1,20 +1,21 @@
-import { Interpolant } from '../Interpolant.js';
-
 /**
  * @author tschw
  */
 
-function LinearInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+THREE.LinearInterpolant = function(
+		parameterPositions, sampleValues, sampleSize, resultBuffer ) {
 
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+	THREE.Interpolant.call(
+			this, parameterPositions, sampleValues, sampleSize, resultBuffer );
 
-}
+};
 
-LinearInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+THREE.LinearInterpolant.prototype =
+		Object.assign( Object.create( THREE.Interpolant.prototype ), {
 
-	constructor: LinearInterpolant,
+	constructor: THREE.LinearInterpolant,
 
-	interpolate_: function ( i1, t0, t, t1 ) {
+	interpolate_: function( i1, t0, t, t1 ) {
 
 		var result = this.resultBuffer,
 			values = this.sampleValues,
@@ -39,6 +40,3 @@ LinearInterpolant.prototype = Object.assign( Object.create( Interpolant.prototyp
 	}
 
 } );
-
-
-export { LinearInterpolant };

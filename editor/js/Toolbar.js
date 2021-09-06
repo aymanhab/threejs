@@ -5,74 +5,59 @@
 var Toolbar = function ( editor ) {
 
 	var signals = editor.signals;
-	var strings = editor.strings;
 
 	var container = new UI.Panel();
 	container.setId( 'toolbar' );
-	container.setDisplay( 'none' );
 
 	var buttons = new UI.Panel();
 	container.add( buttons );
 
 	// translate / rotate / scale
 
-	var translate = new UI.Button( strings.getKey( 'toolbar/translate' ) );
-	translate.dom.className = 'Button selected';
-	translate.onClick( function () {
+	var translate = new UI.Button( 'translate ( w )' ).onClick( function () {
 
 		signals.transformModeChanged.dispatch( 'translate' );
 
 	} );
 	buttons.add( translate );
 
-	var rotate = new UI.Button( strings.getKey( 'toolbar/rotate' ) );
-	rotate.onClick( function () {
+	var rotate = new UI.Button( 'rotate ( e )' ).onClick( function () {
 
 		signals.transformModeChanged.dispatch( 'rotate' );
 
 	} );
 	buttons.add( rotate );
 
-	var scale = new UI.Button( strings.getKey( 'toolbar/scale' ) );
-	scale.onClick( function () {
+	var scale = new UI.Button( 'scale ( r )' ).onClick( function () {
 
 		signals.transformModeChanged.dispatch( 'scale' );
 
 	} );
 	buttons.add( scale );
 
-	var local = new UI.THREE.Boolean( false, strings.getKey( 'toolbar/local' ) );
-	local.onChange( function () {
+	// grid
 
-		signals.spaceChanged.dispatch( this.getValue() === true ? 'local' : 'world' );
+	var grid = new UI.Number( 25 ).setWidth( '40px' ).onChange( update );
+	buttons.add( new UI.Text( 'grid: ' ) );
+	buttons.add( grid );
 
-	} );
+	var snap = new UI.THREE.Boolean( false, 'snap' ).onChange( update );
+	buttons.add( snap );
+
+	var local = new UI.THREE.Boolean( false, 'local' ).onChange( update );
 	buttons.add( local );
 
-	//
+	var showGrid = new UI.THREE.Boolean( true, 'show' ).onChange( update );
+	buttons.add( showGrid );
 
-	signals.objectSelected.add( function ( object ) {
+	function update() {
 
-		container.setDisplay( object === null ? 'none' : '' );
+		signals.snapChanged.dispatch( snap.getValue() === true ? grid.getValue() : null );
+		signals.spaceChanged.dispatch( local.getValue() === true ? "local" : "world" );
+		signals.showGridChanged.dispatch( showGrid.getValue() );
 
-	} );
-
-	signals.transformModeChanged.add( function ( mode ) {
-
-		translate.dom.classList.remove( 'selected' );
-		rotate.dom.classList.remove( 'selected' );
-		scale.dom.classList.remove( 'selected' );
-
-		switch ( mode ) {
-
-			case 'translate': translate.dom.classList.add( 'selected' ); break;
-			case 'rotate': rotate.dom.classList.add( 'selected' ); break;
-			case 'scale': scale.dom.classList.add( 'selected' ); break;
-
-		}
-
-	} );
+	}
 
 	return container;
 
-};
+}

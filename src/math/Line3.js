@@ -1,18 +1,17 @@
-import { Vector3 } from './Vector3.js';
-import { _Math } from './Math.js';
-
 /**
  * @author bhouston / http://clara.io
  */
 
-function Line3( start, end ) {
+THREE.Line3 = function ( start, end ) {
 
-	this.start = ( start !== undefined ) ? start : new Vector3();
-	this.end = ( end !== undefined ) ? end : new Vector3();
+	this.start = ( start !== undefined ) ? start : new THREE.Vector3();
+	this.end = ( end !== undefined ) ? end : new THREE.Vector3();
 
-}
+};
 
-Object.assign( Line3.prototype, {
+THREE.Line3.prototype = {
+
+	constructor: THREE.Line3,
 
 	set: function ( start, end ) {
 
@@ -38,29 +37,17 @@ Object.assign( Line3.prototype, {
 
 	},
 
-	getCenter: function ( target ) {
+	center: function ( optionalTarget ) {
 
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Line3: .getCenter() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
+		var result = optionalTarget || new THREE.Vector3();
+		return result.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
 
 	},
 
-	delta: function ( target ) {
+	delta: function ( optionalTarget ) {
 
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Line3: .delta() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.subVectors( this.end, this.start );
+		var result = optionalTarget || new THREE.Vector3();
+		return result.subVectors( this.end, this.start );
 
 	},
 
@@ -76,23 +63,18 @@ Object.assign( Line3.prototype, {
 
 	},
 
-	at: function ( t, target ) {
+	at: function ( t, optionalTarget ) {
 
-		if ( target === undefined ) {
+		var result = optionalTarget || new THREE.Vector3();
 
-			console.warn( 'THREE.Line3: .at() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return this.delta( target ).multiplyScalar( t ).add( this.start );
+		return this.delta( result ).multiplyScalar( t ).add( this.start );
 
 	},
 
 	closestPointToPointParameter: function () {
 
-		var startP = new Vector3();
-		var startEnd = new Vector3();
+		var startP = new THREE.Vector3();
+		var startEnd = new THREE.Vector3();
 
 		return function closestPointToPointParameter( point, clampToLine ) {
 
@@ -106,7 +88,7 @@ Object.assign( Line3.prototype, {
 
 			if ( clampToLine ) {
 
-				t = _Math.clamp( t, 0, 1 );
+				t = THREE.Math.clamp( t, 0, 1 );
 
 			}
 
@@ -116,18 +98,13 @@ Object.assign( Line3.prototype, {
 
 	}(),
 
-	closestPointToPoint: function ( point, clampToLine, target ) {
+	closestPointToPoint: function ( point, clampToLine, optionalTarget ) {
 
 		var t = this.closestPointToPointParameter( point, clampToLine );
 
-		if ( target === undefined ) {
+		var result = optionalTarget || new THREE.Vector3();
 
-			console.warn( 'THREE.Line3: .closestPointToPoint() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return this.delta( target ).multiplyScalar( t ).add( this.start );
+		return this.delta( result ).multiplyScalar( t ).add( this.start );
 
 	},
 
@@ -146,7 +123,4 @@ Object.assign( Line3.prototype, {
 
 	}
 
-} );
-
-
-export { Line3 };
+};

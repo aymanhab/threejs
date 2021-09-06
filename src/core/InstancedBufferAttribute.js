@@ -1,45 +1,24 @@
-import { BufferAttribute } from './BufferAttribute.js';
-
 /**
  * @author benaadams / https://twitter.com/ben_a_adams
  */
 
-function InstancedBufferAttribute( array, itemSize, normalized, meshPerAttribute ) {
+THREE.InstancedBufferAttribute = function ( array, itemSize, meshPerAttribute ) {
 
-	if ( typeof ( normalized ) === 'number' ) {
-
-		meshPerAttribute = normalized;
-
-		normalized = false;
-
-		console.error( 'THREE.InstancedBufferAttribute: The constructor now expects normalized as the third argument.' );
-
-	}
-
-	BufferAttribute.call( this, array, itemSize, normalized );
+	THREE.BufferAttribute.call( this, array, itemSize );
 
 	this.meshPerAttribute = meshPerAttribute || 1;
 
-}
+};
 
-InstancedBufferAttribute.prototype = Object.assign( Object.create( BufferAttribute.prototype ), {
+THREE.InstancedBufferAttribute.prototype = Object.create( THREE.BufferAttribute.prototype );
+THREE.InstancedBufferAttribute.prototype.constructor = THREE.InstancedBufferAttribute;
 
-	constructor: InstancedBufferAttribute,
+THREE.InstancedBufferAttribute.prototype.copy = function ( source ) {
 
-	isInstancedBufferAttribute: true,
+	THREE.BufferAttribute.prototype.copy.call( this, source );
 
-	copy: function ( source ) {
+	this.meshPerAttribute = source.meshPerAttribute;
 
-		BufferAttribute.prototype.copy.call( this, source );
+	return this;
 
-		this.meshPerAttribute = source.meshPerAttribute;
-
-		return this;
-
-	}
-
-} );
-
-
-
-export { InstancedBufferAttribute };
+};

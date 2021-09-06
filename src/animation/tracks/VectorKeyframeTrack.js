@@ -1,5 +1,3 @@
-import { KeyframeTrack } from '../KeyframeTrack.js';
-
 /**
  *
  * A Track of vectored keyframe values.
@@ -10,15 +8,16 @@ import { KeyframeTrack } from '../KeyframeTrack.js';
  * @author tschw
  */
 
-function VectorKeyframeTrack( name, times, values, interpolation ) {
+THREE.VectorKeyframeTrack = function ( name, times, values, interpolation ) {
 
-	KeyframeTrack.call( this, name, times, values, interpolation );
+	THREE.KeyframeTrack.call( this, name, times, values, interpolation );
 
-}
+};
 
-VectorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
+THREE.VectorKeyframeTrack.prototype =
+		Object.assign( Object.create( THREE.KeyframeTrack.prototype ), {
 
-	constructor: VectorKeyframeTrack,
+	constructor: THREE.VectorKeyframeTrack,
 
 	ValueTypeName: 'vector'
 
@@ -27,5 +26,3 @@ VectorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prot
 	// DefaultInterpolation is inherited
 
 } );
-
-export { VectorKeyframeTrack };

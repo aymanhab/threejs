@@ -1,41 +1,36 @@
 /**
  * @author mrdoob / http://mrdoob.com/
- *
- * parameters = {
- *  color: <THREE.Color>
- * }
  */
 
-import { Material } from './Material.js';
-import { Color } from '../math/Color.js';
+THREE.ShadowMaterial = function () {
 
-function ShadowMaterial( parameters ) {
+	THREE.ShaderMaterial.call( this, {
+		uniforms: THREE.UniformsUtils.merge( [
+			THREE.UniformsLib[ "lights" ],
+			{
+				opacity: { value: 1.0 }
+			}
+		] ),
+		vertexShader: THREE.ShaderChunk[ 'shadow_vert' ],
+		fragmentShader: THREE.ShaderChunk[ 'shadow_frag' ]
+	} );
 
-	Material.call( this );
-
-	this.type = 'ShadowMaterial';
-
-	this.color = new Color( 0x000000 );
+	this.lights = true;
 	this.transparent = true;
 
-	this.setValues( parameters );
-
-}
-
-ShadowMaterial.prototype = Object.create( Material.prototype );
-ShadowMaterial.prototype.constructor = ShadowMaterial;
-
-ShadowMaterial.prototype.isShadowMaterial = true;
-
-ShadowMaterial.prototype.copy = function ( source ) {
-
-	Material.prototype.copy.call( this, source );
-
-	this.color.copy( source.color );
-
-	return this;
+	Object.defineProperties( this, {
+		opacity: {
+			enumerable: true,
+			get: function () {
+				return this.uniforms.opacity.value;
+			},
+			set: function ( value ) {
+				this.uniforms.opacity.value = value;
+			}
+		}
+	} );
 
 };
 
-
-export { ShadowMaterial };
+THREE.ShadowMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
+THREE.ShadowMaterial.prototype.constructor = THREE.ShadowMaterial;

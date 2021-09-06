@@ -1,23 +1,23 @@
-import { Interpolant } from '../Interpolant.js';
-import { Quaternion } from '../Quaternion.js';
-
 /**
  * Spherical linear unit quaternion interpolant.
  *
  * @author tschw
  */
 
-function QuaternionLinearInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+THREE.QuaternionLinearInterpolant = function(
+		parameterPositions, sampleValues, sampleSize, resultBuffer ) {
 
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+	THREE.Interpolant.call(
+			this, parameterPositions, sampleValues, sampleSize, resultBuffer );
 
-}
+};
 
-QuaternionLinearInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+THREE.QuaternionLinearInterpolant.prototype =
+		Object.assign( Object.create( THREE.Interpolant.prototype ), {
 
-	constructor: QuaternionLinearInterpolant,
+	constructor: THREE.QuaternionLinearInterpolant,
 
-	interpolate_: function ( i1, t0, t, t1 ) {
+	interpolate_: function( i1, t0, t, t1 ) {
 
 		var result = this.resultBuffer,
 			values = this.sampleValues,
@@ -29,7 +29,8 @@ QuaternionLinearInterpolant.prototype = Object.assign( Object.create( Interpolan
 
 		for ( var end = offset + stride; offset !== end; offset += 4 ) {
 
-			Quaternion.slerpFlat( result, 0, values, offset - stride, values, offset, alpha );
+			THREE.Quaternion.slerpFlat( result, 0,
+					values, offset - stride, values, offset, alpha );
 
 		}
 
@@ -38,6 +39,3 @@ QuaternionLinearInterpolant.prototype = Object.assign( Object.create( Interpolan
 	}
 
 } );
-
-
-export { QuaternionLinearInterpolant };

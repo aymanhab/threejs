@@ -1,36 +1,28 @@
-import { Light } from './Light.js';
-import { SpotLightShadow } from './SpotLightShadow.js';
-import { Object3D } from '../core/Object3D.js';
-
 /**
  * @author alteredq / http://alteredqualia.com/
  */
 
-function SpotLight( color, intensity, distance, angle, penumbra, decay ) {
+THREE.SpotLight = function ( color, intensity, distance, angle, penumbra, decay ) {
 
-	Light.call( this, color, intensity );
+	THREE.Light.call( this, color, intensity );
 
 	this.type = 'SpotLight';
 
-	this.position.copy( Object3D.DefaultUp );
+	this.position.set( 0, 1, 0 );
 	this.updateMatrix();
 
-	this.target = new Object3D();
+	this.target = new THREE.Object3D();
 
 	Object.defineProperty( this, 'power', {
 		get: function () {
-
 			// intensity = power per solid angle.
-			// ref: equation (17) from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
+			// ref: equation (17) from http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 			return this.intensity * Math.PI;
-
 		},
 		set: function ( power ) {
-
 			// intensity = power per solid angle.
-			// ref: equation (17) from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
+			// ref: equation (17) from http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 			this.intensity = power / Math.PI;
-
 		}
 	} );
 
@@ -39,19 +31,17 @@ function SpotLight( color, intensity, distance, angle, penumbra, decay ) {
 	this.penumbra = ( penumbra !== undefined ) ? penumbra : 0;
 	this.decay = ( decay !== undefined ) ? decay : 1;	// for physically correct lights, should be 2.
 
-	this.shadow = new SpotLightShadow();
+	this.shadow = new THREE.SpotLightShadow();
 
-}
+};
 
-SpotLight.prototype = Object.assign( Object.create( Light.prototype ), {
+THREE.SpotLight.prototype = Object.assign( Object.create( THREE.Light.prototype ), {
 
-	constructor: SpotLight,
-
-	isSpotLight: true,
+	constructor: THREE.SpotLight,
 
 	copy: function ( source ) {
 
-		Light.prototype.copy.call( this, source );
+		THREE.Light.prototype.copy.call( this, source );
 
 		this.distance = source.distance;
 		this.angle = source.angle;
@@ -67,6 +57,3 @@ SpotLight.prototype = Object.assign( Object.create( Light.prototype ), {
 	}
 
 } );
-
-
-export { SpotLight };

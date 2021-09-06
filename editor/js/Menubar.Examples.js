@@ -4,14 +4,12 @@
 
 Menubar.Examples = function ( editor ) {
 
-	var strings = editor.strings;
-
 	var container = new UI.Panel();
 	container.setClass( 'menu' );
 
 	var title = new UI.Panel();
 	title.setClass( 'title' );
-	title.setTextContent( strings.getKey( 'menubar/examples' ) );
+	title.setTextContent( 'Examples' );
 	container.add( title );
 
 	var options = new UI.Panel();
@@ -24,11 +22,10 @@ Menubar.Examples = function ( editor ) {
 		{ title: 'Arkanoid', file: 'arkanoid.app.json' },
 		{ title: 'Camera', file: 'camera.app.json' },
 		{ title: 'Particles', file: 'particles.app.json' },
-		{ title: 'Pong', file: 'pong.app.json' },
-		{ title: 'Shaders', file: 'shaders.app.json' }
+		{ title: 'Pong', file: 'pong.app.json' }
 	];
 
-	var loader = new THREE.FileLoader();
+	var loader = new THREE.XHRLoader();
 
 	for ( var i = 0; i < items.length; i ++ ) {
 
@@ -55,7 +52,7 @@ Menubar.Examples = function ( editor ) {
 			} );
 			options.add( option );
 
-		} )( i );
+		} )( i )
 
 	}
 

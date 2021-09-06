@@ -1,6 +1,3 @@
-import { Material } from './Material.js';
-import { Color } from '../math/Color.js';
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
@@ -15,13 +12,13 @@ import { Color } from '../math/Color.js';
  * }
  */
 
-function LineBasicMaterial( parameters ) {
+THREE.LineBasicMaterial = function ( parameters ) {
 
-	Material.call( this );
+	THREE.Material.call( this );
 
 	this.type = 'LineBasicMaterial';
 
-	this.color = new Color( 0xffffff );
+	this.color = new THREE.Color( 0xffffff );
 
 	this.linewidth = 1;
 	this.linecap = 'round';
@@ -31,16 +28,14 @@ function LineBasicMaterial( parameters ) {
 
 	this.setValues( parameters );
 
-}
+};
 
-LineBasicMaterial.prototype = Object.create( Material.prototype );
-LineBasicMaterial.prototype.constructor = LineBasicMaterial;
+THREE.LineBasicMaterial.prototype = Object.create( THREE.Material.prototype );
+THREE.LineBasicMaterial.prototype.constructor = THREE.LineBasicMaterial;
 
-LineBasicMaterial.prototype.isLineBasicMaterial = true;
+THREE.LineBasicMaterial.prototype.copy = function ( source ) {
 
-LineBasicMaterial.prototype.copy = function ( source ) {
-
-	Material.prototype.copy.call( this, source );
+	THREE.Material.prototype.copy.call( this, source );
 
 	this.color.copy( source.color );
 
@@ -51,6 +46,3 @@ LineBasicMaterial.prototype.copy = function ( source ) {
 	return this;
 
 };
-
-
-export { LineBasicMaterial };

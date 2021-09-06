@@ -10,7 +10,7 @@
  * @constructor
  */
 
-var SetMaterialValueCommand = function ( object, attributeName, newValue, materialSlot ) {
+var SetMaterialValueCommand = function ( object, attributeName, newValue ) {
 
 	Command.call( this );
 
@@ -19,12 +19,8 @@ var SetMaterialValueCommand = function ( object, attributeName, newValue, materi
 	this.updatable = true;
 
 	this.object = object;
-	if (this.object !== undefined)
-		this.material = this.editor.getObjectMaterial( object, materialSlot );
-
-	this.oldValue = ( this.material !== undefined ) ? this.material[ attributeName ] : undefined;
+	this.oldValue = ( object !== undefined ) ? object.material[ attributeName ] : undefined;
 	this.newValue = newValue;
-
 	this.attributeName = attributeName;
 
 };
@@ -33,21 +29,19 @@ SetMaterialValueCommand.prototype = {
 
 	execute: function () {
 
-		this.material[ this.attributeName ] = this.newValue;
-		this.material.needsUpdate = true;
-
+		this.object.material[ this.attributeName ] = this.newValue;
+		this.object.material.needsUpdate = true;
 		this.editor.signals.objectChanged.dispatch( this.object );
-		this.editor.signals.materialChanged.dispatch( this.material );
+		this.editor.signals.materialChanged.dispatch( this.object.material );
 
 	},
 
 	undo: function () {
 
-		this.material[ this.attributeName ] = this.oldValue;
-		this.material.needsUpdate = true;
-
+		this.object.material[ this.attributeName ] = this.oldValue;
+		this.object.material.needsUpdate = true;
 		this.editor.signals.objectChanged.dispatch( this.object );
-		this.editor.signals.materialChanged.dispatch( this.material );
+		this.editor.signals.materialChanged.dispatch( this.object.material );
 
 	},
 
@@ -78,7 +72,7 @@ SetMaterialValueCommand.prototype = {
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;
 		this.object = this.editor.objectByUuid( json.objectUuid );
-		this.material = this.object.material;
+
 	}
 
 };

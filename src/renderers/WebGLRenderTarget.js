@@ -1,8 +1,3 @@
-import { EventDispatcher } from '../core/EventDispatcher.js';
-import { Texture } from '../textures/Texture.js';
-import { LinearFilter } from '../constants.js';
-import { Vector4 } from '../math/Vector4.js';
-
 /**
  * @author szimek / https://github.com/szimek/
  * @author alteredq / http://alteredqualia.com/
@@ -14,34 +9,31 @@ import { Vector4 } from '../math/Vector4.js';
  * Texture parameters for an auto-generated target texture
  * depthBuffer/stencilBuffer: Booleans to indicate if we should generate these buffers
 */
-function WebGLRenderTarget( width, height, options ) {
+THREE.WebGLRenderTarget = function ( width, height, options ) {
+
+	this.uuid = THREE.Math.generateUUID();
 
 	this.width = width;
 	this.height = height;
 
-	this.scissor = new Vector4( 0, 0, width, height );
+	this.scissor = new THREE.Vector4( 0, 0, width, height );
 	this.scissorTest = false;
 
-	this.viewport = new Vector4( 0, 0, width, height );
+	this.viewport = new THREE.Vector4( 0, 0, width, height );
 
 	options = options || {};
 
-	this.texture = new Texture( undefined, undefined, options.wrapS, options.wrapT, options.magFilter, options.minFilter, options.format, options.type, options.anisotropy, options.encoding );
+	if ( options.minFilter === undefined ) options.minFilter = THREE.LinearFilter;
 
-	this.texture.generateMipmaps = options.generateMipmaps !== undefined ? options.generateMipmaps : false;
-	this.texture.minFilter = options.minFilter !== undefined ? options.minFilter : LinearFilter;
+	this.texture = new THREE.Texture( undefined, undefined, options.wrapS, options.wrapT, options.magFilter, options.minFilter, options.format, options.type, options.anisotropy, options.encoding );
 
 	this.depthBuffer = options.depthBuffer !== undefined ? options.depthBuffer : true;
 	this.stencilBuffer = options.stencilBuffer !== undefined ? options.stencilBuffer : true;
-	this.depthTexture = options.depthTexture !== undefined ? options.depthTexture : null;
+	this.depthTexture = null;
 
-}
+};
 
-WebGLRenderTarget.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
-
-	constructor: WebGLRenderTarget,
-
-	isWebGLRenderTarget: true,
+Object.assign( THREE.WebGLRenderTarget.prototype, THREE.EventDispatcher.prototype, {
 
 	setSize: function ( width, height ) {
 
@@ -89,6 +81,3 @@ WebGLRenderTarget.prototype = Object.assign( Object.create( EventDispatcher.prot
 	}
 
 } );
-
-
-export { WebGLRenderTarget };

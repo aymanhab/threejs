@@ -8,10 +8,11 @@
  * @param script javascript object
  * @param attributeName string
  * @param newValue string, object
+ * @param cursorPosition javascript object with format {line: 2, ch: 3}
  * @constructor
  */
 
-var SetScriptValueCommand = function ( object, script, attributeName, newValue ) {
+var SetScriptValueCommand = function ( object, script, attributeName, newValue, cursorPosition ) {
 
 	Command.call( this );
 
@@ -25,6 +26,7 @@ var SetScriptValueCommand = function ( object, script, attributeName, newValue )
 	this.attributeName = attributeName;
 	this.oldValue = ( script !== undefined ) ? script[ this.attributeName ] : undefined;
 	this.newValue = newValue;
+	this.cursorPosition = cursorPosition;
 
 };
 
@@ -35,6 +37,7 @@ SetScriptValueCommand.prototype = {
 		this.script[ this.attributeName ] = this.newValue;
 
 		this.editor.signals.scriptChanged.dispatch();
+		this.editor.signals.refreshScriptEditor.dispatch( this.object, this.script, this.cursorPosition );
 
 	},
 
@@ -43,11 +46,13 @@ SetScriptValueCommand.prototype = {
 		this.script[ this.attributeName ] = this.oldValue;
 
 		this.editor.signals.scriptChanged.dispatch();
+		this.editor.signals.refreshScriptEditor.dispatch( this.object, this.script, this.cursorPosition );
 
 	},
 
 	update: function ( cmd ) {
 
+		this.cursorPosition = cmd.cursorPosition;
 		this.newValue = cmd.newValue;
 
 	},
@@ -61,6 +66,7 @@ SetScriptValueCommand.prototype = {
 		output.attributeName = this.attributeName;
 		output.oldValue = this.oldValue;
 		output.newValue = this.newValue;
+		output.cursorPosition = this.cursorPosition;
 
 		return output;
 
@@ -75,6 +81,7 @@ SetScriptValueCommand.prototype = {
 		this.attributeName = json.attributeName;
 		this.object = this.editor.objectByUuid( json.objectUuid );
 		this.script = this.editor.scripts[ json.objectUuid ][ json.index ];
+		this.cursorPosition = json.cursorPosition;
 
 	}
 
