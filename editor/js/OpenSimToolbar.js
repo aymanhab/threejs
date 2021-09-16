@@ -7,9 +7,9 @@ var OpenSimToolbar = function ( editor ) {
 	var signals = editor.signals;
 
 	var container = new UI.Panel();
-	//container.setPaddingTop('10px');
+	container.setPaddingTop('50px');
     // This causes 3 columns of buttons:
-	container.dom.style.width = '120px';
+	container.dom.style.width = '30px';
 	container.setId( 'opensim_toolbar' );
 
 	var buttons = new UI.Panel();
