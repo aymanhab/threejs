@@ -1,17 +1,66 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { Line } from './Line.js';
+import { Vector3 } from '../math/Vector3.js';
+import { Float32BufferAttribute } from '../core/BufferAttribute.js';
 
-THREE.LineSegments = function ( geometry, material ) {
+const _start = new Vector3();
+const _end = new Vector3();
 
-	THREE.Line.call( this, geometry, material );
+function LineSegments( geometry, material ) {
+
+	Line.call( this, geometry, material );
 
 	this.type = 'LineSegments';
 
-};
+}
 
-THREE.LineSegments.prototype = Object.assign( Object.create( THREE.Line.prototype ), {
+LineSegments.prototype = Object.assign( Object.create( Line.prototype ), {
 
-	constructor: THREE.LineSegments
+	constructor: LineSegments,
+
+	isLineSegments: true,
+
+	computeLineDistances: function () {
+
+		const geometry = this.geometry;
+
+		if ( geometry.isBufferGeometry ) {
+
+			// we assume non-indexed geometry
+
+			if ( geometry.index === null ) {
+
+				const positionAttribute = geometry.attributes.position;
+				const lineDistances = [];
+
+				for ( let i = 0, l = positionAttribute.count; i < l; i += 2 ) {
+
+					_start.fromBufferAttribute( positionAttribute, i );
+					_end.fromBufferAttribute( positionAttribute, i + 1 );
+
+					lineDistances[ i ] = ( i === 0 ) ? 0 : lineDistances[ i - 1 ];
+					lineDistances[ i + 1 ] = lineDistances[ i ] + _start.distanceTo( _end );
+
+				}
+
+				geometry.setAttribute( 'lineDistance', new Float32BufferAttribute( lineDistances, 1 ) );
+
+			} else {
+
+				console.warn( 'THREE.LineSegments.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.' );
+
+			}
+
+		} else if ( geometry.isGeometry ) {
+
+			console.error( 'THREE.LineSegments.computeLineDistances() no longer supports THREE.Geometry. Use THREE.BufferGeometry instead.' );
+
+		}
+
+		return this;
+
+	}
 
 } );
+
+
+export { LineSegments };

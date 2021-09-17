@@ -1,6 +1,10 @@
+import { Material } from './Material.js';
+import { cloneUniforms } from '../renderers/shaders/UniformsUtils.js';
+
+import default_vertex from '../renderers/shaders/ShaderChunk/default_vertex.glsl.js';
+import default_fragment from '../renderers/shaders/ShaderChunk/default_fragment.glsl.js';
+
 /**
- * @author alteredq / http://alteredqualia.com/
- *
  * parameters = {
  *  defines: { "label" : "value" },
  *  uniforms: { "parameter1": { value: 1.0 }, "parameter2": { value2: 2 } },
@@ -19,17 +23,17 @@
  * }
  */
 
-THREE.ShaderMaterial = function ( parameters ) {
+function ShaderMaterial( parameters ) {
 
-	THREE.Material.call( this );
+	Material.call( this );
 
 	this.type = 'ShaderMaterial';
 
 	this.defines = {};
 	this.uniforms = {};
 
-	this.vertexShader = 'void main() {\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}';
-	this.fragmentShader = 'void main() {\n\tgl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );\n}';
+	this.vertexShader = default_vertex;
+	this.fragmentShader = default_fragment;
 
 	this.linewidth = 1;
 
@@ -60,6 +64,9 @@ THREE.ShaderMaterial = function ( parameters ) {
 	};
 
 	this.index0AttributeName = undefined;
+	this.uniformsNeedUpdate = false;
+
+	this.glslVersion = null;
 
 	if ( parameters !== undefined ) {
 
@@ -73,21 +80,23 @@ THREE.ShaderMaterial = function ( parameters ) {
 
 	}
 
-};
+}
 
-THREE.ShaderMaterial.prototype = Object.create( THREE.Material.prototype );
-THREE.ShaderMaterial.prototype.constructor = THREE.ShaderMaterial;
+ShaderMaterial.prototype = Object.create( Material.prototype );
+ShaderMaterial.prototype.constructor = ShaderMaterial;
 
-THREE.ShaderMaterial.prototype.copy = function ( source ) {
+ShaderMaterial.prototype.isShaderMaterial = true;
 
-	THREE.Material.prototype.copy.call( this, source );
+ShaderMaterial.prototype.copy = function ( source ) {
+
+	Material.prototype.copy.call( this, source );
 
 	this.fragmentShader = source.fragmentShader;
 	this.vertexShader = source.vertexShader;
 
-	this.uniforms = THREE.UniformsUtils.clone( source.uniforms );
+	this.uniforms = cloneUniforms( source.uniforms );
 
-	this.defines = source.defines;
+	this.defines = Object.assign( {}, source.defines );
 
 	this.wireframe = source.wireframe;
 	this.wireframeLinewidth = source.wireframeLinewidth;
@@ -100,20 +109,105 @@ THREE.ShaderMaterial.prototype.copy = function ( source ) {
 	this.morphTargets = source.morphTargets;
 	this.morphNormals = source.morphNormals;
 
-	this.extensions = source.extensions;
+	this.extensions = Object.assign( {}, source.extensions );
+
+	this.glslVersion = source.glslVersion;
 
 	return this;
 
 };
 
-THREE.ShaderMaterial.prototype.toJSON = function ( meta ) {
+ShaderMaterial.prototype.toJSON = function ( meta ) {
 
-	var data = THREE.Material.prototype.toJSON.call( this, meta );
+	const data = Material.prototype.toJSON.call( this, meta );
 
-	data.uniforms = this.uniforms;
+	data.glslVersion = this.glslVersion;
+	data.uniforms = {};
+
+	for ( const name in this.uniforms ) {
+
+		const uniform = this.uniforms[ name ];
+		const value = uniform.value;
+
+		if ( value && value.isTexture ) {
+
+			data.uniforms[ name ] = {
+				type: 't',
+				value: value.toJSON( meta ).uuid
+			};
+
+		} else if ( value && value.isColor ) {
+
+			data.uniforms[ name ] = {
+				type: 'c',
+				value: value.getHex()
+			};
+
+		} else if ( value && value.isVector2 ) {
+
+			data.uniforms[ name ] = {
+				type: 'v2',
+				value: value.toArray()
+			};
+
+		} else if ( value && value.isVector3 ) {
+
+			data.uniforms[ name ] = {
+				type: 'v3',
+				value: value.toArray()
+			};
+
+		} else if ( value && value.isVector4 ) {
+
+			data.uniforms[ name ] = {
+				type: 'v4',
+				value: value.toArray()
+			};
+
+		} else if ( value && value.isMatrix3 ) {
+
+			data.uniforms[ name ] = {
+				type: 'm3',
+				value: value.toArray()
+			};
+
+		} else if ( value && value.isMatrix4 ) {
+
+			data.uniforms[ name ] = {
+				type: 'm4',
+				value: value.toArray()
+			};
+
+		} else {
+
+			data.uniforms[ name ] = {
+				value: value
+			};
+
+			// note: the array variants v2v, v3v, v4v, m4v and tv are not supported so far
+
+		}
+
+	}
+
+	if ( Object.keys( this.defines ).length > 0 ) data.defines = this.defines;
+
 	data.vertexShader = this.vertexShader;
 	data.fragmentShader = this.fragmentShader;
+
+	const extensions = {};
+
+	for ( const key in this.extensions ) {
+
+		if ( this.extensions[ key ] === true ) extensions[ key ] = true;
+
+	}
+
+	if ( Object.keys( extensions ).length > 0 ) data.extensions = extensions;
 
 	return data;
 
 };
+
+
+export { ShaderMaterial };

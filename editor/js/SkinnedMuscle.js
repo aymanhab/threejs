@@ -1,7 +1,7 @@
 /**
  * @author Ayman Habib
  */
-THREE.SkinnedMuscle = function(geom, material, points, actives) {
+SkinnedMuscle = function(geom, material, points, actives) {
     // Create bones for uuids in geometryPath
     this.pathpoints = points;
     this.pathpointObjects = [];
@@ -38,15 +38,15 @@ THREE.SkinnedMuscle = function(geom, material, points, actives) {
     this.userData = 'NonEditable';
 };
 
-THREE.SkinnedMuscle.prototype = Object.create( THREE.SkinnedMesh.prototype );
-THREE.SkinnedMuscle.prototype.constructor = THREE.SkinnedMuscle;
+SkinnedMuscle.prototype = Object.create( THREE.SkinnedMesh.prototype );
+SkinnedMuscle.prototype.constructor = SkinnedMuscle;
 
-THREE.SkinnedMuscle.prototype.setColor = function (newColor) {
+SkinnedMuscle.prototype.setColor = function (newColor) {
 	this.material.color.setHex(newColor);
 	if (this.firstPointMaterial !== undefined)
         this.firstPointMaterial.color.setHex(newColor);
 };
-THREE.SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
+SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
 // if has pathpoints attribute then it's a muscle
 // Cycle through pathpoints, update their matrixworld
 // then set the position of the Bones from that
@@ -120,7 +120,7 @@ THREE.SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
     this.skeleton.update();
     THREE.SkinnedMesh.prototype.updateMatrixWorld.call( this, true );
 };
-THREE.SkinnedMuscle.prototype.setVisible = function ( newValue) {
+SkinnedMuscle.prototype.setVisible = function ( newValue) {
     this.visible = newValue;
     // Now repeat for the inner pathpoints under this muscle
     for (var p = 0; p < this.pathpoints.length; p++) {
@@ -128,7 +128,7 @@ THREE.SkinnedMuscle.prototype.setVisible = function ( newValue) {
             this.pathpointObjects[p].visible = newValue;
     }
 };
-THREE.SkinnedMuscle.prototype.togglePathPoints = function (newValue) {
+SkinnedMuscle.prototype.togglePathPoints = function (newValue) {
     for (var p = 0; p < this.pathpoints.length; p++) {
         if (this.actives[p])
             this.pathpointObjects[p].visible = newValue;

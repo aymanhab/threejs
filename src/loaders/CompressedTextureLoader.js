@@ -1,38 +1,45 @@
+import { LinearFilter } from '../constants.js';
+import { FileLoader } from './FileLoader.js';
+import { CompressedTexture } from '../textures/CompressedTexture.js';
+import { Loader } from './Loader.js';
+
 /**
- * @author mrdoob / http://mrdoob.com/
- *
  * Abstract Base class to block based textures loader (dds, pvr, ...)
+ *
+ * Sub classes have to implement the parse() method which will be used in load().
  */
 
-THREE.CompressedTextureLoader = function ( manager ) {
+function CompressedTextureLoader( manager ) {
 
-	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+	Loader.call( this, manager );
 
-	// override in sub classes
-	this._parser = null;
+}
 
-};
+CompressedTextureLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 
-Object.assign( THREE.CompressedTextureLoader.prototype, {
+	constructor: CompressedTextureLoader,
 
 	load: function ( url, onLoad, onProgress, onError ) {
 
-		var scope = this;
+		const scope = this;
 
-		var images = [];
+		const images = [];
 
-		var texture = new THREE.CompressedTexture();
-		texture.image = images;
+		const texture = new CompressedTexture();
 
-		var loader = new THREE.XHRLoader( this.manager );
+		const loader = new FileLoader( this.manager );
 		loader.setPath( this.path );
 		loader.setResponseType( 'arraybuffer' );
+		loader.setRequestHeader( this.requestHeader );
+		loader.setWithCredentials( scope.withCredentials );
+
+		let loaded = 0;
 
 		function loadTexture( i ) {
 
 			loader.load( url[ i ], function ( buffer ) {
 
-				var texDatas = scope._parser( buffer, true );
+				const texDatas = scope.parse( buffer, true );
 
 				images[ i ] = {
 					width: texDatas.width,
@@ -45,9 +52,9 @@ Object.assign( THREE.CompressedTextureLoader.prototype, {
 
 				if ( loaded === 6 ) {
 
-					if ( texDatas.mipmapCount === 1 )
-						texture.minFilter = THREE.LinearFilter;
+					if ( texDatas.mipmapCount === 1 ) texture.minFilter = LinearFilter;
 
+					texture.image = images;
 					texture.format = texDatas.format;
 					texture.needsUpdate = true;
 
@@ -61,9 +68,7 @@ Object.assign( THREE.CompressedTextureLoader.prototype, {
 
 		if ( Array.isArray( url ) ) {
 
-			var loaded = 0;
-
-			for ( var i = 0, il = url.length; i < il; ++ i ) {
+			for ( let i = 0, il = url.length; i < il; ++ i ) {
 
 				loadTexture( i );
 
@@ -75,17 +80,17 @@ Object.assign( THREE.CompressedTextureLoader.prototype, {
 
 			loader.load( url, function ( buffer ) {
 
-				var texDatas = scope._parser( buffer, true );
+				const texDatas = scope.parse( buffer, true );
 
 				if ( texDatas.isCubemap ) {
 
-					var faces = texDatas.mipmaps.length / texDatas.mipmapCount;
+					const faces = texDatas.mipmaps.length / texDatas.mipmapCount;
 
-					for ( var f = 0; f < faces; f ++ ) {
+					for ( let f = 0; f < faces; f ++ ) {
 
-						images[ f ] = { mipmaps : [] };
+						images[ f ] = { mipmaps: [] };
 
-						for ( var i = 0; i < texDatas.mipmapCount; i ++ ) {
+						for ( let i = 0; i < texDatas.mipmapCount; i ++ ) {
 
 							images[ f ].mipmaps.push( texDatas.mipmaps[ f * texDatas.mipmapCount + i ] );
 							images[ f ].format = texDatas.format;
@@ -95,6 +100,8 @@ Object.assign( THREE.CompressedTextureLoader.prototype, {
 						}
 
 					}
+
+					texture.image = images;
 
 				} else {
 
@@ -106,7 +113,7 @@ Object.assign( THREE.CompressedTextureLoader.prototype, {
 
 				if ( texDatas.mipmapCount === 1 ) {
 
-					texture.minFilter = THREE.LinearFilter;
+					texture.minFilter = LinearFilter;
 
 				}
 
@@ -121,13 +128,9 @@ Object.assign( THREE.CompressedTextureLoader.prototype, {
 
 		return texture;
 
-	},
-
-	setPath: function ( value ) {
-
-		this.path = value;
-		return this;
-
 	}
 
 } );
+
+
+export { CompressedTextureLoader };

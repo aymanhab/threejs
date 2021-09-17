@@ -1,60 +1,57 @@
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
+import { Command } from '../Command.js';
 
 /**
+ * @param editor Editor
  * @param object THREE.Object3D
  * @param attributeName string
  * @param newValue integer representing a hex color value
  * @constructor
  */
+class SetMaterialColorCommand extends Command {
 
-var SetMaterialColorCommand = function ( object, attributeName, newValue ) {
+	constructor( editor, object, attributeName, newValue, materialSlot ) {
 
-	Command.call( this );
+		super( editor );
 
 	this.type = 'SetMaterialColorCommand';
-	this.name = 'Set Material.' + attributeName;
+		this.name = `Set Material.${attributeName}`;
 	this.updatable = true;
 
 	this.object = object;
-	this.attributeName = attributeName;
-	this.oldValue = ( object !== undefined ) ? this.object.material[ this.attributeName ].getHex() : undefined;
+		this.material = ( this.object !== undefined ) ? this.editor.getObjectMaterial( object, materialSlot ) : undefined;
+
+	this.oldValue = ( this.material !== undefined ) ? this.material[ attributeName ].getHex() : undefined;
 	this.newValue = newValue;
 
-};
+	this.attributeName = attributeName;
 
-SetMaterialColorCommand.prototype = {
+	}
 
-	execute: function () {
-		if (this.object instanceof THREE.ArrowHelper){
-		     this.object.cone.material.color.setHex( this.newValue );
-		     this.object.line.material.color.setHex( this.newValue );
-		}
-		else {
-		     this.object.material[ this.attributeName ].setHex( this.newValue );
-		     this.editor.signals.materialChanged.dispatch( this.object.material );
-		}
+	execute() {
 
-	},
+		this.material[ this.attributeName ].setHex( this.newValue );
 
-	undo: function () {
+		this.editor.signals.materialChanged.dispatch( this.material );
 
-		this.object.material[ this.attributeName ].setHex( this.oldValue );
-		this.editor.signals.materialChanged.dispatch( this.object.material );
+	}
 
-	},
+	undo() {
 
-	update: function ( cmd ) {
+		this.material[ this.attributeName ].setHex( this.oldValue );
+
+		this.editor.signals.materialChanged.dispatch( this.material );
+
+	}
+
+	update( cmd ) {
 
 		this.newValue = cmd.newValue;
 
-	},
+	}
 
-	toJSON: function () {
+	toJSON() {
 
-		var output = Command.prototype.toJSON.call( this );
+		const output = super.toJSON( this );
 
 		output.objectUuid = this.object.uuid;
 		output.attributeName = this.attributeName;
@@ -63,17 +60,19 @@ SetMaterialColorCommand.prototype = {
 
 		return output;
 
-	},
+	}
 
-	fromJSON: function ( json ) {
+	fromJSON( json ) {
 
-		Command.prototype.fromJSON.call( this, json );
+		super.fromJSON( json );
 
 		this.object = this.editor.objectByUuid( json.objectUuid );
 		this.attributeName = json.attributeName;
 		this.oldValue = json.oldValue;
 		this.newValue = json.newValue;
-
+		this.material = this.object.material;
 	}
 
-};
+}
+
+export { SetMaterialColorCommand };

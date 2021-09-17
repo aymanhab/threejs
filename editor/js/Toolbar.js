@@ -1,63 +1,84 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { UIPanel, UIButton, UICheckbox } from './libs/ui.js';
 
-var Toolbar = function ( editor ) {
+function Toolbar( editor ) {
 
 	var signals = editor.signals;
+	var strings = editor.strings;
 
-	var container = new UI.Panel();
+	var container = new UIPanel();
 	container.setId( 'toolbar' );
-
-	var buttons = new UI.Panel();
-	container.add( buttons );
 
 	// translate / rotate / scale
 
-	var translate = new UI.Button( 'translate ( w )' ).onClick( function () {
+	var translateIcon = document.createElement( 'img' );
+	translateIcon.title = strings.getKey( 'toolbar/translate' );
+	translateIcon.src = 'images/translate.svg';
+
+	var translate = new UIButton();
+	translate.dom.className = 'Button selected';
+	translate.dom.appendChild( translateIcon );
+	translate.onClick( function () {
 
 		signals.transformModeChanged.dispatch( 'translate' );
 
 	} );
-	buttons.add( translate );
+	container.add( translate );
 
-	var rotate = new UI.Button( 'rotate ( e )' ).onClick( function () {
+	var rotateIcon = document.createElement( 'img' );
+	rotateIcon.title = strings.getKey( 'toolbar/rotate' );
+	rotateIcon.src = 'images/rotate.svg';
+
+	var rotate = new UIButton();
+	rotate.dom.appendChild( rotateIcon );
+	rotate.onClick( function () {
 
 		signals.transformModeChanged.dispatch( 'rotate' );
 
 	} );
-	buttons.add( rotate );
+	container.add( rotate );
 
-	var scale = new UI.Button( 'scale ( r )' ).onClick( function () {
+	var scaleIcon = document.createElement( 'img' );
+	scaleIcon.title = strings.getKey( 'toolbar/scale' );
+	scaleIcon.src = 'images/scale.svg';
+
+	var scale = new UIButton();
+	scale.dom.appendChild( scaleIcon );
+	scale.onClick( function () {
 
 		signals.transformModeChanged.dispatch( 'scale' );
 
 	} );
-	buttons.add( scale );
+	container.add( scale );
 
-	// grid
+	var local = new UICheckbox( false );
+	local.dom.title = strings.getKey( 'toolbar/local' );
+	local.onChange( function () {
 
-	var grid = new UI.Number( 25 ).setWidth( '40px' ).onChange( update );
-	buttons.add( new UI.Text( 'grid: ' ) );
-	buttons.add( grid );
+		signals.spaceChanged.dispatch( this.getValue() === true ? 'local' : 'world' );
 
-	var snap = new UI.THREE.Boolean( false, 'snap' ).onChange( update );
-	buttons.add( snap );
+	} );
+	container.add( local );
 
-	var local = new UI.THREE.Boolean( false, 'local' ).onChange( update );
-	buttons.add( local );
+	//
 
-	var showGrid = new UI.THREE.Boolean( true, 'show' ).onChange( update );
-	buttons.add( showGrid );
+	signals.transformModeChanged.add( function ( mode ) {
 
-	function update() {
+		translate.dom.classList.remove( 'selected' );
+		rotate.dom.classList.remove( 'selected' );
+		scale.dom.classList.remove( 'selected' );
 
-		signals.snapChanged.dispatch( snap.getValue() === true ? grid.getValue() : null );
-		signals.spaceChanged.dispatch( local.getValue() === true ? "local" : "world" );
-		signals.showGridChanged.dispatch( showGrid.getValue() );
+		switch ( mode ) {
 
-	}
+			case 'translate': translate.dom.classList.add( 'selected' ); break;
+			case 'rotate': rotate.dom.classList.add( 'selected' ); break;
+			case 'scale': scale.dom.classList.add( 'selected' ); break;
+
+		}
+
+	} );
 
 	return container;
 
 }
+
+export { Toolbar };

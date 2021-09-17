@@ -1,57 +1,56 @@
-/**
- * @author dforrer / https://github.com/dforrer
- * Developed as part of a project at University of Applied Sciences and Arts Northwestern Switzerland (www.fhnw.ch)
- */
+import { Command } from '../Command.js';
+import { ObjectLoader } from '../../../build/three.module.js';
 
 /**
+ * @param editor Editor
  * @param object THREE.Object3D
  * @constructor
  */
+class AddObjectCommand extends Command {
 
-var AddObjectCommand = function ( object ) {
+	constructor( editor, object ) {
 
-	Command.call( this );
+		super( editor );
 
 	this.type = 'AddObjectCommand';
 
 	this.object = object;
 	if ( object !== undefined ) {
 
-		this.name = 'Add Object: ' + object.name;
+			this.name = `Add Object: ${object.name}`;
 
 	}
 
-};
+	}
 
-AddObjectCommand.prototype = {
-
-	execute: function () {
+	execute() {
 
 		this.editor.addObject( this.object );
 		//this.editor.select( this.object );
 		this.object.updateMatrixWorld( true );
 
-	},
+	}
 
-	undo: function () {
+	undo() {
 
 		this.editor.removeObject( this.object );
 		this.editor.deselect();
 
-	},
+	}
 
-	toJSON: function () {
+	toJSON() {
 
-		var output = Command.prototype.toJSON.call( this );
+		const output = super.toJSON( this );
+
 		output.object = this.object.toJSON();
 
 		return output;
 
-	},
+	}
 
-	fromJSON: function ( json ) {
+	fromJSON( json ) {
 
-		Command.prototype.fromJSON.call( this, json );
+		super.fromJSON( json );
 
 		this.object = this.editor.objectByUuid( json.object.object.uuid );
 
@@ -64,4 +63,6 @@ AddObjectCommand.prototype = {
 
 	}
 
-};
+}
+
+export { AddObjectCommand };
