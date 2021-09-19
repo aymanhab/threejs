@@ -965,6 +965,25 @@ OpenSimEditor.prototype = {
 			sprite.position.set(50, 50, 0);
 
 			this.sceneOrtho.add(sprite);
+			// Repeat for OpenSim logo
+			var getOsimLogoTexture = function () {
+				var texture = new THREE.ImageUtils.loadTexture("OpenSimWatermarkOpaqueGrayscale128x128.png");
+				return texture;
+			};
+			var spriteOsimMaterial = new THREE.SpriteMaterial({
+						opacity: 0.9,
+						color: 0xffffff,
+						transparent: false, // TODO not necessary
+						// useScreenCoordinates: true, TODO deprecated
+						map: getOsimLogoTexture()}
+			);
+			spriteOsimMaterial.scaleByViewport = false;
+			spriteOsimMaterial.transparent = true;
+			var osimSprite = new THREE.Sprite(spriteOsimMaterial);
+			osimSprite.scale.set(32, 32, 1);
+			osimSprite.position.set(50, 100, 0);
+
+			this.sceneOrtho.add(osimSprite);
 		},
 	getModel: function () {
 		return editor.objectByUuid(this.currentModel);
