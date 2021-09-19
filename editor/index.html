@@ -183,6 +183,10 @@
 		<script src="js/libs/three.html.js"></script>
 
 		<script>
+			var builtins = {};
+			builtins[0]='model2354_walk.json';
+			builtins[1] = 'dPendulum.json';
+			builtins[2] = 'opensense.json';
 			function getParameterByName(name, url) {
 				if (!url) url = window.location.href;
 				name = name.replace(/[\[\]]/g, "\\$&");
@@ -208,7 +212,9 @@
 			document.body.appendChild(stats.domElement);
 
 			var editor = new OpenSimEditor();
-			editor.loadModel('../examples/models/opensim/model2354_walk.json')
+			var modNum = getParameterByName('mod');
+			var modFile = (modNum < 3)? builtins[modNum]:builtins[0];
+			editor.loadModel('../examples/models/opensim/'+modFile);
 			// Minimal ui, should move to a different file to avoid clutter
 			var VisualizerKnobs = function () {
 				// Backdrop
