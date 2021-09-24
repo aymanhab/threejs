@@ -1,5 +1,5 @@
 import { Command } from '../Command.js';
-
+import { CommandFactory } from './CommandFactory.js';
 /**
  * @param editor Editor
  * @param cmdArray array containing command objects
@@ -72,7 +72,7 @@ class MultiCmdsCommand extends Command {
 		const cmds = json.cmds;
 		for ( let i = 0; i < cmds.length; i ++ ) {
 
-			const cmd = new window[ cmds[ i ].type ]();	// creates a new object of type "json.type"
+			const cmd = CommandFactory.createCommand(cmds[ i ].type);	// creates a new object of type "json.type"
 			cmd.fromJSON( cmds[ i ] );
 			this.cmdArray.push( cmd );
 

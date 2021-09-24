@@ -532,7 +532,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 				break;
 			case 'GeometryPath':
-                //object = new SkinnedMuscle(getGeometry(data.geometry),  getMaterial( data.material ), data.points, data.active);
+                object = new SkinnedMuscle(getGeometry(data.geometry),  getMaterial( data.material ), data.points, data.active);
 
                 break;
 

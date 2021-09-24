@@ -31,7 +31,7 @@ function sendText(json) {
 }
 				
 async function onMessage(evt) {
-	console.log("received: " + evt.data);
+	// console.log("received: " + evt.data);
 	var msg = JSON.parse(evt.data);
 
 	switch(msg.Op){
@@ -94,9 +94,7 @@ async function onMessage(evt) {
 	case "execute":
 		//msg.command.object = editor.objectByUuid(msg.UUID);
 		if (msg.message_uuid !== last_message_uuid){
-            var cmd = eval("new " + msg.command.type + "()");
-			cmd.fromJSON(msg.command);
-			editor.execute(cmd);
+			editor.executeCommandJson(msg);
 			editor.refresh();
 			last_message_uuid = msg.message_uuid;
 		}

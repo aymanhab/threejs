@@ -17,6 +17,7 @@
  import { SetPositionCommand } from './commands/SetPositionCommand.js';
  import { SetRotationCommand } from './commands/SetRotationCommand.js';
  import { SetScaleCommand } from './commands/SetScaleCommand.js';
+ import { sendText } from '../websocket.js';
 
 function OpenSimViewport ( editor ) {
 

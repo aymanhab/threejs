@@ -7,6 +7,7 @@ import { History as _History } from './History.js';
 import { Strings } from './Strings.js';
 import { Storage as _Storage } from './Storage.js';
 import { sendText } from '../websocket.js';
+import { MultiCmdsCommand } from './commands/MultiCmdsCommand.js';
 
 var _DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 0.1, 10000 );
 _DEFAULT_CAMERA.name = 'Camera';
@@ -45,7 +46,7 @@ function OpenSimEditor () {
 	//this.cameraEye.name = 'CameraEye';
 
 	var Signal = signals.Signal;
-
+	
 	this.signals = {
 
 		// script
@@ -884,7 +885,7 @@ OpenSimEditor.prototype = {
 		var scope = this;
 		this.config.setKey('skybox', choice);
 		if (choice == 'nobackground') {
-			color = this.config.getKey('settings/backgroundcolor');
+			var color = this.config.getKey('settings/backgroundcolor');
 			this.scene.background = new THREE.Color(color);
 			this.signals.backgroundColorChanged.dispatch(this.scene.background.getHex());
 			return;
@@ -1377,7 +1378,20 @@ OpenSimEditor.prototype = {
         };
         this.reportframeTime = false;
         sendText(JSON.stringify(info));
-    }
+    },
+	executeCommandJson: function(json) {
+		var cmd = json.command.type;
+		switch (cmd) {
+			case 'MultiCmdsCommand':
+				var cmdObject = new MultiCmdsCommand(this);
+				cmdObject.fromJSON(json.command);
+				execute(cmdObject);
+				break;
+		
+			default:
+				break;
+		}
+	}
 
 };
 
