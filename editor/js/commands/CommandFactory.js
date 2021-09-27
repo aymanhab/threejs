@@ -8,6 +8,7 @@ import {RemoveObjectCommand} from './Commands.js';
 import {AddObjectCommand} from './Commands.js';
 import {SetMaterialColorCommand} from './Commands.js';
 import {SetMaterialValueCommand} from './Commands.js';
+import {SetPositionCommand} from './Commands.js';
 
 function CommandFactory() {
 
@@ -39,6 +40,9 @@ CommandFactory.prototype = {
                 return cmd;
             case 'SetMaterialValueCommand':
                 var cmd = new SetMaterialValueCommand(theEditor);
+                return cmd;
+            case 'SetPositionCommand':
+                var cmd = new SetPositionCommand(theEditor);
                 return cmd;
             default:
                 break;
