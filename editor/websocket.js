@@ -100,8 +100,7 @@ async function onMessage(evt) {
 		}
 		break; 
 	case "addModelObject":
-		cmd = new window[msg.command.type]();
-		cmd.fromJSON(msg.command);
+		editor.executeCommandJson(msg);
 		parentUuid = msg.command.object.object.parent;
 		editor.execute(cmd);
 		newUuid = cmd.object.uuid;
