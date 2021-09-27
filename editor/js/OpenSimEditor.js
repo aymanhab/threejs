@@ -1294,12 +1294,12 @@ OpenSimEditor.prototype = {
 		newMuscle.togglePathPoints(pathPointsOn);
 	},
     scaleGeometry: function (scaleJson) {
-        sceneObject = editor.objectByUuid(scaleJson.command.objectUuid);
-        geomObject = sceneObject.geometry;
-        if (geomObject instanceof THREE.SphereGeometry){
-            UUID = geomObject.uuid;
-            newRadius = msg.command.newScale[0];
-            newGeometry = new THREE.SphereGeometry(newRadius);
+        let sceneObject = editor.objectByUuid(scaleJson.command.objectUuid);
+        let geomObject = sceneObject.geometry;
+        if (geomObject.type === 'SphereGeometry'){
+            let UUID = geomObject.uuid;
+            let newRadius = scaleJson.command.newScale[0];
+            let newGeometry = new THREE.SphereGeometry(newRadius);
             newGeometry.uuid = UUID;
             sceneObject.geometry = newGeometry;
             this.signals.geometryChanged.dispatch(sceneObject);
