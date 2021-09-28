@@ -84,7 +84,7 @@ function ViewportInfo( editor ) {
 
 	}
 
-	signals.sceneRendered.add( updateFrametime );
+	///signals.sceneRendered.add( updateFrametime );
 
 	function updateFrametime( frametime ) {
 

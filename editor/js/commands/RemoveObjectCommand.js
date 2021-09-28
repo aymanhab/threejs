@@ -1,6 +1,7 @@
 import { Command } from '../Command.js';
 
 import { ObjectLoader } from '../../../build/three.module.js';
+import { OpenSimLoader } from '../OpenSimLoader.js';
 
 /**
  * @param editor Editor
@@ -70,7 +71,7 @@ class RemoveObjectCommand extends Command {
 
 		if ( this.object === undefined ) {
 
-			var loader = new THREE.OpenSimLoader();
+			var loader = new OpenSimLoader();
 			this.object = loader.parse( json.object );
 
 		}

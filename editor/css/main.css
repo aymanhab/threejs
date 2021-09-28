@@ -306,9 +306,9 @@ select {
 
 #viewport {
 	position: absolute;
-	top: 32px;
+	top: 0px;
 	left: 0;
-	right: 300px;
+	right: 0px;
 	bottom: 0;
 }
 
@@ -557,13 +557,6 @@ select {
 
 	#menubar .menu.right {
 		display: none;
-	}
-
-	#viewport {
-		left: 0;
-		right: 0;
-		top: 32px;
-		height: calc(100% - 352px);
 	}
 
 	#script {

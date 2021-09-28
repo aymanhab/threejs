@@ -1,17 +1,26 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import * as THREE from '../../build/three.module.js';
 
-var OpenSimEditor = function () {
+import { Config } from './Config.js';
+import { Loader } from './Loader.js';
+import { OpenSimLoader } from './OpenSimLoader.js';
+import { History as _History } from './History.js';
+import { Strings } from './Strings.js';
+import { Storage as _Storage } from './Storage.js';
+import { sendText } from '../websocket.js';
+import { MultiCmdsCommand } from './commands/MultiCmdsCommand.js';
+import { CommandFactory } from './commands/CommandFactory.js';
 
-	this.DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 0.1, 10000 );
-	this.DEFAULT_CAMERA.name = 'Camera';
-	this.DEFAULT_CAMERA.position.set( 20, 10, 20 );
-	this.DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
-	this.dolly_camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10000);
-	this.dolly_camera.name = 'DollyCamera';
-	this.dolly_camera.position.set(0, 0, 0);
-	this.dolly_camera.lookAt(new THREE.Vector3());
+var _DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 0.1, 10000 );
+_DEFAULT_CAMERA.name = 'Camera';
+_DEFAULT_CAMERA.position.set( 20, 10, 20 );
+_DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
+
+var dolly_camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10000);
+dolly_camera.name = 'DollyCamera';
+dolly_camera.position.set(0, 0, 0);
+dolly_camera.lookAt(new THREE.Vector3());
+
+function OpenSimEditor () {
 
 	this.dolly_object = new THREE.Object3D();
 	this.dolly_object.name = 'Dolly';
@@ -32,6 +41,8 @@ var OpenSimEditor = function () {
 	// types of objects that are graphically movable
 	var supportedOpenSimTypes = ["PathPoint", "Marker"];
     this.reportframeTime = false;
+	this.videoFormat = "webm";
+	this.frameRate = 30;
 	//this.cameraEye = new THREE.Mesh(new THREE.SphereGeometry(50), new THREE.MeshBasicMaterial({ color: 0xdddddd }));
 	//this.cameraEye.name = 'CameraEye';
 
@@ -107,27 +118,21 @@ var OpenSimEditor = function () {
 		hiresRender: new Signal(),
 		screenCaptureScaleupChanged: new Signal(),
 		captureFrame: new Signal(),
+		optionsChanged: new Signal(),
+		// ported from Editor.js v123
+		cameraAdded: new Signal(),
+		cameraRemoved: new Signal(),
+		rendererUpdated: new Signal(),
+		sceneRendered: new Signal(),
 	};
 
 	this.config = new Config( 'threejs-editor' );
-	this.history = new History( this );
-	this.storage = new Storage();
+	this.history = new _History( this );
+	this.storage = new _Storage();
 	this.strings = new Strings( this.config );
-	this.loader = new THREE.OpenSimLoader(this);
+	this.loader = new OpenSimLoader();
 
-	this.camera = this.DEFAULT_CAMERA.clone();
-	this.dollyPath = new THREE.CatmullRomCurve3([
-			new THREE.Vector3(0, 0, 2000),
-			new THREE.Vector3(-1400, 0, 1400),
-			new THREE.Vector3(-2000, 0, 0),
-			new THREE.Vector3(-1400, 0, -1400),
-			new THREE.Vector3(0, 0, -2000),
-			new THREE.Vector3(1400, 0, -1400),
-			new THREE.Vector3(2000, 0, 0),
-			new THREE.Vector3(1400, 0, 1400),
-	]);
-
-	this.dollyPath.type = 'catmullrom';
+	this.camera = _DEFAULT_CAMERA.clone();
 	this.scene = new THREE.Scene();
 		// Ortho Scene and Camera for Logo and text
 		this.sceneOrtho = new THREE.Scene();
@@ -159,17 +164,17 @@ var OpenSimEditor = function () {
 	this.createGroundPlane(this.config.getKey('floor'));
 	this.createWall();
 	this.createGlobalFrame();
-	this.createDollyPath();
+	//this.createDollyPath();
 	this.createModelsGroup();
 	this.createLogoSprite();
 
-};
+}
 
 OpenSimEditor.prototype = {
 
 	setTheme: function ( value ) {
 
-		document.getElementById( 'theme' ).href = value;
+		this.config.setKey('theme', 'css/'+value+'.css');
 
 		this.signals.themeChanged.dispatch( value );
 
@@ -517,8 +522,10 @@ OpenSimEditor.prototype = {
 		this.history.clear();
 		this.storage.clear();
 
-		this.camera.copy( this.DEFAULT_CAMERA );
-		this.dolly_camera.copy(this.DEFAULT_CAMERA);
+		this.camera.copy( this._DEFAULT_CAMERA );
+		this.dolly_camera.copy(this._DEFAULT_CAMERA);
+		this.scene.background.setHex( 0xaaaaaa );
+		this.scene.fog = null;
 		this.scene.background.setHex( 0xaaaaaa );
 		this.scene.fog = null;
 
@@ -559,7 +566,7 @@ OpenSimEditor.prototype = {
 		var camera = loader.parse( json.camera );
 
 		this.camera.copy( camera );
-		this.camera.aspect = this.DEFAULT_CAMERA.aspect;
+		this.camera.aspect = this._DEFAULT_CAMERA.aspect;
 		this.camera.updateProjectionMatrix();
 
 		this.history.fromJSON( json.history );
@@ -571,9 +578,9 @@ OpenSimEditor.prototype = {
 
 	addfromJSON: function ( json ) {
 
-		var loader = new THREE.OpenSimLoader();
+		var loader = new OpenSimLoader();
 		this.signals.sceneGraphChanged.active = false;
-		model = loader.parse( json );
+		var model = loader.parse(json);
 		model.parent = this.modelsGroup;
 		var exist = this.models.indexOf(model.uuid);
 		if (exist == -1){
@@ -584,6 +591,7 @@ OpenSimEditor.prototype = {
 			this.models.push(model.uuid);
 			this.setCurrentModel(model.uuid);
 			this.adjustSceneAfterModelLoading();
+			
 			//this.scripts = json.scripts;
 			// The next 2 line has to be made after helper was added to scene to fix helper display
 			var modelLight = model.getObjectByName('ModelLight');
@@ -602,10 +610,11 @@ OpenSimEditor.prototype = {
 			    "uuid": model.uuid
 			};
 			sendText(JSON.stringify(msg));
+			
 		}
 	},
 	buildCache: function( model) {
-	    modelobject.traverse(function (child) {
+	    model.traverse(function (child) {
 	        if (child.type === "Group")
 	            editor.cache[child.uuid] = child;
 	    });
@@ -621,7 +630,7 @@ OpenSimEditor.prototype = {
 		} );	
 	},
 	enableShadows: function (modeluuid, newSetting) {
-		modelobject = editor.objectByUuid(modeluuid);
+		var modelobject = editor.objectByUuid(modeluuid);
 		if (modelobject !== undefined){
 		modelobject.traverse( function ( child ) {
 			if (child instanceof THREE.Mesh)
@@ -632,9 +641,9 @@ OpenSimEditor.prototype = {
 	},
 	closeModel: function (modeluuid) {
 		if (this.models.indexOf(modeluuid)!=-1){
-		    ndx = this.models.indexOf(modeluuid);
+		    var ndx = this.models.indexOf(modeluuid);
 		    this.models.splice(ndx, 1);
-		    modelObject = editor.objectByUuid(modeluuid);
+		    var modelObject = editor.objectByUuid(modeluuid);
 		    editor.removeObject(modelObject);
 		}
 		this.signals.sceneGraphChanged.dispatch();
@@ -645,12 +654,12 @@ OpenSimEditor.prototype = {
 		this.currentModel = modeluuid;
 		if (this.currentModel === undefined)
 			return;
-		newCurrentModel = editor.objectByUuid(modeluuid);
+		var newCurrentModel = editor.objectByUuid(modeluuid);
 		// Dim light for all other models and make the model have shadows, 
 		// Specififc light
 		for ( var modindex = 0; modindex < this.models.length; modindex++ ) {
 		if (this.models[modindex] == modeluuid){
-			modelLight = newCurrentModel.getObjectByName('ModelLight');
+			var modelLight = newCurrentModel.getObjectByName('ModelLight');
 			modelLight.color = this.currentModelColor;
 			modelLight.visible = true;
 			this.enableShadows(modeluuid, true);
@@ -734,9 +743,9 @@ OpenSimEditor.prototype = {
 	},
 
 	createBackground: function (choice) {
-		scope = this;
+		var scope = this;
 		if (choice == 'nobackground') {
-			color = this.config.getKey('settings/backgroundcolor');
+			var color = this.config.getKey('settings/backgroundcolor');
 			this.scene.background = new THREE.Color(color);
 			this.signals.backgroundColorChanged.dispatch(this.scene.background.getHex());
 			return;
@@ -761,7 +770,6 @@ OpenSimEditor.prototype = {
 		if (choice == 'nofloor')
             return;
 		var scope = this;
-		scope = this;
 		var textureLoader = new THREE.TextureLoader();
 		var texture1 = textureLoader.load( "textures/"+choice+".jpg", function () {
 			scope.refresh();
@@ -771,7 +779,7 @@ OpenSimEditor.prototype = {
 		texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
 		texture1.repeat.set( 64, 64);
 		var geometry = new THREE.PlaneBufferGeometry( 100, 100 );
-		groundPlane = new THREE.Mesh( geometry, material1 );
+		var groundPlane = new THREE.Mesh( geometry, material1 );
 		groundPlane.name = 'GroundPlane';
 		groundPlane.rotation.x = - Math.PI / 2;
 		groundPlane.position.y = -.01;
@@ -787,7 +795,7 @@ OpenSimEditor.prototype = {
 		var texture1 = textureLoader.load( "textures/wall.jpg" );
 		var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture1, side:2 } );
 		var geometry = new THREE.PlaneBufferGeometry( 1000, 1000 );
-		wallPlane = new THREE.Mesh( geometry, material1 );
+		var wallPlane = new THREE.Mesh( geometry, material1 );
 		wallPlane.name = 'Wall';
 		wallPlane.position.x = 0;
 		wallPlane.position.y = 5000;
@@ -831,7 +839,7 @@ OpenSimEditor.prototype = {
 	},
 	createModelsGroup: function () {
 		if (this.modelsGroup == undefined) {
-		modelsGroup = new THREE.Group();
+		var modelsGroup = new THREE.Group();
 		modelsGroup.name = "Models";
 		this.addObject(modelsGroup);
 		this.modelsGroup = modelsGroup;
@@ -844,17 +852,17 @@ OpenSimEditor.prototype = {
 		this.addObject(this.environment);
 	},
 	createLights: function () {
-		amb = new THREE.AmbientLight(0xffffff);
+		var amb = new THREE.AmbientLight(0xffffff);
 		amb.name = 'AmbientLight';
 		amb.intensity = 0.2;
 		this.addObject(amb);
-		sceneLightColor = new THREE.Color().setHex(12040119);
-		directionalLight = new THREE.DirectionalLight(sceneLightColor);
+		var sceneLightColor = new THREE.Color().setHex(12040119);
+		var directionalLight = new THREE.DirectionalLight(sceneLightColor);
 		directionalLight.name = 'CameraLight';
 		this.sceneLight = directionalLight;
 		this.addObject(directionalLight);
 //
-        dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+        var dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
         dirLight.name = 'SunLight';
         dirLight.intensity = 0.2;
         dirLight.color.setHSL( 0.1, 1, 0.95 );
@@ -880,7 +888,7 @@ OpenSimEditor.prototype = {
 		var scope = this;
 		this.config.setKey('skybox', choice);
 		if (choice == 'nobackground') {
-			color = this.config.getKey('settings/backgroundcolor');
+			var color = this.config.getKey('settings/backgroundcolor');
 			this.scene.background = new THREE.Color(color);
 			this.signals.backgroundColorChanged.dispatch(this.scene.background.getHex());
 			return;
@@ -894,7 +902,7 @@ OpenSimEditor.prototype = {
 		if (choice == 'nofloor') {
 			if (this.groundPlane !== null) {
 				this.groundPlane.visible = false;
-				this.signals.objectChanged.dispatch(groundPlane);
+				this.signals.objectChanged.dispatch(this.groundPlane);
 			}
 			return;
 		}
@@ -908,9 +916,8 @@ OpenSimEditor.prototype = {
             function (texture1) { 
 		        texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
 		        texture1.repeat.set(64, 64);
-		        groundMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture1 });
-		        groundPlane.material = groundMaterial;
-		        groundPlane.needsUpdate = true;
+		        scope.groundPlane.material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture1 });
+		        scope.groundPlane.needsUpdate = true;
 		        scope.refresh();
             });
 	},
@@ -921,23 +928,7 @@ OpenSimEditor.prototype = {
 	getGroundSelection: function () {
 		return this.config.getKey('floor');
 	},
-	createDollyPath: function () {
 
-		tube = new THREE.TubeGeometry(this.dollyPath, 100, 5, 8, true);
-		tubemat = new THREE.MeshLambertMaterial({
-			color: 0xff00ff
-		});
-		tubeMesh = new THREE.Mesh(tube, tubemat);
-		tubeMesh.name = "DollyPath";
-		// evaluate dollyPath at t=0 and use that to place dolly_camera
-		this.dolly_camera.position = this.dollyPath.getPoint(0);
-		this.dolly_object.add(this.dolly_camera);
-		this.dolly_object.add(tubeMesh);
-		//this.dolly_object.add(this.cameraEye);
-		dcameraHelper = new THREE.CameraHelper(this.dolly_camera);
-		///this.sceneHelpers.add(dcameraHelper);
-
-	},
 		createLogoSprite: function() {
 			var getLogoTexture = function () {
 				var loader = new THREE.TextureLoader();
@@ -1073,12 +1064,12 @@ OpenSimEditor.prototype = {
 		if (modelObject != undefined)
 		modelObject.add(helper);
 	    */
-	    builtinLight = this.scene.getObjectByName('SunLight');
+	    var builtinLight = this.scene.getObjectByName('SunLight');
 	    builtinLight.position.copy(new THREE.Vector3(modelbbox.max.x-100, modelbbox.max.y+100, modelbbox.min.z-400));
 	    this.signals.cameraChanged.dispatch(this.camera);
 	    // Move dolly to middle hight of bbox and make it invisible
 	    this.dolly_object.position.y = (modelbbox.max.y + modelbbox.min.y) / 2;
-	    path = this.scene.getObjectByName('DollyPath');
+	    ///path = this.scene.getObjectByName('DollyPath');
 	    ///path.visible = false;
 	    // Compute Offset so that models don't overlap
 	    if (this.models.length==1)
@@ -1087,8 +1078,8 @@ OpenSimEditor.prototype = {
 			if (modelObject.children[0].name.startsWith('/ExperimentalData'))
 				return;
 		// Multiple models, compute box bounding all previous models and use to offset
-		nextModel = editor.objectByUuid(this.models[0]);
-		sceneBox = new THREE.Box3().setFromObject(nextModel);
+		var nextModel = editor.objectByUuid(this.models[0]);
+		var sceneBox = new THREE.Box3().setFromObject(nextModel);
 		for ( var modindex = 1; modindex < this.models.length-1; modindex++ ) {
 		nextModel = editor.objectByUuid(this.models[modindex]);
 		nextModelBox = new THREE.Box3().setFromObject(nextModel);
@@ -1103,11 +1094,11 @@ OpenSimEditor.prototype = {
 		var modelbbox = new THREE.Box3().setFromObject(model);
 		var modelCenter = new THREE.Vector3();
 		modelbbox.getCenter(modelCenter);
-		modelCenterGroup = new THREE.Group();
+		var modelCenterGroup = new THREE.Group();
 		modelCenterGroup.name = "ModelCenter";
 		modelCenterGroup.position.copy(new THREE.Vector3(modelCenter.x, modelCenter.y, modelCenter.z));
 		model.add(modelCenterGroup);
-		modelLight =  new THREE.PointLight( {color: this.currentModelColor});
+		var modelLight =  new THREE.PointLight( {color: this.currentModelColor});
 		//modelLight.castShadow = true;
 		//modelLight.angle = 0.5;
 		modelLight.intensity = this.modelLightIntensity;	
@@ -1183,7 +1174,7 @@ OpenSimEditor.prototype = {
 	replaceGeometry: function(geometryJson, uuid) {
 		var sceneObject = this.objectByUuid(uuid);
 		var oldGeometryUUID = sceneObject.geometry.uuid;
-		var geometryLoader = new THREE.OpenSimLoader();
+		var geometryLoader = new OpenSimLoader();
 		geometryJson[0].uuid = oldGeometryUUID;
 		var newgeometries = geometryLoader.parseGeometries(geometryJson);
 		sceneObject.geometry = newgeometries[oldGeometryUUID];
@@ -1305,12 +1296,12 @@ OpenSimEditor.prototype = {
 		newMuscle.togglePathPoints(pathPointsOn);
 	},
     scaleGeometry: function (scaleJson) {
-        sceneObject = editor.objectByUuid(scaleJson.command.objectUuid);
-        geomObject = sceneObject.geometry;
-        if (geomObject instanceof THREE.SphereGeometry){
-            UUID = geomObject.uuid;
-            newRadius = msg.command.newScale[0];
-            newGeometry = new THREE.SphereGeometry(newRadius);
+        let sceneObject = editor.objectByUuid(scaleJson.command.objectUuid);
+        let geomObject = sceneObject.geometry;
+        if (geomObject.type === 'SphereGeometry'){
+            let UUID = geomObject.uuid;
+            let newRadius = scaleJson.command.newScale[0];
+            let newGeometry = new THREE.SphereGeometry(newRadius);
             newGeometry.uuid = UUID;
             sceneObject.geometry = newGeometry;
             this.signals.geometryChanged.dispatch(sceneObject);
@@ -1390,6 +1381,11 @@ OpenSimEditor.prototype = {
         };
         this.reportframeTime = false;
         sendText(JSON.stringify(info));
+    },
+	executeCommandJson: function(json) {
+		new CommandFactory().createCommand(this, json);
     }
 
 };
+
+export { OpenSimEditor };

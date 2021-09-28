@@ -58,8 +58,7 @@ function SidebarProject( editor ) {
 
 	settings.add( vrRow );
 
-	container.add( vrRow );
-	*/
+	// container.add( vrRow );
 	//
 
 	/* container.add( new SidebarProjectMaterials( editor ) ); */

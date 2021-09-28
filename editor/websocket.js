@@ -30,9 +30,9 @@ function sendText(json) {
 	websocket.send(json);
 }
 				
-function onMessage(evt) {
-	//console.log("received: " + evt.data);
-	msg = JSON.parse(evt.data);
+async function onMessage(evt) {
+	// console.log("received: " + evt.data);
+	var msg = JSON.parse(evt.data);
 
 	switch(msg.Op){
 	case "Select":
@@ -80,7 +80,7 @@ function onMessage(evt) {
 		editor.refresh();
 		break;
 	case "OpenModel":
-		modeluuid = msg.UUID;
+		var modeluuid = msg.UUID;
 		if (editor.models.indexOf(modeluuid)===-1){
 			editor.loadModel(modeluuid.substring(0,8)+'.json');
 			editor.refresh();
@@ -94,16 +94,13 @@ function onMessage(evt) {
 	case "execute":
 		//msg.command.object = editor.objectByUuid(msg.UUID);
 		if (msg.message_uuid !== last_message_uuid){
-			cmd = new window[msg.command.type]();
-			cmd.fromJSON(msg.command);
-			editor.execute(cmd);
+			editor.executeCommandJson(msg);
 			editor.refresh();
 			last_message_uuid = msg.message_uuid;
 		}
 		break; 
 	case "addModelObject":
-		cmd = new window[msg.command.type]();
-		cmd.fromJSON(msg.command);
+		editor.executeCommandJson(msg);
 		parentUuid = msg.command.object.object.parent;
 		editor.execute(cmd);
 		newUuid = cmd.object.uuid;
@@ -142,3 +139,5 @@ function onMessage(evt) {
     processing = false; // Defensive in case render never finishes/errors
 }
 // End test functions
+
+export {websocket, sendText};

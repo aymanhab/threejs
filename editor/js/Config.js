@@ -7,7 +7,7 @@ function Config() {
 		'exportPrecision': 6,
 
 		'autosave': true,
-		'theme': 'css/minimal.css',
+		'theme': 'css/main.css',
 
 		'project/title': '',
 		'project/editable': false,
