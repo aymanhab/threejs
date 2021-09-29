@@ -22,7 +22,7 @@ function Sidebar( editor ) {
 	);
 	var project = new SidebarProject( editor );
 	var settings = new SidebarSettings( editor );
-		
+	
 	container.addTab( 'scene', strings.getKey( 'sidebar/scene' ), scene );
 	container.addTab( 'project', strings.getKey( 'sidebar/project' ), project );
 	container.addTab( 'settings', strings.getKey( 'sidebar/settings' ), settings );
@@ -30,6 +30,6 @@ function Sidebar( editor ) {
 
 	return container;
 
-		}
+}
 
 export { Sidebar };

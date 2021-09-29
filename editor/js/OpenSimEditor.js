@@ -47,7 +47,7 @@ function OpenSimEditor () {
 	//this.cameraEye.name = 'CameraEye';
 
 	var Signal = signals.Signal;
-
+	
 	this.signals = {
 
 		// script
@@ -526,8 +526,6 @@ OpenSimEditor.prototype = {
 		this.dolly_camera.copy(this._DEFAULT_CAMERA);
 		this.scene.background.setHex( 0xaaaaaa );
 		this.scene.fog = null;
-		this.scene.background.setHex( 0xaaaaaa );
-		this.scene.fog = null;
 
 		var objects = this.scene.children;
 
@@ -928,7 +926,7 @@ OpenSimEditor.prototype = {
 	getGroundSelection: function () {
 		return this.config.getKey('floor');
 	},
-
+	
 		createLogoSprite: function() {
 			var getLogoTexture = function () {
 				var loader = new THREE.TextureLoader();
@@ -936,7 +934,7 @@ OpenSimEditor.prototype = {
 				return texture;
 			};
 			var spriteMaterial = new THREE.SpriteMaterial({
-						opacity: 0.9,
+						opacity: 0.5,
 						color: 0xffffff,
 						transparent: false, // TODO not necessary
 						// useScreenCoordinates: true, TODO deprecated
@@ -1074,9 +1072,9 @@ OpenSimEditor.prototype = {
 	    // Compute Offset so that models don't overlap
 	    if (this.models.length==1)
 		return; // No need for offset
-			// if ExperimentalData, also no offset
-			if (modelObject.children[0].name.startsWith('/ExperimentalData'))
-				return;
+		// if ExperimentalData, also no offset
+		if (modelObject.children[0].name.startsWith('/ExperimentalData'))
+			return;
 		// Multiple models, compute box bounding all previous models and use to offset
 		var nextModel = editor.objectByUuid(this.models[0]);
 		var sceneBox = new THREE.Box3().setFromObject(nextModel);
@@ -1384,7 +1382,7 @@ OpenSimEditor.prototype = {
     },
 	executeCommandJson: function(json) {
 		new CommandFactory().createCommand(this, json);
-    }
+	}
 
 };
 

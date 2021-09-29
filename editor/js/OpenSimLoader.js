@@ -5,7 +5,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 	constructor ( manager ) {
 		super( manager);
-		}
+	}
 	// Absent sane extension mechanism this is a replica of ObjectLoader.parseGeometries
 	// Modified to handle types 
 	parseGeometries( json, shapes ) {
@@ -215,7 +215,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 							geometryShapes.push( shape );
 
-				}
+						}
 
 						geometry = new Geometries[ data.type ](
 							geometryShapes,
@@ -244,7 +244,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 							data.options.extrudePath = new Curves[ extrudePath.type ]().fromJSON( extrudePath );
 
-			}
+						}
 
 						geometry = new Geometries[ data.type ](
 							geometryShapes,
@@ -264,7 +264,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 						//CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded, thetaStart, thetaLength)
 						// NOTE: number of heightSegments must be equal to the number of bones in the SkinnedMuscle
 						geometry = new THREE.CylinderGeometry(data.radius, data.radius, 0.1, 8, 2*data.segments-1, true);
-
+		
 						break;
 					case 'Geometry':
 
@@ -293,7 +293,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 		return geometries;
 
-		}
+	}
 	parseObject( data, geometries, materials, animations ) {
 
 		let object;
@@ -308,7 +308,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 			return geometries[ name ];
 
-			}
+		}
 
 		function getMaterial( name ) {
 
@@ -326,7 +326,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 						console.warn( 'THREE.ObjectLoader: Undefined material', uuid );
 
-		}
+					}
 
 					array.push( materials[ uuid ] );
 
@@ -334,17 +334,17 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 				return array;
 
-				}
+			}
 
 			if ( materials[ name ] === undefined ) {
 
 				console.warn( 'THREE.ObjectLoader: Undefined material', name );
 
-				}
+			}
 
 			return materials[ name ];
 
-			}
+		}
 
 		let geometry, material;
 
@@ -374,50 +374,50 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 						object.fog = new FogExp2( data.fog.color, data.fog.density );
 
+					}
+
 				}
 
-			}
+				break;
 
-					break;
-
-				case 'PerspectiveCamera':
+			case 'PerspectiveCamera':
 
 				object = new PerspectiveCamera( data.fov, data.aspect, data.near, data.far );
 
-					if ( data.focus !== undefined ) object.focus = data.focus;
-					if ( data.zoom !== undefined ) object.zoom = data.zoom;
-					if ( data.filmGauge !== undefined ) object.filmGauge = data.filmGauge;
-					if ( data.filmOffset !== undefined ) object.filmOffset = data.filmOffset;
-					if ( data.view !== undefined ) object.view = Object.assign( {}, data.view );
+				if ( data.focus !== undefined ) object.focus = data.focus;
+				if ( data.zoom !== undefined ) object.zoom = data.zoom;
+				if ( data.filmGauge !== undefined ) object.filmGauge = data.filmGauge;
+				if ( data.filmOffset !== undefined ) object.filmOffset = data.filmOffset;
+				if ( data.view !== undefined ) object.view = Object.assign( {}, data.view );
 
-					break;
+				break;
 
-				case 'OrthographicCamera':
+			case 'OrthographicCamera':
 
 				object = new OrthographicCamera( data.left, data.right, data.top, data.bottom, data.near, data.far );
 
 				if ( data.zoom !== undefined ) object.zoom = data.zoom;
 				if ( data.view !== undefined ) object.view = Object.assign( {}, data.view );
 
-					break;
+				break;
 
-				case 'AmbientLight':
+			case 'AmbientLight':
 
 				object = new AmbientLight( data.color, data.intensity );
 
-					break;
+				break;
 
-				case 'DirectionalLight':
+			case 'DirectionalLight':
 
 				object = new DirectionalLight( data.color, data.intensity );
 
-					break;
+				break;
 
-				case 'PointLight':
+			case 'PointLight':
 
 				object = new PointLight( data.color, data.intensity, data.distance, data.decay );
 
-					break;
+				break;
 
 			case 'RectAreaLight':
 
@@ -425,17 +425,17 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 				break;
 
-				case 'SpotLight':
+			case 'SpotLight':
 
 				object = new SpotLight( data.color, data.intensity, data.distance, data.angle, data.penumbra, data.decay );
 
-					break;
+				break;
 
-				case 'HemisphereLight':
+			case 'HemisphereLight':
 
 				object = new HemisphereLight( data.color, data.groundColor, data.intensity );
 
-					break;
+				break;
 
 			case 'LightProbe':
 
@@ -461,7 +461,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 				geometry = getGeometry( data.geometry );
 				material = getMaterial( data.material );
 
-						object = new THREE.Mesh( geometry, material );
+				object = new THREE.Mesh( geometry, material );
 
 				break;
 
@@ -475,19 +475,19 @@ class OpenSimLoader extends THREE.ObjectLoader {
 				object = new InstancedMesh( geometry, material, count );
 				object.instanceMatrix = new BufferAttribute( new Float32Array( instanceMatrix.array ), 16 );
 
-					break;
+				break;
 
-				case 'LOD':
+			case 'LOD':
 
 				object = new LOD();
 
-					break;
+				break;
 
-				case 'Line':
+			case 'Line':
 
 				object = new Line( getGeometry( data.geometry ), getMaterial( data.material ) );
 
-					break;
+				break;
 
 			case 'LineLoop':
 
@@ -501,24 +501,24 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 				break;
 
-				case 'PointCloud':
-				case 'Points':
+			case 'PointCloud':
+			case 'Points':
 
 				object = new Points( getGeometry( data.geometry ), getMaterial( data.material ) );
 
-					break;
+				break;
 
-				case 'Sprite':
+			case 'Sprite':
 
 				object = new Sprite( getMaterial( data.material ) );
 
-					break;
+				break;
 
-				case 'Group':
+			case 'Group':
 
-					object = new THREE.Group();
+				object = new THREE.Group();
 
-					break;
+				break;
 
 			case 'Bone':
 
@@ -526,51 +526,51 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 				break;
 			// OPENSIM Types
-			    case 'Frame':
+			case 'Frame':
 
 				object = new THREE.AxesHelper(data.size);
 
-                                        break;
-			    case 'GeometryPath':
+				break;
+			case 'GeometryPath':
                 object = new SkinnedMuscle(getGeometry(data.geometry),  getMaterial( data.material ), data.points, data.active);
 
-                                        break;
+                break;
 
-                            case 'Arrow':
-                                        object = new THREE.ArrowHelper(data.dir, data.origin, 1000, data.color);
+            case 'Arrow':
+                object = new THREE.ArrowHelper(data.dir, data.origin, 1000, data.color);
 
-                                        break;
+                break;
 
-                            default:
+			default:
 
-					object = new THREE.Object3D();
+				object = new THREE.Object3D();
 
-			}
+		}
 		if (object === undefined )
 			return object;
 
-			object.uuid = data.uuid;
+		object.uuid = data.uuid;
 
-			if ( data.name !== undefined ) object.name = data.name;
+		if ( data.name !== undefined ) object.name = data.name;
 
-			if ( data.matrix !== undefined ) {
+		if ( data.matrix !== undefined ) {
 
 			object.matrix.fromArray( data.matrix );
 
 			if ( data.matrixAutoUpdate !== undefined ) object.matrixAutoUpdate = data.matrixAutoUpdate;
 			if ( object.matrixAutoUpdate ) object.matrix.decompose( object.position, object.quaternion, object.scale );
 
-			} else {
+		} else {
 
-				if ( data.position !== undefined ) object.position.fromArray( data.position );
-				if ( data.rotation !== undefined ) object.rotation.fromArray( data.rotation );
+			if ( data.position !== undefined ) object.position.fromArray( data.position );
+			if ( data.rotation !== undefined ) object.rotation.fromArray( data.rotation );
 			if ( data.quaternion !== undefined ) object.quaternion.fromArray( data.quaternion );
-				if ( data.scale !== undefined ) object.scale.fromArray( data.scale );
+			if ( data.scale !== undefined ) object.scale.fromArray( data.scale );
 
-			}
+		}
 
-			if ( data.castShadow !== undefined ) object.castShadow = data.castShadow;
-			if ( data.receiveShadow !== undefined ) object.receiveShadow = data.receiveShadow;
+		if ( data.castShadow !== undefined ) object.castShadow = data.castShadow;
+		if ( data.receiveShadow !== undefined ) object.receiveShadow = data.receiveShadow;
 
 		if ( data.shadow ) {
 
@@ -582,22 +582,22 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 		}
 
-			if ( data.visible !== undefined ) object.visible = data.visible;
+		if ( data.visible !== undefined ) object.visible = data.visible;
 		if ( data.frustumCulled !== undefined ) object.frustumCulled = data.frustumCulled;
 		if ( data.renderOrder !== undefined ) object.renderOrder = data.renderOrder;
-			if ( data.userData !== undefined ) object.userData = data.userData;
+		if ( data.userData !== undefined ) object.userData = data.userData;
 		if ( data.layers !== undefined ) object.layers.mask = data.layers;
 		// OPENSIM Specific Handling to make object nonEditable
-			if ( object.userData === 'NonEditable') { // Propagate to children if any
-				for ( var child in object.children ) {
-					object.children[child].userData = 'NonEditable';
-				}
+		if ( object.userData === 'NonEditable') { // Propagate to children if any
+			for ( var child in object.children ) {
+				object.children[child].userData = 'NonEditable';
 			}
-			if ( data.opensimType !== undefined ) {
-					object.opensimType = data.opensimType;
-			}
+		}
+		if ( data.opensimType !== undefined ) {
+				object.opensimType = data.opensimType;
+		}
 		// end OPENSIM Specific Handling
-			if ( data.children !== undefined ) {
+		if ( data.children !== undefined ) {
 
 			const children = data.children;
 
@@ -606,9 +606,9 @@ class OpenSimLoader extends THREE.ObjectLoader {
 				if (nextObj !== undefined)
 					object.add( nextObj );
 
-				}
-
 			}
+
+		}
 
 		if ( data.animations !== undefined ) {
 
@@ -624,7 +624,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 		}
 
-			if ( data.type === 'LOD' ) {
+		if ( data.type === 'LOD' ) {
 
 			if ( data.autoUpdate !== undefined ) object.autoUpdate = data.autoUpdate;
 
@@ -635,17 +635,17 @@ class OpenSimLoader extends THREE.ObjectLoader {
 				const level = levels[ l ];
 				const child = object.getObjectByProperty( 'uuid', level.object );
 
-					if ( child !== undefined ) {
+				if ( child !== undefined ) {
 
-						object.addLevel( child, level.distance );
-
-					}
+					object.addLevel( child, level.distance );
 
 				}
 
 			}
 
-			return object;
+		}
+
+		return object;
 
 	}
 
@@ -705,7 +705,7 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 					}
 
-} );
+				} );
 
 				break;
 

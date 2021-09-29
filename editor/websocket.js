@@ -101,9 +101,9 @@ async function onMessage(evt) {
 		break; 
 	case "addModelObject":
 		editor.executeCommandJson(msg);
-		parentUuid = msg.command.object.object.parent;
-		editor.execute(cmd);
-		newUuid = cmd.object.uuid;
+		let parentUuid = msg.command.object.object.parent;
+		let cmd = msg.command;
+		let newUuid = cmd.objectUuid;
         editor.moveObject(editor.objectByUuid(newUuid), editor.objectByUuid(parentUuid));
         if (msg.command.bbox !== undefined) {
             // update models bounding box with bbox;

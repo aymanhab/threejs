@@ -4,7 +4,7 @@
  import * as THREE from '../../build/three.module.js';
 
  import { TransformControls } from '../../examples/jsm/controls/TransformControls.js';
-
+ 
  import { UIPanel } from './libs/ui.js';
  
  import { EditorControls } from './EditorControls.js';
@@ -806,9 +806,9 @@ function OpenSimViewport ( editor ) {
 	            renderer.render(scene, currentCamera);
 	            renderer.render(sceneOrtho, sceneOrthoCam);
 	            
-	                if (sceneHelpers.visible)
-	                    renderer.render(sceneHelpers, camera);
-
+				if (sceneHelpers.visible)
+					renderer.render(sceneHelpers, camera);
+	            
 	            //if (recording) capturer.capture(renderer.domElement);
 	        }
                 if (editor.reportframeTime){

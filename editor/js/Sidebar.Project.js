@@ -67,6 +67,6 @@ function SidebarProject( editor ) {
 
 	return container;
 
-	}
+}
 
 export { SidebarProject };
