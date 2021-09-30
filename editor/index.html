@@ -64,11 +64,11 @@
 			import { OpenSimViewport } from './js/OpenSimViewport.js';
 			import { Toolbar } from './js/Toolbar.js';
 			import { Script } from './js/Script.js';
-			import { Player } from './js/Player.js';
+			//import { Player } from './js/Player.js';
 			import { Sidebar } from './js/Sidebar.js';
 			import { Menubar } from './js/Menubar.js';
 			import { Resizer } from './js/Resizer.js';
-			import { VRButton } from '../examples/jsm/webxr/VRButton.js';
+			//import { VRButton } from '../examples/jsm/webxr/VRButton.js';
 			import { OpenSimToolbar } from './js/OpenSimToolbar.js';
 			import { websocket } from './websocket.js';
 
@@ -100,7 +100,7 @@
 
 			window.editor = editor; // Expose editor to Console
 			window.THREE = THREE; // Expose THREE to APP Scripts and Console
-			window.VRButton = VRButton; // Expose VRButton to APP Scripts
+			//window.VRButton = VRButton; // Expose VRButton to APP Scripts
 
 			//var viewport = new OpenSimViewport( editor );
       // Minimal ui, should move to a different file to avoid clutter
@@ -196,7 +196,7 @@
       var script = new Script( editor );
       //document.body.appendChild( script.dom );
 
-      var player = new Player( editor );
+      //var player = new Player( editor );
       //document.body.appendChild( player.dom );
 
 	    var sidebar = new Sidebar( editor );
@@ -214,7 +214,7 @@
          document.body.appendChild( sidebar.dom );
       }
 			var resizer = new Resizer( editor );
-			document.body.appendChild( resizer.dom );
+			//document.body.appendChild( resizer.dom );
 
       //
 
