@@ -460,9 +460,8 @@ class OpenSimLoader extends THREE.ObjectLoader {
 
 				geometry = getGeometry( data.geometry );
 				material = getMaterial( data.material );
-
+				geometry.computeVertexNormals();
 				object = new THREE.Mesh( geometry, material );
-
 				break;
 
 			case 'InstancedMesh':
