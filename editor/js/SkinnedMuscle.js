@@ -1,12 +1,13 @@
+
 /**
  * @author Ayman Habib
  */
-THREE.SkinnedMuscle = function(geom, material, points, actives) {
+SkinnedMuscle = function(geom, material, points, actives) {
     // Create bones for uuids in geometryPath
     this.pathpoints = points;
     this.pathpointObjects = [];
     this.actives = actives;
-    geom.bones = [];
+    var bones = [];
     this.firstPointMaterial = undefined;
     // When off only caps are shown, when on, user defined points are shown (for editing/picking)
     this.showInnerPathPoints = false;
@@ -16,62 +17,60 @@ THREE.SkinnedMuscle = function(geom, material, points, actives) {
         bone.pos = [0, 0, 0];
         bone.rotq = [0, 0, 0, 1];
         bone.ppt = this.pathpoints[Math.floor(i/2)];
-        geom.bones.push(bone);
+        bones.push(bone);
     }
 
-    var numVerticesPerLevel = geom.parameters.radialSegments+1;
+    var numVerticesPerLevel = geom.attributes.position.count / (2*points.length-2);
     const skinIndices = [];
     const skinWeights = [];
-    //var numVertices = geom.attributes.position.count;
-    for (var i = 0; i < geom.attributes.position.count; i++) {
+    const position = geom.attributes.position;
+    for ( var i = 0; i < position.count; i++ ) {
         var skinIndex = Math.floor(i / numVerticesPerLevel);
         var pptIndex = Math.floor((skinIndex+1)/2);
         //var activePoint = this.actives[pptIndex];
-        skinIndices.push(skinIndex, skinIndex, skinIndex, skinIndex);
+        skinIndices.push(skinIndex, 0, 0, 0);
         // Will always use weight of 1, 0, 0, 0 to interpolate pathpoints
         // Changing weights will make the paths smooth but doesn't interpolate points'
         skinWeights.push( 1.0, 0, 0, 0);
     }
-    geom.addAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
-    geom.addAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
-    geom.dynamic = true;
-    THREE.SkinnedMesh.call( this, geom );
-    this.material = material;
-    this.material.skinning = true;
+    //geom.dynamic = true;
+    geom.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+    geom.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
+    material.skinning = true;
+    THREE.SkinnedMesh.call( this, geom, material );
+    const skeleton = new THREE.Skeleton( bones );
+    for (var j = 0; j < bones.length; j++)
+        this.add( skeleton.bones[ j ]);
+    //this.add( skeleton.bones[ 1 ]);
+    this.bind( skeleton );
     this.frustumCulled = false;
     this.userData = 'NonEditable';
-    const skeleton = new THREE.Skeleton( geom.bones );
-    const rootBone = skeleton.bones[0];
-    for (var bi = 0; bi < skeleton.bones.length; bi++)
-        this.add( skeleton.bones[bi] );
-    // bind the skeleton to the mesh
-    this.bind( skeleton );
 };
 
-THREE.SkinnedMuscle.prototype = Object.create( THREE.SkinnedMesh.prototype );
-THREE.SkinnedMuscle.prototype.constructor = THREE.SkinnedMuscle;
+SkinnedMuscle.prototype = Object.assign(Object.create( THREE.SkinnedMesh.prototype ), {
+    constructor: SkinnedMuscle,
 
-THREE.SkinnedMuscle.prototype.setColor = function (newColor) {
+    setColor: function (newColor) {
 	this.material.color.setHex(newColor);
 	if (this.firstPointMaterial !== undefined)
         this.firstPointMaterial.color.setHex(newColor);
-};
-THREE.SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
+    },
+    updateMatrixWorld: function ( force ) {
 // if has pathpoints attribute then it's a muscle
 // Cycle through pathpoints, update their matrixworld
 // then set the position of the Bones from that
     if (this.skeleton === undefined)
         return;
-    var bones = this.skeleton.bones;
+        const bones = this.skeleton.bones;
     //console.warn("Num bones in updateMatrixWorld: " + bones.length);
 
     if (this.pathpointObjects.length != this.pathpoints.length){
-        var b = 0;
+        let b = 0;
         for ( var p=0; p < this.pathpoints.length; p++) {
-        	var pptObject1 = editor.objectByUuid(this.pathpoints[p]);
+            let pptObject1 = editor.objectByUuid(this.pathpoints[p]);
             if (this.firstPointMaterial === undefined && pptObject1 !== undefined && p === 0)
         		this.firstPointMaterial = pptObject1.material;
-            var pptObject2 = editor.objectByUuid(this.pathpoints[p+1]);
+            let pptObject2 = editor.objectByUuid(this.pathpoints[p+1]);
 
             if (pptObject1 !== undefined) {
                // add every pathpoint to the list of PathPoint objects
@@ -86,10 +85,10 @@ THREE.SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
             }
         }
     }
-    if (this.parent === null) return; //in initialization, bypass
     // Compute reverse transform from Ground to Scene (usually this's inverse translation)
     // This is necessary since the blending to compute vertices adds offset twice
-    var mat = new THREE.Matrix4().getInverse(this.parent.matrixWorld);
+        if (this.parent === null) return; // construction
+        var mat = new THREE.Matrix4().copy(this.parent.matrixWorld).invert();
     var vec = new THREE.Vector3().setFromMatrixPosition(mat);
 
     // Variables for the two points of a given path segement, the axis to
@@ -130,19 +129,22 @@ THREE.SkinnedMuscle.prototype.updateMatrixWorld = function( force ) {
     }
     this.skeleton.update();
     THREE.SkinnedMesh.prototype.updateMatrixWorld.call( this, true );
-};
-THREE.SkinnedMuscle.prototype.setVisible = function ( newValue) {
+
+    },
+    setVisible: function ( newValue) {
     this.visible = newValue;
     // Now repeat for the inner pathpoints under this muscle
     for (var p = 0; p < this.pathpoints.length; p++) {
         if (this.pathpointObjects[p].opensimType!=="ComputedPathPoint")
             this.pathpointObjects[p].visible = newValue;
     }
-};
-THREE.SkinnedMuscle.prototype.togglePathPoints = function (newValue) {
+    },
+    togglePathPoints: function (newValue) {
     for (var p = 0; p < this.pathpoints.length; p++) {
         if (this.actives[p])
             this.pathpointObjects[p].visible = newValue;
     }
     
-}
+    }
+    
+});

@@ -1,4 +1,4 @@
-export default `
+export default /* glsl */`
 #ifdef USE_AOMAP
 
 	// reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
@@ -6,7 +6,7 @@ export default `
 
 	reflectedLight.indirectDiffuse *= ambientOcclusion;
 
-	#if defined( USE_ENVMAP ) && defined( PHYSICAL )
+	#if defined( USE_ENVMAP ) && defined( STANDARD )
 
 		float dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );
 

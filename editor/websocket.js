@@ -35,9 +35,9 @@ function sendText(json) {
 	*/
 }
 				
-function onMessage(evt) {
-	//console.log("received: " + evt.data);
-	msg = JSON.parse(evt.data);
+async function onMessage(evt) {
+	// console.log("received: " + evt.data);
+	var msg = JSON.parse(evt.data);
 
 	switch(msg.Op){
 	case "Select":
@@ -85,7 +85,7 @@ function onMessage(evt) {
 		editor.refresh();
 		break;
 	case "OpenModel":
-		modeluuid = msg.UUID;
+		var modeluuid = msg.UUID;
 		if (editor.models.indexOf(modeluuid)===-1){
 			editor.loadModel(modeluuid.substring(0,8)+'.json');
 			editor.refresh();
@@ -99,24 +99,21 @@ function onMessage(evt) {
 	case "execute":
 		//msg.command.object = editor.objectByUuid(msg.UUID);
 		if (msg.message_uuid !== last_message_uuid){
-			cmd = new window[msg.command.type]();
-			cmd.fromJSON(msg.command);
-			editor.execute(cmd);
+			editor.executeCommandJson(msg);
 			editor.refresh();
 			last_message_uuid = msg.message_uuid;
 		}
 		break; 
 	case "addModelObject":
-		cmd = new window[msg.command.type]();
-		cmd.fromJSON(msg.command);
-		parentUuid = msg.command.object.object.parent;
-		editor.execute(cmd);
-		newUuid = cmd.object.uuid;
-		editor.moveObject(editor.objectByUuid(newUuid), editor.objectByUuid(parentUuid));
-		if (msg.command.bbox !== undefined) {
-			// update models bounding box with bbox;
-			editor.updateModelBBox(msg.command.bbox);
-		}
+		editor.executeCommandJson(msg);
+		let parentUuid = msg.command.object.object.parent;
+		let cmd = msg.command;
+		let newUuid = cmd.objectUuid;
+        editor.moveObject(editor.objectByUuid(newUuid), editor.objectByUuid(parentUuid));
+        if (msg.command.bbox !== undefined) {
+            // update models bounding box with bbox;
+            editor.updateModelBBox(msg.command.bbox);
+        }
 		editor.refresh();
 		break;
 	case "ReplaceGeometry":
@@ -135,9 +132,7 @@ function onMessage(evt) {
 		editor.scaleGeometry(msg);
 		break;
 	case "startAnimation":
-		editor.reportframeTime=true;
-		editor.sceneHelpers.visible=false;
-		editor.resetCaptureIfNeeded();
+        editor.reportframeTime=true;
 		break;
 	case "endAnimation":
 		// Sending any messages during handling a message causes problems, use callbacks only
@@ -145,10 +140,9 @@ function onMessage(evt) {
 	case "getOffsets":
 		sendText(editor.getModelOffsetsJson());
 		break;
-	case "setOption":
-		editor.setOption(msg.data);
-		break;
     }
     processing = false; // Defensive in case render never finishes/errors
 }
 // End test functions
+
+// export {websocket, sendText};

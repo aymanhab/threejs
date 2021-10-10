@@ -1,25 +1,24 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-
-var Config = function () {
+function Config() {
 
 	var name = 'threejs-editor';
 
 	var storage = {
 		'language': 'en',
+		'exportPrecision': 6,
 
 		'autosave': true,
-		'theme': 'css/minimal.css',
+		'theme': 'css/main.css',
 
 		'project/title': '',
 		'project/editable': false,
+		'project/vr': false,
 
-		'project/renderer': 'WebGLRenderer',
 		'project/renderer/antialias': true,
-		'project/renderer/gammaInput': false,
-		'project/renderer/gammaOutput': false,
 		'project/renderer/shadows': true,
+		'project/renderer/shadowType': 1, // PCF
+		'project/renderer/physicallyCorrectLights': false,
+		'project/renderer/toneMapping': 0, // NoToneMapping
+		'project/renderer/toneMappingExposure': 1,
 
 		'project/vr': false,
 		'render/debug': true,
@@ -80,4 +79,6 @@ var Config = function () {
 
 	};
 
-};
+}
+
+export { Config };

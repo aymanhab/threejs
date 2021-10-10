@@ -1,16 +1,33 @@
 /**
  * @author Ayman Habib based on mrdoob / http://mrdoob.com/
  */
+ import * as THREE from '../../build/three.module.js';
 
-var OpenSimViewport = function ( editor ) {
+ import { TransformControls } from '../../examples/jsm/controls/TransformControls.js';
+ 
+ import { UIPanel } from './libs/ui.js';
+ 
+ import { EditorControls } from './EditorControls.js';
+ 
+ import { ViewportCamera } from './Viewport.Camera.js';
+ import { ViewportInfo } from './Viewport.Info.js';
+ import { ViewHelper } from './Viewport.ViewHelper.js';
+ import { VR } from './Viewport.VR.js';
+ 
+ import { SetPositionCommand } from './commands/SetPositionCommand.js';
+ import { SetRotationCommand } from './commands/SetRotationCommand.js';
+ import { SetScaleCommand } from './commands/SetScaleCommand.js';
+ //import { sendText } from '../websocket.js';
+
+function OpenSimViewport ( editor ) {
 
 	var signals = editor.signals;
 
-	var container = new UI.Panel();
+	var container = new UIPanel();
 	container.setId( 'viewport' );
-	container.setPosition( 'absolute' );
+	//container.setPosition( 'absolute' );
 
-	//container.add( new Viewport.Info( editor ) );
+	container.add( new ViewportInfo( editor ) );
 
 	var scene = editor.scene;
 	var sceneHelpers = editor.sceneHelpers;
@@ -29,8 +46,7 @@ var OpenSimViewport = function ( editor ) {
 	var recording = false;
 	var screenCapUpsamplingFactor = 2;
 	var objects = [];
-	var video_format = 'webm-mediarecorder';
-	var frame_rate = 30;
+
 	// helpers
 
 	var grid = new THREE.GridHelper( 30, 1 );
@@ -54,7 +70,7 @@ var OpenSimViewport = function ( editor ) {
 	var objectRotationOnDown = null;
 	var objectScaleOnDown = null;
 
-	var transformControls = new THREE.TransformControls(camera, container.dom);
+	var transformControls = new TransformControls(camera, container.dom);
 	editor.control = transformControls;
 
 	var animating = false;
@@ -102,7 +118,7 @@ var OpenSimViewport = function ( editor ) {
 
 					if ( ! objectPositionOnDown.equals( object.position ) ) {
 
-						editor.execute( new SetPositionCommand( object, object.position, objectPositionOnDown ) );
+						editor.execute( new SetPositionCommand( editor, object, object.position, objectPositionOnDown ) );
 						//
 						var json = JSON.stringify({
 							"event": "translate",
@@ -118,7 +134,7 @@ var OpenSimViewport = function ( editor ) {
 
 					if ( ! objectRotationOnDown.equals( object.rotation ) ) {
 
-						editor.execute( new SetRotationCommand( object, object.rotation, objectRotationOnDown ) );
+						editor.execute( new SetRotationCommand( editor, object, object.rotation, objectRotationOnDown ) );
 
 					}
 
@@ -284,7 +300,7 @@ var OpenSimViewport = function ( editor ) {
 	// controls need to be added *after* main logic,
 	// otherwise controls.enabled doesn't work.
 
-	var controls = new THREE.EditorControls( camera, container.dom );
+	var controls = new EditorControls( camera, container.dom );
 	controls.addEventListener( 'change', function () {
 
 		//transformControls.update();
@@ -411,9 +427,9 @@ var OpenSimViewport = function ( editor ) {
 	        capturer = new CCapture({
 	            verbose: false,
 	            display: false,
-	            framerate: frame_rate,
-	            name: "opensim_video",
-	            format: video_format,
+	            framerate: 30,
+                name: "opensim_video",
+                format: 'webm-mediarecorder',
 	        });
 	        recording = true;
 	        capturer.start();
@@ -423,7 +439,7 @@ var OpenSimViewport = function ( editor ) {
 	});
 	signals.animationStopped.add(function () {
 	    this.animating = false;
-	    if (recording) {
+        if (recording) {
 	        capturer.stop();
 	        capturer.save();
 	        capturer = undefined;
@@ -431,32 +447,26 @@ var OpenSimViewport = function ( editor ) {
 	    }
 
 	});
-	signals.optionsChanged.add(function (ed) {
-	      video_format = ed.videoFormat;
-	      frame_rate = ed.frameRate;
-	    }
-	);
+
 	signals.recordingStarted.add(function () {
 	    // add frame to capture
 	    if (capturer !== undefined) 
                capturer = undefined;
          capturer = new CCapture({
-         	    workersPath :'/threejs/editor/js/libs/',
 	            verbose: false,
 	            display: false,
-	            framerate: frame_rate,
+	            framerate: 30,
                 name: "opensim_video",
-                format: video_format,
+                format: 'webm-mediarecorder',
 	        });
 	        recording = true;
 	        capturer.start();
 	});
 
-	signals.recordingStopped.add(function (discard) {
+	signals.recordingStopped.add(function () {
 	    if (capturer !== undefined) {
 	        capturer.stop();
-	        if (discard === undefined)
-	            capturer.save();
+	        capturer.save();
 	        capturer = undefined;
             recording = false;
 	    }
@@ -622,8 +632,8 @@ var OpenSimViewport = function ( editor ) {
 
 		// TODO: Move this out?
 
-		editor.DEFAULT_CAMERA.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
-		editor.DEFAULT_CAMERA.updateProjectionMatrix();
+		editor.camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
+		editor.camera.updateProjectionMatrix();
 
 		camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
 		camera.updateProjectionMatrix();
@@ -740,18 +750,20 @@ var OpenSimViewport = function ( editor ) {
 	}
 
 	function renderHiRes(upSample) {
-		var saveWidth = renderer.getSize().width;
-		var saveHeight = renderer.getSize().height;
+		var curSize = new THREE.Vector2(0, 0);
+		renderer.getSize(curSize)
+		var saveWidth = curSize.width;
+		var saveHeight = curSize.height;
 		var widthOfScreenshot = saveWidth * upSample;
 		var heightOfScreenshot = saveHeight * upSample;
 		renderer.setSize(widthOfScreenshot, heightOfScreenshot);
 		renderer.clear(); // clear first to keep background color
-		renderer.render(scene, currentCamera);
+		renderer.render(scene, editor.camera);
 		renderer.render(sceneOrtho, sceneOrthoCam);
 		renderer.domElement.toBlob(function (blob) {
 			var link = document.createElement('a');
 			link.download = "opensim_snapshot.png";
-			url = URL.createObjectURL(blob);
+			var url = URL.createObjectURL(blob);
 			link.href = url;
 			document.body.appendChild(link);
 			link.click();
@@ -760,7 +772,7 @@ var OpenSimViewport = function ( editor ) {
 		renderer.setSize(saveWidth, saveHeight);
 		renderer.clear();
 		//renderer.setClearColor(clearColor);
-		renderer.render(scene, currentCamera);
+		renderer.render(scene, editor.camera);
 		renderer.render(sceneOrtho, sceneOrthoCam);
 
 	}
@@ -770,11 +782,11 @@ var OpenSimViewport = function ( editor ) {
 	        var t0 = performance.now();
 	        sceneHelpers.updateMatrixWorld();
 	        scene.updateMatrixWorld();
-	        stats.update();
+	        //stats.update();
 	        if (renderer != null) {
 	            renderer.clear();
-
-	            if (this.animating) {
+				var currentCamera;
+	            if (animating) {
 	                var time = Date.now() - startTime;
 	                var looptime = animationCycleTime;
 	                var t = (time % looptime) / looptime;
@@ -793,11 +805,10 @@ var OpenSimViewport = function ( editor ) {
 
 	            renderer.render(scene, currentCamera);
 	            renderer.render(sceneOrtho, sceneOrthoCam);
-	            if (renderer instanceof THREE.RaytracingRenderer === false) {
-	                if (sceneHelpers.visible)
-	                    renderer.render(sceneHelpers, camera);
-
-	            }
+	            
+				if (sceneHelpers.visible)
+					renderer.render(sceneHelpers, camera);
+	            
 	            //if (recording) capturer.capture(renderer.domElement);
 	        }
                 if (editor.reportframeTime){
@@ -810,3 +821,6 @@ var OpenSimViewport = function ( editor ) {
 	return container;
 
 };
+
+
+export { OpenSimViewport };
