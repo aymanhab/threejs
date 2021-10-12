@@ -327,7 +327,8 @@ OpenSimEditor.prototype = {
 
 			} else if ( object instanceof THREE.PointLight ) {
 
-				helper = new THREE.PointLightHelper( object, 1 );
+				//helper = new THREE.PointLightHelper( object, 1 );
+				return;
 
 			} else if ( object instanceof THREE.DirectionalLight ) {
 
@@ -593,8 +594,8 @@ OpenSimEditor.prototype = {
 			//this.scripts = json.scripts;
 			// The next 2 line has to be made after helper was added to scene to fix helper display
 			var modelLight = model.getObjectByName('ModelLight');
-			this.helpers[modelLight.id].update();
-			modelLight.userData = "NonEditable";
+			//this.helpers[modelLight.id].update();
+			//modelLight.userData = "NonEditable";
 			this.signals.sceneGraphChanged.active = true;
 			this.signals.sceneGraphChanged.dispatch();
 			if (!this.isExperimentalDataModel(model) || this.models.length==1)
@@ -1148,8 +1149,8 @@ OpenSimEditor.prototype = {
 		this.modelLightIntensity = val;
 		// For each model, find the light and update intensity
 		for (var modindex = 0; modindex < this.models.length; modindex++) {
-			nextModel = this.objectByUuid(this.models[modindex]);
-			modelLight = nextModel.getObjectByName('ModelLight');
+			let nextModel = this.objectByUuid(this.models[modindex]);
+			let modelLight = nextModel.getObjectByName('ModelLight');
 			modelLight.intensity = val;
 		}
 		this.refresh();
