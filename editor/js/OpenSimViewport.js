@@ -25,9 +25,9 @@ function OpenSimViewport ( editor ) {
 
 	var container = new UIPanel();
 	container.setId( 'viewport' );
-	//container.setPosition( 'absolute' );
+	container.setPosition( 'absolute' );
 
-	container.add( new ViewportInfo( editor ) );
+	//container.add( new ViewportInfo( editor ) );
 
 	var scene = editor.scene;
 	var sceneHelpers = editor.sceneHelpers;
