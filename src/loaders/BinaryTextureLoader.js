@@ -55,6 +55,7 @@ Object.assign( THREE.BinaryTextureLoader.prototype, {
 				texture.format = texData.format;
 
 			}
+			
 			if ( undefined !== texData.type ) {
 
 				texture.type = texData.type;

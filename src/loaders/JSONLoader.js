@@ -20,11 +20,11 @@ THREE.JSONLoader = function ( manager ) {
 
 Object.assign( THREE.JSONLoader.prototype, {
 
-	load: function( url, onLoad, onProgress, onError ) {
+	load: function ( url, onLoad, onProgress, onError ) {
 
 		var scope = this;
 
-		var texturePath = this.texturePath && ( typeof this.texturePath === "string" ) ? this.texturePath : THREE.Loader.prototype.extractUrlBase( url );
+		var texturePath = this.texturePath && ( typeof this.texturePath === 'string' ) ? this.texturePath : THREE.Loader.prototype.extractUrlBase( url );
 
 		var loader = new THREE.XHRLoader( this.manager );
 		loader.setWithCredentials( this.withCredentials );
@@ -93,28 +93,21 @@ Object.assign( THREE.JSONLoader.prototype, {
 			}
 
 			var i, j, fi,
-
-			offset, zLength,
-
-		colorIndex, normalIndex, uvIndex, materialIndex,
-
-			type,
-			isQuad,
-			hasMaterial,
-			hasFaceVertexUv,
-			hasFaceNormal, hasFaceVertexNormal,
-			hasFaceColor, hasFaceVertexColor,
-
-		vertex, face, faceA, faceB, hex, normal,
-
-			uvLayer, uv, u, v,
-
-			faces = json.faces,
-			vertices = json.vertices,
-			normals = json.normals,
-			colors = json.colors,
-
-			nUvLayers = 0;
+				offset, zLength,
+				colorIndex, normalIndex, uvIndex, materialIndex,
+				type,
+				isQuad,
+				hasMaterial,
+				hasFaceVertexUv,
+				hasFaceNormal, hasFaceVertexNormal,
+				hasFaceColor, hasFaceVertexColor,
+				vertex, face, faceA, faceB, hex, normal,
+				uvLayer, uv, u, v,
+				faces = json.faces,
+				vertices = json.vertices,
+				normals = json.normals,
+				colors = json.colors,
+				nUvLayers = 0;
 
 			if ( json.uvs !== undefined ) {
 
