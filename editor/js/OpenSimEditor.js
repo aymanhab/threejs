@@ -853,7 +853,7 @@ OpenSimEditor.prototype = {
 	createLights: function () {
 		var amb = new THREE.AmbientLight(0xffffff);
 		amb.name = 'AmbientLight';
-		amb.intensity = 0.2;
+		amb.intensity = 0.05;
 		this.addObject(amb);
 		var sceneLightColor = new THREE.Color().setHex(12040119);
 		var directionalLight = new THREE.DirectionalLight(sceneLightColor);
@@ -863,7 +863,7 @@ OpenSimEditor.prototype = {
 //
         var dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
         dirLight.name = 'SunLight';
-        dirLight.intensity = 0.2;
+        dirLight.intensity = 0.25;
         dirLight.color.setHSL( 0.1, 1, 0.95 );
         dirLight.position.set( 1, 3, -1 );
         dirLight.position.multiplyScalar( 500 );
