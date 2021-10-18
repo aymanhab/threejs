@@ -1297,17 +1297,18 @@ OpenSimEditor.prototype = {
     scaleGeometry: function (scaleJson) {
         let sceneObject = editor.objectByUuid(scaleJson.command.objectUuid);
         let geomObject = sceneObject.geometry;
-        if (geomObject.type === 'SphereGeometry'){
+		if (sceneObject instanceof THREE.ArrowHelper){
+            sceneObject.setLength(1000*scaleJson.command.newScale[0]);
+            this.signals.objectChanged.dispatch(sceneObject);
+        }
+        else if (geomObject.type === 'SphereGeometry'){
             let UUID = geomObject.uuid;
             let newRadius = scaleJson.command.newScale[0];
             let newGeometry = new THREE.SphereGeometry(newRadius);
             newGeometry.uuid = UUID;
             sceneObject.geometry = newGeometry;
             this.signals.geometryChanged.dispatch(sceneObject);
-        } else if (sceneObject instanceof THREE.ArrowHelper){
-            sceneObject.setLength(1000*msg.command.newScale[0]);
-            this.signals.objectChanged.dispatch(sceneObject);
-        }
+        } 
     },
 	toggleRecord: function () {
 		if (this.recording){

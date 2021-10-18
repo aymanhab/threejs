@@ -28,11 +28,14 @@ class SetMaterialColorCommand extends Command {
 	}
 
 	execute() {
-
-		this.material[ this.attributeName ].setHex( this.newValue );
-
-		this.editor.signals.materialChanged.dispatch( this.material );
-
+		if (this.object instanceof THREE.ArrowHelper){
+			this.object.cone.material.color.setHex( this.newValue );
+			this.object.line.material.color.setHex( this.newValue );
+		}
+		else {
+			this.material[ this.attributeName ].setHex( this.newValue );
+			this.editor.signals.materialChanged.dispatch( this.material );
+	   }
 	}
 
 	undo() {
