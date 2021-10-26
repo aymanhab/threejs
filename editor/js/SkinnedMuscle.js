@@ -51,9 +51,9 @@ SkinnedMuscle.prototype = Object.assign(Object.create( THREE.SkinnedMesh.prototy
     constructor: SkinnedMuscle,
 
     setColor: function (newColor) {
-        this.material.color.setHex(newColor);
+        this.material.color.setHex(newColor).convertSRGBToLinear();
         if (this.firstPointMaterial !== undefined)
-            this.firstPointMaterial.color.setHex(newColor);
+            this.firstPointMaterial.color.setHex(newColor).convertSRGBToLinear();
     },
     updateMatrixWorld: function ( force ) {
         // if has pathpoints attribute then it's a muscle
