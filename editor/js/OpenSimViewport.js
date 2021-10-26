@@ -533,7 +533,8 @@ function OpenSimViewport ( editor ) {
 	    if (editor.selected === object) {
 
 			selectionBox.setFromObject( object );
-			transformControls.update();
+			// avoid console warning that update is nop now
+			//transformControls.update();
 
 		}
 
