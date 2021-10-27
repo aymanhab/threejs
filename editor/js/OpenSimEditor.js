@@ -856,6 +856,7 @@ OpenSimEditor.prototype = {
 		amb.intensity = 0.05;
 		this.addObject(amb);
 		var sceneLightColor = new THREE.Color().setHex(12040119);
+		sceneLightColor.convertSRGBToLinear();
 		var directionalLight = new THREE.DirectionalLight(sceneLightColor);
 		directionalLight.name = 'CameraLight';
 		this.sceneLight = directionalLight;
@@ -865,6 +866,7 @@ OpenSimEditor.prototype = {
         dirLight.name = 'SunLight';
         dirLight.intensity = 0.25;
         dirLight.color.setHSL( 0.1, 1, 0.95 );
+		dirLight.color.convertSRGBToLinear();
         dirLight.position.set( 1, 3, -1 );
         dirLight.position.multiplyScalar( 500 );
         this.environment.add(dirLight);
