@@ -853,7 +853,7 @@ OpenSimEditor.prototype = {
 	createLights: function () {
 		var amb = new THREE.AmbientLight(0xffffff);
 		amb.name = 'AmbientLight';
-		amb.intensity = 0.05;
+		amb.intensity = 0.2;
 		this.addObject(amb);
 		var sceneLightColor = new THREE.Color().setHex(12040119);
 		sceneLightColor.convertSRGBToLinear();
