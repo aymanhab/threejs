@@ -193,7 +193,7 @@
       var viewport = new OpenSimViewport( editor );
       document.body.appendChild( viewport.dom );
 
-      var script = new Script( editor );
+      //var script = new Script( editor );
       //document.body.appendChild( script.dom );
 
       //var player = new Player( editor );
@@ -213,7 +213,7 @@
       document.body.appendChild( menubar.dom );
          document.body.appendChild( sidebar.dom );
       }
-			var resizer = new Resizer( editor );
+			//var resizer = new Resizer( editor );
 			//document.body.appendChild( resizer.dom );
 
       //
@@ -283,7 +283,8 @@
       signals.historyChanged.add( saveState );
 
 			} );
-
+      window.addEventListener( 'resize', onWindowResize );
+      
       document.addEventListener( 'dragover', function ( event ) {
 
       event.preventDefault();
@@ -379,7 +380,7 @@
 
 			}, false );
 
-			function onWindowResize( event ) {
+			function onWindowResize() {
 
 				editor.signals.windowResize.dispatch();
 

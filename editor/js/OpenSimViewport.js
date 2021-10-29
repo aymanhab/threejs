@@ -25,10 +25,11 @@ function OpenSimViewport ( editor ) {
 
 	var container = new UIPanel();
 	container.setId( 'viewport' );
-	//container.setPosition( 'absolute' );
+	container.setPosition( 'absolute' );
 
 	//container.add( new ViewportInfo( editor ) );
 
+	var camera = editor.camera;
 	var scene = editor.scene;
 	var sceneHelpers = editor.sceneHelpers;
 	var sceneOrtho = editor.sceneOrtho;
@@ -49,12 +50,13 @@ function OpenSimViewport ( editor ) {
 
 	// helpers
 
-	var grid = new THREE.GridHelper( 30, 1 );
+	var grid = new THREE.GridHelper( 30, 30, 0x444444, 0x888888 );
+	var viewHelper = new ViewHelper( camera, container );
 	//OPENSIM sceneHelpers.add( grid );
 
 	//
 
-	var camera = editor.camera;
+	// var camera = editor.camera;
 	var dollyCamera = editor.dolly_camera;
 	//
 	var clearColor = editor.config.getKey('settings/backgroundcolor');
@@ -174,6 +176,13 @@ function OpenSimViewport ( editor ) {
 	var mouse = new THREE.Vector2();
 
 	// events
+
+	function updateAspectRatio() {
+
+		camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
+		camera.updateProjectionMatrix();
+
+	}
 
 	function getIntersects( point, objects ) {
 
@@ -303,10 +312,10 @@ function OpenSimViewport ( editor ) {
 	var controls = new EditorControls( camera, container.dom );
 	controls.addEventListener( 'change', function () {
 
-		//transformControls.update();
 		signals.cameraChanged.dispatch( camera );
 
 	} );
+	viewHelper.controls = controls;
 
 	// signals
 
@@ -533,12 +542,10 @@ function OpenSimViewport ( editor ) {
 	    if (editor.selected === object) {
 
 			selectionBox.setFromObject( object );
-			// avoid console warning that update is nop now
-			//transformControls.update();
 
 		}
 
-		if ( object instanceof THREE.PerspectiveCamera ) {
+		if ( object.isPerspectiveCamera ) {
 
 			object.updateProjectionMatrix();
 
@@ -571,7 +578,13 @@ function OpenSimViewport ( editor ) {
 
 	signals.helperRemoved.add( function ( object ) {
 
-		objects.splice( objects.indexOf( object.getObjectByName( 'picker' ) ), 1 );
+		var picker = object.getObjectByName( 'picker' );
+
+		if ( picker !== undefined ) {
+
+			objects.splice( objects.indexOf( picker ), 1 );
+
+		}
 
 	} );
 
