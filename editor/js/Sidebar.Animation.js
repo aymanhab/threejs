@@ -1,158 +1,105 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { UIPanel, UIBreak, UISelect, UIButton, UIText, UINumber, UIRow } from './libs/ui.js';
 
-Sidebar.Animation = function ( editor ) {
+function SidebarAnimation( editor ) {
 
+	var strings = editor.strings;
 	var signals = editor.signals;
+	var mixer = editor.mixer;
 
-	var options = {};
-	var possibleAnimations = {};
-	var cycleTime = 20;
-	var showCameraOnlyBool = false;
-	var recording = false;
+	var actions = {};
 
-	var container = new UI.CollapsiblePanel();
-	container.setCollapsed( editor.config.getKey( 'ui/sidebar/animation/collapsed' ) );
-	container.onCollapsedChange( function ( boolean ) {
+	signals.objectSelected.add( function ( object ) {
 
-		editor.config.setKey( 'ui/sidebar/animation/collapsed', boolean );
+		if ( object !== null && object.animations.length > 0 ) {
 
-	} );
-	//container.setDisplay( 'none' );
+			var animations = object.animations;
 
-	container.addStatic( new UI.Text( 'Animation' ).setTextTransform( 'uppercase' ) );
-	container.add( new UI.Break() );
+			container.setDisplay( '' );
 
-	var animationsRow = new UI.Row();
-	container.add( animationsRow );
+			var options = {};
+			var firstAnimation;
 
-	
+			for ( var animation of animations ) {
 
-	var animations = { };
-    /*
-	signals.objectAdded.add( function ( object ) {
+				if ( firstAnimation === undefined ) firstAnimation = animation.name;
 
-		object.traverse( function ( child ) {
-
-			if ( child instanceof THREE.SkinnedMesh ) {
-
-				var material = child.material;
-
-				if ( material instanceof THREE.MultiMaterial ) {
-
-					for ( var i = 0; i < material.materials.length; i ++ ) {
-
-						material.materials[ i ].skinning = true;
-
-					}
-
-				} else {
-
-					child.material.skinning = true;
-
-				}
-
-				animations[ child.id ] = new THREE.Animation( child, child.geometry.animation );
-
-			} else if ( child instanceof THREE.MorphAnimMesh ) {
-
-				var animation = new THREE.MorphAnimation( child );
-				animation.duration = 30;
-
-				// temporal hack for THREE.AnimationHandler
-				animation._play = animation.play;
-				animation.play = function () {
-					this._play();
-					THREE.AnimationHandler.play( this );
-				};
-				animation.resetBlendWeights = function () {};
-				animation.stop = function () {
-					this.pause();
-					THREE.AnimationHandler.stop( this );
-				};
-
-				animations[ child.id ] = animation;
+				actions[ animation.name ] = mixer.clipAction( animation, object );
+				options[ animation.name ] = animation.name;
 
 			}
 
-		} );
+			animationsSelect.setOptions( options );
+			animationsSelect.setValue( firstAnimation );
+			mixerTimeScaleNumber.setValue( mixer.timeScale );
 
-	} );
-    */
-	signals.objectSelected.add( function ( object ) {
+		} else {
 
-		container.setDisplay( 'none' );
-
-		if ( object instanceof THREE.PerspectiveCamera  ) {
-
-			animationsRow.clear();
-
-			var animation = animations[object.id];
-
-			var cycleRow = new UI.Row();
-			var cycle = new UI.Integer(cycleTime).setRange(1, 60).onChange(update);
-
-			cycleRow.add(new UI.Text('Cycle (s)').setWidth('90px'));
-			cycleRow.add(cycle);
-
-			animationsRow.add(cycleRow);
-
-			var showCameraOnlyRow = new UI.Row();
-			var showCameraOnly = new UI.Checkbox(showCameraOnlyBool).setLeft('100px').onChange(function () { showCameraOnlyBool = showCameraOnly.getValue(); });
-
-			showCameraOnlyRow.add(new UI.Text('Preview Camera Only').setWidth('90px'));
-			showCameraOnlyRow.add(showCameraOnly);
-
-			animationsRow.add(showCameraOnlyRow);
-
-
-			var playButton = new UI.Button( 'Play' ).onClick( function () {
-
-			    var position = { x: 0, y: 0, z: 0 };
-			    var target = { x: 100, y: 0, z: 0 };
-			    var tween = new TWEEN.Tween(position).to(target, cycleTime*1000);
-			    var dModel = editor.getModel();
-			    tween.onUpdate(function () {
-			        dModel.position.x = position.x;
-			        dModel.position.y = position.y;
-			        dModel.position.z = position.z;
-			        //dModel.updateMatrix();
-			    });
-			    tween.onComplete(function () {
-			        signals.animationStopped.dispatch();
-			        recordButton.setValue(false);
-			        recording = false;
-			    });
-			    signals.animationStarted.dispatch(cycleTime, showCameraOnlyBool, recording);
-			    tween.start();
-			} );
-			animationsRow.add( playButton );
-
-			var pauseButton = new UI.Button( 'Stop' ).onClick( function () {
-			    signals.animationStopped.dispatch();
-			    recordButton.setValue(false);
-			    recording = false;
-			});
-			animationsRow.add(pauseButton);
-			animationsRow.add(new UI.Text('  Record: '));
-			var recordButton = new UI.Checkbox('Record').onClick(function () {
-			    if (recording)
-			        signals.recordingStopped.dispatch();
-			    recording = recordButton.getValue();
-			});
-			recordButton.setValue(recording);
-			animationsRow.add(recordButton);
-			container.setDisplay( 'block' );
+			container.setDisplay( 'none' );
 
 		}
-        function update() {
-            cycleTime = cycle.getValue();
-        }
 
 	} );
 
+	signals.objectRemoved.add( function ( object ) {
+
+		if ( object !== null && object.animations.length > 0 ) {
+
+			mixer.uncacheRoot( object );
+
+		}
+
+	} );
+
+	function playAction() {
+
+		actions[ animationsSelect.getValue() ].play();
+
+	}
+
+	function stopAction() {
+
+		actions[ animationsSelect.getValue() ].stop();
+
+		signals.animationStopped.dispatch();
+
+	}
+
+	function changeTimeScale() {
+
+		mixer.timeScale = mixerTimeScaleNumber.getValue();
+
+	}
+
+	var container = new UIPanel();
+	container.setDisplay( 'none' );
+
+	container.add( new UIText( strings.getKey( 'sidebar/animations' ) ).setTextTransform( 'uppercase' ) );
+	container.add( new UIBreak() );
+	container.add( new UIBreak() );
+
+	//
+
+	var animationsRow = new UIRow();
+
+	var animationsSelect = new UISelect().setFontSize( '12px' );
+	animationsRow.add( animationsSelect );
+	animationsRow.add( new UIButton( strings.getKey( 'sidebar/animations/play' ) ).setMarginLeft( '4px' ).onClick( playAction ) );
+	animationsRow.add( new UIButton( strings.getKey( 'sidebar/animations/stop' ) ).setMarginLeft( '4px' ).onClick( stopAction ) );
+
+	container.add( animationsRow );
+
+	//
+
+	var mixerTimeScaleRow = new UIRow();
+	var mixerTimeScaleNumber = new UINumber( 0.5 ).setWidth( '60px' ).setRange( - 10, 10 ).onChange( changeTimeScale );
+
+	mixerTimeScaleRow.add( new UIText( strings.getKey( 'sidebar/animations/timescale' ) ).setWidth( '90px' ) );
+	mixerTimeScaleRow.add( mixerTimeScaleNumber );
+
+	container.add( mixerTimeScaleRow );
 
 	return container;
 
 }
+
+export { SidebarAnimation };

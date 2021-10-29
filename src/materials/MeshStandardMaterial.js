@@ -1,6 +1,9 @@
+import { TangentSpaceNormalMap } from '../constants.js';
+import { Material } from './Material.js';
+import { Vector2 } from '../math/Vector2.js';
+import { Color } from '../math/Color.js';
+
 /**
- * @author WestLangley / http://github.com/WestLangley
- *
  * parameters = {
  *  color: <hex>,
  *  roughness: <float>,
@@ -23,6 +26,7 @@
  *  bumpScale: <float>,
  *
  *  normalMap: new THREE.Texture( <Image> ),
+ *  normalMapType: THREE.TangentSpaceNormalMap,
  *  normalScale: <Vector2>,
  *
  *  displacementMap: new THREE.Texture( <Image> ),
@@ -45,21 +49,23 @@
  *
  *  skinning: <bool>,
  *  morphTargets: <bool>,
- *  morphNormals: <bool>
+ *  morphNormals: <bool>,
+ *
+ *  flatShading: <bool>
  * }
  */
 
-THREE.MeshStandardMaterial = function ( parameters ) {
+function MeshStandardMaterial( parameters ) {
 
-	THREE.Material.call( this );
+	Material.call( this );
 
 	this.defines = { 'STANDARD': '' };
 
 	this.type = 'MeshStandardMaterial';
 
-	this.color = new THREE.Color( 0xffffff ); // diffuse
-	this.roughness = 0.5;
-	this.metalness = 0.5;
+	this.color = new Color( 0xffffff ); // diffuse
+	this.roughness = 1.0;
+	this.metalness = 0.0;
 
 	this.map = null;
 
@@ -69,7 +75,7 @@ THREE.MeshStandardMaterial = function ( parameters ) {
 	this.aoMap = null;
 	this.aoMapIntensity = 1.0;
 
-	this.emissive = new THREE.Color( 0x000000 );
+	this.emissive = new Color( 0x000000 );
 	this.emissiveIntensity = 1.0;
 	this.emissiveMap = null;
 
@@ -77,7 +83,8 @@ THREE.MeshStandardMaterial = function ( parameters ) {
 	this.bumpScale = 1;
 
 	this.normalMap = null;
-	this.normalScale = new THREE.Vector2( 1, 1 );
+	this.normalMapType = TangentSpaceNormalMap;
+	this.normalScale = new Vector2( 1, 1 );
 
 	this.displacementMap = null;
 	this.displacementScale = 1;
@@ -103,16 +110,22 @@ THREE.MeshStandardMaterial = function ( parameters ) {
 	this.morphTargets = false;
 	this.morphNormals = false;
 
+	this.flatShading = false;
+
+	this.vertexTangents = false;
+
 	this.setValues( parameters );
 
-};
+}
 
-THREE.MeshStandardMaterial.prototype = Object.create( THREE.Material.prototype );
-THREE.MeshStandardMaterial.prototype.constructor = THREE.MeshStandardMaterial;
+MeshStandardMaterial.prototype = Object.create( Material.prototype );
+MeshStandardMaterial.prototype.constructor = MeshStandardMaterial;
 
-THREE.MeshStandardMaterial.prototype.copy = function ( source ) {
+MeshStandardMaterial.prototype.isMeshStandardMaterial = true;
 
-	THREE.Material.prototype.copy.call( this, source );
+MeshStandardMaterial.prototype.copy = function ( source ) {
+
+	Material.prototype.copy.call( this, source );
 
 	this.defines = { 'STANDARD': '' };
 
@@ -136,6 +149,7 @@ THREE.MeshStandardMaterial.prototype.copy = function ( source ) {
 	this.bumpScale = source.bumpScale;
 
 	this.normalMap = source.normalMap;
+	this.normalMapType = source.normalMapType;
 	this.normalScale.copy( source.normalScale );
 
 	this.displacementMap = source.displacementMap;
@@ -162,6 +176,13 @@ THREE.MeshStandardMaterial.prototype.copy = function ( source ) {
 	this.morphTargets = source.morphTargets;
 	this.morphNormals = source.morphNormals;
 
+	this.flatShading = source.flatShading;
+
+	this.vertexTangents = source.vertexTangents;
+
 	return this;
 
 };
+
+
+export { MeshStandardMaterial };

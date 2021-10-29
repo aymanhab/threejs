@@ -2,7 +2,6 @@
  * Depth-of-field post-process with bokeh shader
  */
 
-
 THREE.BokehPass = function ( scene, camera, params ) {
 
 	THREE.Pass.call( this );
@@ -20,37 +19,41 @@ THREE.BokehPass = function ( scene, camera, params ) {
 	var width = params.width || window.innerWidth || 1;
 	var height = params.height || window.innerHeight || 1;
 
-	this.renderTargetColor = new THREE.WebGLRenderTarget( width, height, {
-		minFilter: THREE.LinearFilter,
-		magFilter: THREE.LinearFilter,
-		format: THREE.RGBFormat
+	this.renderTargetDepth = new THREE.WebGLRenderTarget( width, height, {
+		minFilter: THREE.NearestFilter,
+		magFilter: THREE.NearestFilter
 	} );
 
-	this.renderTargetDepth = this.renderTargetColor.clone();
+	this.renderTargetDepth.texture.name = 'BokehPass.depth';
 
 	// depth material
 
 	this.materialDepth = new THREE.MeshDepthMaterial();
+	this.materialDepth.depthPacking = THREE.RGBADepthPacking;
+	this.materialDepth.blending = THREE.NoBlending;
 
 	// bokeh material
 
 	if ( THREE.BokehShader === undefined ) {
 
-		console.error( "THREE.BokehPass relies on THREE.BokehShader" );
+		console.error( 'THREE.BokehPass relies on THREE.BokehShader' );
 
 	}
 
 	var bokehShader = THREE.BokehShader;
 	var bokehUniforms = THREE.UniformsUtils.clone( bokehShader.uniforms );
 
-	bokehUniforms[ "tDepth" ].value = this.renderTargetDepth.texture;
+	bokehUniforms[ 'tDepth' ].value = this.renderTargetDepth.texture;
 
-	bokehUniforms[ "focus" ].value = focus;
-	bokehUniforms[ "aspect" ].value = aspect;
-	bokehUniforms[ "aperture" ].value = aperture;
-	bokehUniforms[ "maxblur" ].value = maxblur;
+	bokehUniforms[ 'focus' ].value = focus;
+	bokehUniforms[ 'aspect' ].value = aspect;
+	bokehUniforms[ 'aperture' ].value = aperture;
+	bokehUniforms[ 'maxblur' ].value = maxblur;
+	bokehUniforms[ 'nearClip' ].value = camera.near;
+	bokehUniforms[ 'farClip' ].value = camera.far;
 
 	this.materialBokeh = new THREE.ShaderMaterial( {
+		defines: Object.assign( {}, bokehShader.defines ),
 		uniforms: bokehUniforms,
 		vertexShader: bokehShader.vertexShader,
 		fragmentShader: bokehShader.fragmentShader
@@ -59,11 +62,9 @@ THREE.BokehPass = function ( scene, camera, params ) {
 	this.uniforms = bokehUniforms;
 	this.needsSwap = false;
 
-	this.camera2 = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
-	this.scene2  = new THREE.Scene();
+	this.fsQuad = new THREE.Pass.FullScreenQuad( this.materialBokeh );
 
-	this.quad2 = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), null );
-	this.scene2.add( this.quad2 );
+	this._oldClearColor = new THREE.Color();
 
 };
 
@@ -71,31 +72,46 @@ THREE.BokehPass.prototype = Object.assign( Object.create( THREE.Pass.prototype )
 
 	constructor: THREE.BokehPass,
 
-	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
-
-		this.quad2.material = this.materialBokeh;
+	render: function ( renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/ ) {
 
 		// Render depth into texture
 
 		this.scene.overrideMaterial = this.materialDepth;
 
-		renderer.render( this.scene, this.camera, this.renderTargetDepth, true );
+		renderer.getClearColor( this._oldClearColor );
+		var oldClearAlpha = renderer.getClearAlpha();
+		var oldAutoClear = renderer.autoClear;
+		renderer.autoClear = false;
+
+		renderer.setClearColor( 0xffffff );
+		renderer.setClearAlpha( 1.0 );
+		renderer.setRenderTarget( this.renderTargetDepth );
+		renderer.clear();
+		renderer.render( this.scene, this.camera );
 
 		// Render bokeh composite
 
-		this.uniforms[ "tColor" ].value = readBuffer.texture;
+		this.uniforms[ 'tColor' ].value = readBuffer.texture;
+		this.uniforms[ 'nearClip' ].value = this.camera.near;
+		this.uniforms[ 'farClip' ].value = this.camera.far;
 
 		if ( this.renderToScreen ) {
 
-			renderer.render( this.scene2, this.camera2 );
+			renderer.setRenderTarget( null );
+			this.fsQuad.render( renderer );
 
 		} else {
 
-			renderer.render( this.scene2, this.camera2, writeBuffer, this.clear );
+			renderer.setRenderTarget( writeBuffer );
+			renderer.clear();
+			this.fsQuad.render( renderer );
 
 		}
 
 		this.scene.overrideMaterial = null;
+		renderer.setClearColor( this._oldClearColor );
+		renderer.setClearAlpha( oldClearAlpha );
+		renderer.autoClear = oldAutoClear;
 
 	}
 

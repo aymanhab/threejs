@@ -1,29 +1,46 @@
 /**
  * Based on http://www.emagix.net/academic/mscs-project/item/camera-sync-with-css3-and-webgl-threejs
- * @author mrdoob / http://mrdoob.com/
  */
 
 THREE.CSS3DObject = function ( element ) {
 
 	THREE.Object3D.call( this );
 
-	this.element = element;
+	this.element = element || document.createElement( 'div' );
 	this.element.style.position = 'absolute';
+	this.element.style.pointerEvents = 'auto';
 
-	this.addEventListener( 'removed', function ( event ) {
+	this.addEventListener( 'removed', function () {
 
-		if ( this.element.parentNode !== null ) {
+		this.traverse( function ( object ) {
 
-			this.element.parentNode.removeChild( this.element );
+			if ( object.element instanceof Element && object.element.parentNode !== null ) {
 
-		}
+				object.element.parentNode.removeChild( object.element );
+
+			}
+
+		} );
 
 	} );
 
 };
 
-THREE.CSS3DObject.prototype = Object.create( THREE.Object3D.prototype );
-THREE.CSS3DObject.prototype.constructor = THREE.CSS3DObject;
+THREE.CSS3DObject.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
+
+	constructor: THREE.CSS3DObject,
+
+	copy: function ( source, recursive ) {
+
+		THREE.Object3D.prototype.copy.call( this, source, recursive );
+
+		this.element = source.element.cloneNode( true );
+
+		return this;
+
+	}
+
+} );
 
 THREE.CSS3DSprite = function ( element ) {
 
@@ -38,7 +55,7 @@ THREE.CSS3DSprite.prototype.constructor = THREE.CSS3DSprite;
 
 THREE.CSS3DRenderer = function () {
 
-	console.log( 'THREE.CSS3DRenderer', THREE.REVISION );
+	var _this = this;
 
 	var _width, _height;
 	var _widthHalf, _heightHalf;
@@ -47,31 +64,22 @@ THREE.CSS3DRenderer = function () {
 
 	var cache = {
 		camera: { fov: 0, style: '' },
-		objects: {}
+		objects: new WeakMap()
 	};
 
 	var domElement = document.createElement( 'div' );
 	domElement.style.overflow = 'hidden';
 
-	domElement.style.WebkitTransformStyle = 'preserve-3d';
-	domElement.style.MozTransformStyle = 'preserve-3d';
-	domElement.style.oTransformStyle = 'preserve-3d';
-	domElement.style.transformStyle = 'preserve-3d';
-
 	this.domElement = domElement;
 
 	var cameraElement = document.createElement( 'div' );
 
-	cameraElement.style.WebkitTransformStyle = 'preserve-3d';
-	cameraElement.style.MozTransformStyle = 'preserve-3d';
-	cameraElement.style.oTransformStyle = 'preserve-3d';
 	cameraElement.style.transformStyle = 'preserve-3d';
+	cameraElement.style.pointerEvents = 'none';
 
 	domElement.appendChild( cameraElement );
 
-	this.setClearColor = function () {};
-
-	this.getSize = function() {
+	this.getSize = function () {
 
 		return {
 			width: _width,
@@ -84,7 +92,6 @@ THREE.CSS3DRenderer = function () {
 
 		_width = width;
 		_height = height;
-
 		_widthHalf = _width / 2;
 		_heightHalf = _height / 2;
 
@@ -96,13 +103,13 @@ THREE.CSS3DRenderer = function () {
 
 	};
 
-	var epsilon = function ( value ) {
+	function epsilon( value ) {
 
-		return Math.abs( value ) < Number.EPSILON ? 0 : value;
+		return Math.abs( value ) < 1e-10 ? 0 : value;
 
-	};
+	}
 
-	var getCameraCSSMatrix = function ( matrix ) {
+	function getCameraCSSMatrix( matrix ) {
 
 		var elements = matrix.elements;
 
@@ -125,13 +132,12 @@ THREE.CSS3DRenderer = function () {
 			epsilon( elements[ 15 ] ) +
 		')';
 
-	};
+	}
 
-	var getObjectCSSMatrix = function ( matrix ) {
+	function getObjectCSSMatrix( matrix ) {
 
 		var elements = matrix.elements;
-
-		return 'translate3d(-50%,-50%,0) matrix3d(' +
+		var matrix3d = 'matrix3d(' +
 			epsilon( elements[ 0 ] ) + ',' +
 			epsilon( elements[ 1 ] ) + ',' +
 			epsilon( elements[ 2 ] ) + ',' +
@@ -150,11 +156,15 @@ THREE.CSS3DRenderer = function () {
 			epsilon( elements[ 15 ] ) +
 		')';
 
-	};
+		return 'translate(-50%,-50%)' + matrix3d;
 
-	var renderObject = function ( object, camera ) {
+	}
+
+	function renderObject( object, scene, camera, cameraCSSMatrix ) {
 
 		if ( object instanceof THREE.CSS3DObject ) {
+
+			object.onBeforeRender( _this, scene, camera );
 
 			var style;
 
@@ -181,18 +191,18 @@ THREE.CSS3DRenderer = function () {
 			}
 
 			var element = object.element;
-			var cachedStyle = cache.objects[ object.id ];
+			var cachedObject = cache.objects.get( object );
 
-			if ( cachedStyle === undefined || cachedStyle !== style ) {
+			if ( cachedObject === undefined || cachedObject.style !== style ) {
 
-				element.style.WebkitTransform = style;
-				element.style.MozTransform = style;
-				element.style.oTransform = style;
 				element.style.transform = style;
 
-				cache.objects[ object.id ] = style;
+				var objectData = { style: style };
+				cache.objects.set( object, objectData );
 
 			}
+
+			element.style.display = object.visible ? '' : 'none';
 
 			if ( element.parentNode !== cameraElement ) {
 
@@ -200,52 +210,55 @@ THREE.CSS3DRenderer = function () {
 
 			}
 
+			object.onAfterRender( _this, scene, camera );
+
 		}
 
 		for ( var i = 0, l = object.children.length; i < l; i ++ ) {
 
-			renderObject( object.children[ i ], camera );
+			renderObject( object.children[ i ], scene, camera, cameraCSSMatrix );
 
 		}
 
-	};
+	}
 
 	this.render = function ( scene, camera ) {
 
-		var fov = 0.5 / Math.tan( THREE.Math.degToRad( camera.getEffectiveFOV() * 0.5 ) ) * _height;
+		var fov = camera.projectionMatrix.elements[ 5 ] * _heightHalf;
 
 		if ( cache.camera.fov !== fov ) {
 
-			domElement.style.WebkitPerspective = fov + "px";
-			domElement.style.MozPerspective = fov + "px";
-			domElement.style.oPerspective = fov + "px";
-			domElement.style.perspective = fov + "px";
-
+			domElement.style.perspective = camera.isPerspectiveCamera ? fov + 'px' : '';
 			cache.camera.fov = fov;
 
 		}
 
-		scene.updateMatrixWorld();
-
+		if ( scene.autoUpdate === true ) scene.updateMatrixWorld();
 		if ( camera.parent === null ) camera.updateMatrixWorld();
 
-		camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+		if ( camera.isOrthographicCamera ) {
 
-		var style = "translate3d(0,0," + fov + "px)" + getCameraCSSMatrix( camera.matrixWorldInverse ) +
-			" translate3d(" + _widthHalf + "px," + _heightHalf + "px, 0)";
+			var tx = - ( camera.right + camera.left ) / 2;
+			var ty = ( camera.top + camera.bottom ) / 2;
+
+		}
+
+		var cameraCSSMatrix = camera.isOrthographicCamera ?
+			'scale(' + fov + ')' + 'translate(' + epsilon( tx ) + 'px,' + epsilon( ty ) + 'px)' + getCameraCSSMatrix( camera.matrixWorldInverse ) :
+			'translateZ(' + fov + 'px)' + getCameraCSSMatrix( camera.matrixWorldInverse );
+
+		var style = cameraCSSMatrix +
+			'translate(' + _widthHalf + 'px,' + _heightHalf + 'px)';
 
 		if ( cache.camera.style !== style ) {
 
-			cameraElement.style.WebkitTransform = style;
-			cameraElement.style.MozTransform = style;
-			cameraElement.style.oTransform = style;
 			cameraElement.style.transform = style;
 
 			cache.camera.style = style;
 
 		}
 
-		renderObject( scene, camera );
+		renderObject( scene, scene, camera, cameraCSSMatrix );
 
 	};
 

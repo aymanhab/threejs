@@ -1,15 +1,8 @@
 /**
- * @author renej
  * NURBS surface object
  *
  * Implementation is based on (x, y [, z=0 [, w=1]]) control points with w=weight.
- *
  **/
-
-
-/**************************************************************
- *	NURBS surface
- **************************************************************/
 
 THREE.NURBSSurface = function ( degree1, degree2, knots1, knots2 /* arrays of reals */, controlPoints /* array^2 of Vector(2|3|4) */ ) {
 
@@ -42,14 +35,12 @@ THREE.NURBSSurface.prototype = {
 
 	constructor: THREE.NURBSSurface,
 
-	getPoint: function ( t1, t2 ) {
+	getPoint: function ( t1, t2, target ) {
 
 		var u = this.knots1[ 0 ] + t1 * ( this.knots1[ this.knots1.length - 1 ] - this.knots1[ 0 ] ); // linear mapping t1->u
 		var v = this.knots2[ 0 ] + t2 * ( this.knots2[ this.knots2.length - 1 ] - this.knots2[ 0 ] ); // linear mapping t2->u
 
-		return THREE.NURBSUtils.calcSurfacePoint( this.degree1, this.degree2, this.knots1, this.knots2, this.controlPoints, u, v );
+		THREE.NURBSUtils.calcSurfacePoint( this.degree1, this.degree2, this.knots1, this.knots2, this.controlPoints, u, v, target );
 
 	}
 };
-
-

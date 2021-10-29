@@ -1,24 +1,24 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { ImageLoader } from './ImageLoader.js';
+import { CubeTexture } from '../textures/CubeTexture.js';
+import { Loader } from './Loader.js';
 
-THREE.CubeTextureLoader = function ( manager ) {
+class CubeTextureLoader extends Loader {
 
-	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+	constructor( manager ) {
 
-};
+		super( manager );
 
-Object.assign( THREE.CubeTextureLoader.prototype, {
+	}
 
-	load: function ( urls, onLoad, onProgress, onError ) {
+	load( urls, onLoad, onProgress, onError ) {
 
-		var texture = new THREE.CubeTexture();
+		const texture = new CubeTexture();
 
-		var loader = new THREE.ImageLoader( this.manager );
+		const loader = new ImageLoader( this.manager );
 		loader.setCrossOrigin( this.crossOrigin );
 		loader.setPath( this.path );
 
-		var loaded = 0;
+		let loaded = 0;
 
 		function loadTexture( i ) {
 
@@ -40,7 +40,7 @@ Object.assign( THREE.CubeTextureLoader.prototype, {
 
 		}
 
-		for ( var i = 0; i < urls.length; ++ i ) {
+		for ( let i = 0; i < urls.length; ++ i ) {
 
 			loadTexture( i );
 
@@ -48,20 +48,9 @@ Object.assign( THREE.CubeTextureLoader.prototype, {
 
 		return texture;
 
-	},
-
-	setCrossOrigin: function ( value ) {
-
-		this.crossOrigin = value;
-		return this;
-
-	},
-
-	setPath: function ( value ) {
-
-		this.path = value;
-		return this;
-
 	}
 
-} );
+}
+
+
+export { CubeTextureLoader };

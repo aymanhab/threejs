@@ -1,23 +1,26 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { Font } from '../extras/core/Font.js';
+import { FileLoader } from './FileLoader.js';
+import { Loader } from './Loader.js';
 
-THREE.FontLoader = function ( manager ) {
+class FontLoader extends Loader {
 
-	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+	constructor( manager ) {
 
-};
+		super( manager );
 
-Object.assign( THREE.FontLoader.prototype, {
+	}
 
-	load: function ( url, onLoad, onProgress, onError ) {
+	load( url, onLoad, onProgress, onError ) {
 
-		var scope = this;
+		const scope = this;
 
-		var loader = new THREE.XHRLoader( this.manager );
+		const loader = new FileLoader( this.manager );
+		loader.setPath( this.path );
+		loader.setRequestHeader( this.requestHeader );
+		loader.setWithCredentials( scope.withCredentials );
 		loader.load( url, function ( text ) {
 
-			var json;
+			let json;
 
 			try {
 
@@ -30,18 +33,21 @@ Object.assign( THREE.FontLoader.prototype, {
 
 			}
 
-			var font = scope.parse( json );
+			const font = scope.parse( json );
 
 			if ( onLoad ) onLoad( font );
 
 		}, onProgress, onError );
 
-	},
+	}
 
-	parse: function ( json ) {
+	parse( json ) {
 
-		return new THREE.Font( json );
+		return new Font( json );
 
 	}
 
-} );
+}
+
+
+export { FontLoader };

@@ -1,32 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>OpenSim 4.0 Visualizer 040417</title>
+		<title>OpenSim Visualizer</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<script src="stats.min.js"></script>
+		<link rel="apple-touch-icon" href="images/icon.png">
+		<link rel="manifest" href="manifest.json">
+		<link rel="shortcut icon" href="../files/favicon.ico" />
 	</head>
-	<body ontouchstart="">
-		<link href="css/main.css" rel="stylesheet" />
-		<link id="theme" href="css/minimal.css" rel="stylesheet" />
-
-		<script src="../build/three.min.js"></script>
+	<body>
+		<link rel="stylesheet" href="css/main.css">
+		<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.6/dist/ffmpeg.min.js" defer></script>
+		<script src="../build/three.js"></script>
 		<script src="js/SkinnedMuscle.js"></script>
-		<script src="js/OpenSimLoader.js"></script>
-		<script src="../examples/js/libs/system.min.js"></script>
 
-		<script src="../examples/js/Detector.js"></script>
+		<!--<script src="../examples/js/libs/system.min.js"></script>-->
+
+		<!--<script src="../examples/js/libs/draco/draco_encoder.js"></script>-->
 		<script src="../examples/js/libs/dat.gui.min.js"></script>
 
-		<script src="../examples/js/controls/EditorControls.js"></script>
-		<script src="../examples/js/controls/TransformControls.js"></script>
-		<script src="../examples/js/loaders/STLLoader.js"></script>
-		<script src="../examples/js/loaders/OBJLoader.js"></script>
-		<script src="../examples/js/renderers/Projector.js"></script>
-		<script src="../examples/js/renderers/CanvasRenderer.js"></script>
-		<script src="../examples/js/renderers/RaytracingRenderer.js"></script>
-		<script src="../examples/js/renderers/SoftwareRenderer.js"></script>
-		<script src="../examples/js/renderers/SVGRenderer.js"></script>
 
 		<link rel="stylesheet" href="js/libs/codemirror/codemirror.css">
 		<link rel="stylesheet" href="js/libs/codemirror/theme/monokai.css">
@@ -36,12 +28,12 @@
 
 		<script src="js/libs/esprima.js"></script>
 		<script src="js/libs/jsonlint.js"></script>
-		<script src="js/libs/glslprep.min.js"></script>
 		<script src="js/libs/Tween.js"></script>
 
 		<link rel="stylesheet" href="js/libs/codemirror/addon/dialog.css">
 		<link rel="stylesheet" href="js/libs/codemirror/addon/show-hint.css">
 		<link rel="stylesheet" href="js/libs/codemirror/addon/tern.css">
+
 		<script src="js/libs/codemirror/addon/dialog.js"></script>
 		<script src="js/libs/codemirror/addon/show-hint.js"></script>
 		<script src="js/libs/codemirror/addon/tern.js"></script>
@@ -56,121 +48,67 @@
 		<script src="js/libs/ternjs/infer.js"></script>
 		<script src="js/libs/ternjs/doc_comment.js"></script>
 		<script src="js/libs/tern-threejs/threejs.js"></script>
-
 		<script src="js/libs/signals.min.js"></script>
-		<script src="js/libs/ui.js"></script>
-		<script src="js/libs/ui.three.js"></script>
-
-		<script src="js/libs/app.js"></script>
-		<script src="js/Player.js"></script>
-		<script src="js/Script.js"></script>
-
-		<script src="js/Storage.js"></script>
-
-		<script src="js/Editor.js"></script>
-		<script src="js/OpenSimEditor.js"></script>
-		<script src="js/Config.js"></script>
-		<script src="js/History.js"></script>
-		<script src="js/Loader.js"></script>
-		<script src="js/Menubar.js"></script>
-		<script src="js/Menubar.File.js"></script>
-		<script src="js/Menubar.Edit.js"></script>
-		<script src="js/Menubar.Add.js"></script>
-		<script src="js/Menubar.Movies.js"></script>
-		<script src="js/Menubar.View.js"></script>
-		<script src="js/Menubar.Examples.js"></script>
-		<script src="js/Menubar.Help.js"></script>
-		<script src="js/Menubar.Status.js"></script>
-		<script src="js/Sidebar.js"></script>
-		<script src="js/Sidebar.Scene.js"></script>
-		<script src="js/Sidebar.SceneSettings.js"></script>
-		<script src="js/Sidebar.Project.js"></script>
-		<script src="js/Sidebar.Settings.js"></script>
-		<script src="js/Sidebar.Properties.js"></script>
-		<script src="js/Sidebar.Object.js"></script>
-		<script src="js/Sidebar.Geometry.js"></script>
-		<script src="js/Sidebar.Geometry.Geometry.js"></script>
-		<script src="js/Sidebar.Geometry.BufferGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.Modifiers.js"></script>
-		<script src="js/Sidebar.Geometry.BoxGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.CircleGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.CylinderGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.IcosahedronGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.PlaneGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.SphereGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.TorusGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.TorusKnotGeometry.js"></script>
-		<script src="js/Sidebar.Geometry.LatheGeometry.js"></script>
-		<script src="js/Sidebar.Material.js"></script>
 		<script src="js/libs/Whammy.js"></script>
 		<script src="js/libs/download.js"></script>
 		<script src="js/libs/gif.js"></script>
-		<script src="js/libs/tar.js"></script>		
 		<script src="js/libs/CCapture.js"></script>
-		<script src="js/Sidebar.Animation.js"></script>
-		<script src="js/Sidebar.Script.js"></script>
-		<script src="js/Sidebar.History.js"></script>
-		<script src="js/OpenSimToolbar.js"></script>
-		<script src="js/Viewport.js"></script>
-		<script src="js/Viewport.Info.js"></script>
-		<script src="js/OpenSimViewport.js"></script>
-		<script src="js/Command.js"></script>
-		<script src="js/commands/AddObjectCommand.js"></script>
-		<script src="js/commands/RemoveObjectCommand.js"></script>
-		<script src="js/commands/MoveObjectCommand.js"></script>
-		<script src="js/commands/SetPositionCommand.js"></script>
-		<script src="js/commands/TranslatePositionCommand.js"></script>
-		<script src="js/commands/SetRotationCommand.js"></script>
-		<script src="js/commands/SetScaleCommand.js"></script>
-		<script src="js/commands/SetValueCommand.js"></script>
-		<script src="js/commands/SetValueCommandMuscle.js"></script>
-		<script src="js/commands/SetUuidCommand.js"></script>
-		<script src="js/commands/SetColorCommand.js"></script>
-		<script src="js/commands/SetGeometryCommand.js"></script>
-		<script src="js/commands/SetGeometryValueCommand.js"></script>
-		<script src="js/commands/MultiCmdsCommand.js"></script>
-		<script src="js/commands/AddScriptCommand.js"></script>
-		<script src="js/commands/RemoveScriptCommand.js"></script>
-		<script src="js/commands/SetScriptValueCommand.js"></script>
-		<script src="js/commands/SetMaterialCommand.js"></script>
-		<script src="js/commands/SetMaterialValueCommand.js"></script>
-		<script src="js/commands/SetMaterialColorCommand.js"></script>
-		<script src="js/commands/SetMaterialMapCommand.js"></script>
-		<script src="js/commands/SetSceneCommand.js"></script>
-		<script type="text/javascript" src="websocket.js"></script>
-		<!-- <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="qyqgfqd9j8z890t"></script> -->
 
-		<script>
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+
+			import { Editor } from './js/Editor.js';
+			import { OpenSimEditor } from './js/OpenSimEditor.js';
+			import { Viewport } from './js/Viewport.js';
+			import { OpenSimViewport } from './js/OpenSimViewport.js';
+			import { Toolbar } from './js/Toolbar.js';
+			import { Script } from './js/Script.js';
+			//import { Player } from './js/Player.js';
+			import { Sidebar } from './js/Sidebar.js';
+			import { Menubar } from './js/Menubar.js';
+			import { Resizer } from './js/Resizer.js';
+			//import { VRButton } from '../examples/jsm/webxr/VRButton.js';
+			import { OpenSimToolbar } from './js/OpenSimToolbar.js';
+			import { websocket } from './websocket.js';
+
+
 			function getParameterByName(name, url) {
 				if (!url) url = window.location.href;
 					name = name.replace(/[\[\]]/g, "\\$&");
 				var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-      results = regex.exec(url);
-      if (!results) return null;
-      if (!results[2]) return '';
-      return decodeURIComponent(results[2].replace(/\+/g, " "));
-      }
+				results = regex.exec(url);
+				if (!results) return null;
+				if (!results[2]) return '';
+				return decodeURIComponent(results[2].replace(/\+/g, " "));
+			}
 
-      if (!Detector.webgl) Detector.addGetWebGLMessage();
+			window.URL = window.URL || window.webkitURL;
+			window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
 
-      window.URL = window.URL || window.webkitURL;
-      window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+			Number.prototype.format = function (){
+
+				return this.toString().replace( /(\d)(?=(\d{3})+(?!\d))/g, '$1,' );
+
+			};
 
       Number.prototype.format = function (){
       return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
       };
-      //
-      stats = new Stats();
-      document.body.appendChild( stats.domElement );
 
       var editor = new OpenSimEditor();
 
+			window.editor = editor; // Expose editor to Console
+			window.THREE = THREE; // Expose THREE to APP Scripts and Console
+			//window.VRButton = VRButton; // Expose VRButton to APP Scripts
+
+			//var viewport = new OpenSimViewport( editor );
       // Minimal ui, should move to a different file to avoid clutter
       var VisualizerKnobs = function() {
       // Backdrop
       this.backdrop = editor.config.getKey('skybox');
       this.backdropImage = editor.config.getKey('skybox');
-      color = editor.config.getKey('settings/backgroundcolor');
+      var color = editor.config.getKey('settings/backgroundcolor');
       if (color=== undefined){
       this.backgroundColor = "#888888";
       editor.updateBackgroundColor(this.backgroundColor);
@@ -187,7 +125,7 @@
       //
       this.sceneLightSelect = function () { editor.select(editor.scene.getObjectByName('SunLight')); }
       this.modelLightSelect = function () { editor.selectCurrentModelLight(); }
-      this.expertModeSelect = function () { editor.setTheme('css/dark.css'); }
+      this.expertModeSelect = function () { editor.setTheme('css/main.css'); }
       this.showStats = function () {
       var elem = document.getElementById("viewport");
       if (elem.style.bottom=="20px")
@@ -234,13 +172,7 @@
 
       var lights = gui.addFolder('Lighting');
       lights.add(knobs, 'sceneLightSelect').name('Select Scene Light');
-	 /*
-      var lightIntensity = lights.add(knobs, 'sceneLightIntensity');
-      lightIntensity.name('Intensity');
-      lightIntensity.onChange(function (value) {
-      editor.updateSceneLight('intensity', value);
-      editor.refresh();
-      });*/
+
       var modelLightIntensity = lights.add(knobs, 'modelLightIntensity');
       modelLightIntensity.name('Model Light').onChange(function(value){
       editor.updateModelLightIntensity(value);
@@ -261,29 +193,30 @@
       var viewport = new OpenSimViewport( editor );
       document.body.appendChild( viewport.dom );
 
-      var script = new Script( editor );
-      document.body.appendChild( script.dom );
+      //var script = new Script( editor );
+      //document.body.appendChild( script.dom );
 
-      var player = new Player( editor );
-      document.body.appendChild( player.dom );
+      //var player = new Player( editor );
+      //document.body.appendChild( player.dom );
 
-      var toolbar = new OpenSimToolbar(editor);
-      document.body.appendChild( toolbar.dom );
+	    var sidebar = new Sidebar( editor );
+	    //document.body.appendChild( sidebar.dom );
+
+      var toolbar = new Toolbar(editor);
+      //document.body.appendChild( toolbar.dom );
+
+      var osimToolbar = new OpenSimToolbar(editor);
+      document.body.appendChild( osimToolbar.dom );
+
       if (getParameterByName('expert') === "1"){
       var menubar = new Menubar( editor );
       document.body.appendChild( menubar.dom );
+         document.body.appendChild( sidebar.dom );
       }
-      var sidebar = new Sidebar( editor );
-      document.body.appendChild( sidebar.dom );
-
-      /*
-      var dialog = new UI.Dialog();
-      document.body.appendChild( dialog.dom );
-      */
+			//var resizer = new Resizer( editor );
+			//document.body.appendChild( resizer.dom );
 
       //
-
-      editor.setTheme( editor.config.getKey( 'theme' ) );
 
       editor.storage.init( function () {
       /*
@@ -311,7 +244,7 @@
 
       var timeout;
 
-      function saveState( scene ) {
+				function saveState() {
       /*
       if ( editor.config.getKey( 'autosave' ) === false ) {
 
@@ -335,7 +268,7 @@
 
       }, 1000 );
       */
-      };
+				}
 
       var signals = editor.signals;
 
@@ -349,16 +282,9 @@
       signals.scriptChanged.add( saveState );
       signals.historyChanged.add( saveState );
 
-      signals.showModal.add( function ( content ) {
-
-      modal.show( content );
-
-      } );
-
-      } );
-
-      //
-
+			} );
+      window.addEventListener( 'resize', onWindowResize );
+      
       document.addEventListener( 'dragover', function ( event ) {
 
       event.preventDefault();
@@ -370,11 +296,19 @@
 
       event.preventDefault();
 
-      if ( event.dataTransfer.files.length > 0 ) {
+				if ( event.dataTransfer.types[ 0 ] === 'text/plain' ) return; // Outliner drop
 
-      new Loader(editor).loadFile( event.dataTransfer.files[ 0 ] );
+				if ( event.dataTransfer.items ) {
 
-      }
+					// DataTransferItemList supports folders
+
+					editor.loader.loadItemList( event.dataTransfer.items );
+
+				} else {
+
+				editor.loader.loadFiles( event.dataTransfer.files );
+
+				}
 
       }, false );
 
@@ -446,21 +380,30 @@
 
 			}, false );
 
-			function onWindowResize( event ) {
+			function onWindowResize() {
 
 				editor.signals.windowResize.dispatch();
 
 			}
 
-			window.addEventListener( 'resize', onWindowResize, false );
+			// ServiceWorker
 
-			onWindowResize();
+			if ( 'serviceWorker' in navigator ) {
 
 			animate();
 			function animate() {
 			    requestAnimationFrame(animate);
                 if (editor.recording)
 			        editor.signals.captureFrame.dispatch();
+			}
+				try {
+
+					navigator.serviceWorker.register( 'sw.js' );
+
+				} catch ( error ) {
+
+				}
+
 			}
 
 		</script>
