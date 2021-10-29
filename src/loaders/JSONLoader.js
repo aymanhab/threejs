@@ -73,7 +73,7 @@ Object.assign( THREE.JSONLoader.prototype, {
 	parse: function ( json, texturePath ) {
 
 		var geometry = new THREE.Geometry(),
-		scale = ( json.scale !== undefined ) ? 1.0 / json.scale : 1.0;
+			scale = ( json.scale !== undefined ) ? 1.0 / json.scale : 1.0;
 
 		parseModel( scale );
 
@@ -150,13 +150,13 @@ Object.assign( THREE.JSONLoader.prototype, {
 				type = faces[ offset ++ ];
 
 
-				isQuad              = isBitSet( type, 0 );
-				hasMaterial         = isBitSet( type, 1 );
-				hasFaceVertexUv     = isBitSet( type, 3 );
-				hasFaceNormal       = isBitSet( type, 4 );
+				isQuad = isBitSet( type, 0 );
+				hasMaterial = isBitSet( type, 1 );
+				hasFaceVertexUv = isBitSet( type, 3 );
+				hasFaceNormal = isBitSet( type, 4 );
 				hasFaceVertexNormal = isBitSet( type, 5 );
-				hasFaceColor	     = isBitSet( type, 6 );
-				hasFaceVertexColor  = isBitSet( type, 7 );
+				hasFaceColor = isBitSet( type, 6 );
+				hasFaceVertexColor = isBitSet( type, 7 );
 
 				// console.log("type", type, "bits", isQuad, hasMaterial, hasFaceVertexUv, hasFaceNormal, hasFaceVertexNormal, hasFaceColor, hasFaceVertexColor);
 
@@ -385,7 +385,7 @@ Object.assign( THREE.JSONLoader.prototype, {
 
 				for ( var i = 0, l = json.skinWeights.length; i < l; i += influencesPerVertex ) {
 
-					var x =                               json.skinWeights[ i ];
+					var x = json.skinWeights[ i ];
 					var y = ( influencesPerVertex > 1 ) ? json.skinWeights[ i + 1 ] : 0;
 					var z = ( influencesPerVertex > 2 ) ? json.skinWeights[ i + 2 ] : 0;
 					var w = ( influencesPerVertex > 3 ) ? json.skinWeights[ i + 3 ] : 0;
@@ -400,7 +400,7 @@ Object.assign( THREE.JSONLoader.prototype, {
 
 				for ( var i = 0, l = json.skinIndices.length; i < l; i += influencesPerVertex ) {
 
-					var a =                               json.skinIndices[ i ];
+					var a = json.skinIndices[ i ];
 					var b = ( influencesPerVertex > 1 ) ? json.skinIndices[ i + 1 ] : 0;
 					var c = ( influencesPerVertex > 2 ) ? json.skinIndices[ i + 2 ] : 0;
 					var d = ( influencesPerVertex > 3 ) ? json.skinIndices[ i + 3 ] : 0;
