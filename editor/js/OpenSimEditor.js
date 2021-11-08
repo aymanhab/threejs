@@ -777,6 +777,7 @@ OpenSimEditor.prototype = {
 		var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture1 } );
 		texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
 		texture1.repeat.set( 64, 64);
+		texture1.encoding = THREE.sRGBEncoding;
 		var geometry = new THREE.PlaneBufferGeometry( 100, 100 );
 		var groundPlane = new THREE.Mesh( geometry, material1 );
 		groundPlane.name = 'GroundPlane';
@@ -917,6 +918,7 @@ OpenSimEditor.prototype = {
             function (texture1) { 
 		        texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
 		        texture1.repeat.set(64, 64);
+		        texture1.encoding = THREE.sRGBEncoding;
 		        scope.groundPlane.material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture1 });
 		        scope.groundPlane.needsUpdate = true;
 		        scope.refresh();
