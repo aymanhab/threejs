@@ -43,8 +43,10 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z) / 2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.x = bbox.max.x + distance;
+		editor.signals.moveCameraTo.dispatch(newpos, center);
+		/*
 	    editor.updateCamera(newpos, center);
-	    
+	    */
     };
     // +Y
 	var viewplusy = createOpenSimToolbarButton('-Y', 'icons/topView_axes.png');

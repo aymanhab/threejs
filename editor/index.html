@@ -93,7 +93,7 @@
 			};
 
       Number.prototype.format = function (){
-      return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+        return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
       };
 
       var editor = new OpenSimEditor();
@@ -149,9 +149,9 @@
       var backdropColor = backdrop.addColor(knobs, 'backgroundColor').name('Background Color');
       var backdropImage = backdrop.add(knobs, 'backdropImage', ['nobackground', 'sky', 'canyon', 'pastures', 'city']);
       backdropColor.onChange(function (value) {
-		editor.updateBackgroundColor(value);
-		backdropImage.setValue('nobackground');
-		backdropImage.updateDisplay();
+		    editor.updateBackgroundColor(value);
+		    backdropImage.setValue('nobackground');
+		    backdropImage.updateDisplay();
       });
       backdropImage.name('Image');
       backdropImage.onChange(function(newImage){
@@ -175,17 +175,17 @@
 
       var modelLightIntensity = lights.add(knobs, 'modelLightIntensity');
       modelLightIntensity.name('Model Light').onChange(function(value){
-      editor.updateModelLightIntensity(value);
-      });;
+        editor.updateModelLightIntensity(value);
+      });
       if (getParameterByName('expert') === "1"){
         gui.add(knobs, 'expertModeSelect').name('Expert Mode');
         gui.add(knobs, 'showStats').name('FPS');
       }
       var captureControl = gui.add(knobs, 'screenCaptureDPI').name('Snapshot Quality').min(1).max(4).step(1);
       captureControl.onChange(function (value) {
-      editor.setScreenCaptureScaleup(value);
-		editor.config.setKey('settings/captureDPI', value);
-		editor.refresh();
+        editor.setScreenCaptureScaleup(value);
+		    editor.config.setKey('settings/captureDPI', value);
+		    editor.refresh();
       });
       gui.closed = true;
       }
@@ -306,7 +306,7 @@
 
 				} else {
 
-				editor.loader.loadFiles( event.dataTransfer.files );
+				  editor.loader.loadFiles( event.dataTransfer.files );
 
 				}
 
@@ -393,7 +393,7 @@
 			animate();
 			function animate() {
 			    requestAnimationFrame(animate);
-                if (editor.recording)
+          if (editor.recording)
 			        editor.signals.captureFrame.dispatch();
 			}
 				try {

@@ -99,7 +99,7 @@ function ViewHelper( editorCamera, container ) {
 
 	var point = new THREE.Vector3();
 	var dim = 128;
-	var turnRate = 2 * Math.PI; // turn rate in angles per second
+	var turnRate = Math.PI; // turn rate in angles per second
 
 	this.render = function ( renderer ) {
 
@@ -108,7 +108,7 @@ function ViewHelper( editorCamera, container ) {
 
 		point.set( 0, 0, 1 );
 		point.applyQuaternion( editorCamera.quaternion );
-
+		/*
 		if ( point.x >= 0 ) {
 
 			posXAxisHelper.material.opacity = 1;
@@ -151,8 +151,9 @@ function ViewHelper( editorCamera, container ) {
 
 		renderer.clearDepth();
 		renderer.setViewport( x, 0, dim, dim );
+		
 		renderer.render( this, camera );
-
+        */
 	};
 
 	var targetPosition = new THREE.Vector3();
@@ -201,7 +202,6 @@ function ViewHelper( editorCamera, container ) {
 		var focusPoint = this.controls.center;
 
 		// animate position by doing a slerp and then scaling the position on the unit sphere
-
 		q1.rotateTowards( q2, step );
 		editorCamera.position.set( 0, 0, 1 ).applyQuaternion( q1 ).multiplyScalar( radius ).add( focusPoint );
 
@@ -216,7 +216,19 @@ function ViewHelper( editorCamera, container ) {
 		}
 
 	};
+	this.moveCameraTo = function ( targetPos, targetCenter) {
+		targetPosition.copy(targetPos);
+		targetQuaternion.setFromEuler( new THREE.Euler( 0, Math.PI * 0.5, 0 ) );
+		radius = editorCamera.position.distanceTo( targetCenter );
+		dummy.position.copy( targetCenter );
 
+		dummy.lookAt( editorCamera.position );
+		q1.copy( dummy.quaternion );
+
+		dummy.lookAt( targetPos );
+		q2.copy( dummy.quaternion );
+		this.animating = true;
+	}
 	function prepareAnimationData( object, focusPoint ) {
 
 		switch ( object.userData.type ) {

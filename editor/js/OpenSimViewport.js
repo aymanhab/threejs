@@ -75,7 +75,6 @@ function OpenSimViewport ( editor ) {
 	var transformControls = new TransformControls(camera, container.dom);
 	editor.control = transformControls;
 
-	var animating = false;
 	transformControls.addEventListener( 'change', function () {
 
 		var object = transformControls.object;
@@ -394,6 +393,7 @@ function OpenSimViewport ( editor ) {
 
 		renderer.autoClear = false;
 		renderer.autoUpdateScene = false;
+		renderer.setAnimationLoop( animate );
 		renderer.setClearColor( clearColor );
 		renderer.setPixelRatio( window.devicePixelRatio );
 		renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
@@ -423,39 +423,6 @@ function OpenSimViewport ( editor ) {
 		render();
 
 	} );
-
-	signals.animationStarted.add(function (cycleTime, showCameraOnly, isRecording) {
-	    this.animating = true;
-	    animationCycleTime = cycleTime*1000;
-	    dollyCamera.aspect = camera.aspect;
-	    dollyCamera.updateProjectionMatrix();
-	    startTime = Date.now();
-	    showCamOnly = showCameraOnly;
-	    if (isRecording) {
-	    //    capturer.dispose();
-	        capturer = new CCapture({
-	            verbose: false,
-	            display: false,
-	            framerate: 30,
-                name: "opensim_video",
-                format: 'webm-mediarecorder',
-	        });
-	        recording = true;
-	        capturer.start();
-	    }
-	    render();
-
-	});
-	signals.animationStopped.add(function () {
-	    this.animating = false;
-        if (recording) {
-	        capturer.stop();
-	        capturer.save();
-	        capturer = undefined;
-	        recording = false;
-	    }
-
-	});
 
 	signals.recordingStarted.add(function () {
 	    // add frame to capture
@@ -709,11 +676,17 @@ function OpenSimViewport ( editor ) {
 		offsets.positions.push(changedObject.position);
 		sendText(JSON.stringify(offsets));
 	});
+
+	signals.moveCameraTo.add(function (targetPos, targetCenter) {
+		viewHelper.moveCameraTo(targetPos, targetCenter);
+		animate();
+	});
+
 	var renderer = null;
 
 	render();
 
-	//
+	var clock = new THREE.Clock(); // only used for animations
 
 	function updateFog( root ) {
 
@@ -728,40 +701,40 @@ function OpenSimViewport ( editor ) {
 		}
 
 	}
+	// animations
 
 	function animate() {
 
-	    render();
-	    //requestAnimationFrame(animate);
-	    //TWEEN.update();
+		var mixer = editor.mixer;
+		var delta = clock.getDelta();
 
-		/*
+		var needsUpdate = false;
 
-		// animations
+		if (mixer.stats.actions.inUse > 0) {
 
-		if ( THREE.AnimationHandler.animations.length > 0 ) {
-
-			THREE.AnimationHandler.update( 0.016 );
-
-			for ( var i = 0, l = sceneHelpers.children.length; i < l; i ++ ) {
-
-				var helper = sceneHelpers.children[ i ];
-
-				if ( helper instanceof THREE.SkeletonHelper ) {
-
-					helper.update();
-
-				}
-
-			}
-
-			render();
+			mixer.update(delta);
+			needsUpdate = true;
 
 		}
 
-		*/
+		if (viewHelper.animating === true) {
+			console.warn('viewHelper.update:'+delta);
+			viewHelper.update(delta);
+			needsUpdate = true;
+
+		}
+        /*
+		if (vr.currentSession !== null) {
+
+			needsUpdate = true;
+
+		}
+        */
+		if (needsUpdate === true) render();
 
 	}
+
+	//
 
 	function renderHiRes(upSample) {
 		var curSize = new THREE.Vector2(0, 0);
@@ -791,33 +764,17 @@ function OpenSimViewport ( editor ) {
 
 	}
 
+	//var clock = new THREE.Clock(); // only used for animations
+
 	function render() {
 	    if (!recording) {
-	        var t0 = performance.now();
+	        //var t0 = performance.now();
 	        sceneHelpers.updateMatrixWorld();
 	        scene.updateMatrixWorld();
 	        //stats.update();
 	        if (renderer != null) {
-	            renderer.clear();
-				var currentCamera;
-	            if (animating) {
-	                var time = Date.now() - startTime;
-	                var looptime = animationCycleTime;
-	                var t = (time % looptime) / looptime;
-
-	                var pos = editor.dollyPath.getPointAt(t);
-	                dollyCamera.position.copy(pos);
-	                animationLookAt.copy(lookAtObject.position);
-	                dollyCamera.lookAt(animationLookAt);
-	                if (showCamOnly === false)
-	                    currentCamera = dollyCamera;
-	                else
-	                    currentCamera = camera;
-	            }
-	            else
-	                currentCamera = camera;
-
-	            renderer.render(scene, currentCamera);
+	            if (viewHelper.animating===false) renderer.clear();
+	            renderer.render(scene, camera);
 	            renderer.render(sceneOrtho, sceneOrthoCam);
 	            
 				if (sceneHelpers.visible)
@@ -826,8 +783,8 @@ function OpenSimViewport ( editor ) {
 	            //if (recording) capturer.capture(renderer.domElement);
 	        }
                 if (editor.reportframeTime){
-                    var t1 = performance.now();
-                    editor.reportRenderTime(t1-t0);
+                    //var t1 = performance.now();
+                    //editor.reportRenderTime(t1-t0);
                 }
 	    }
 	}

@@ -19,14 +19,14 @@ function ViewportCamera( editor ) {
 	signals.cameraAdded.add( update );
 	signals.cameraRemoved.add( update );
 
-	update();
+	// update();
 
 	//
 
 	function update() {
 
 		var options = {};
-
+        
 		var cameras = editor.cameras;
 
 		for ( var key in cameras ) {
