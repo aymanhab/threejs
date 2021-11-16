@@ -216,9 +216,9 @@ function ViewHelper( editorCamera, container ) {
 		}
 
 	};
-	this.moveCameraTo = function ( targetPos, targetCenter) {
+	this.moveCameraTo = function ( targetPos, targetCenter, targetQuat) {
 		targetPosition.copy(targetPos);
-		targetQuaternion.setFromEuler( new THREE.Euler( 0, Math.PI * 0.5, 0 ) );
+		targetQuaternion.copy( targetQuat );
 		radius = editorCamera.position.distanceTo( targetCenter );
 		dummy.position.copy( targetCenter );
 
