@@ -679,8 +679,7 @@ function OpenSimViewport ( editor ) {
 
 	signals.moveCameraTo.add(function (targetPos, targetCenter, targetQuat) {
 		viewHelper.moveCameraTo(targetPos, targetCenter, targetQuat);
-	    editor.sceneLight.position.copy(editor.camera.position);
-		animate();
+		editor.sceneLight.position.copy(editor.camera.position);
 	});
 
 	var renderer = null;
@@ -721,7 +720,7 @@ function OpenSimViewport ( editor ) {
 		if (viewHelper.animating === true) {
 			viewHelper.update(delta);
 			needsUpdate = true;
-
+			editor.sceneLight.position.copy(editor.camera.position);
 		}
         /*
 		if (vr.currentSession !== null) {
