@@ -1,5 +1,4 @@
 import { UIPanel, UIButton, UICheckbox } from './libs/ui.js';
-import { TWEEN } from '../../examples/jsm/libs/tween.module.min.js';
 
 var OpenSimToolbar = function ( editor ) {
 
