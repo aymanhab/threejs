@@ -133,72 +133,72 @@
 				this.sceneLightSelect = function () { editor.select(editor.scene.getObjectByName('SunLight')); }
 				this.modelLightSelect = function () { editor.selectCurrentModelLight(); }
       this.expertModeSelect = function () { editor.setTheme('css/main.css'); }
-				this.showStats = function () {
-					var elem = document.getElementById("viewport");
-					if (elem.style.bottom == "20px")
-						elem.style.bottom = "0px";
-					else
-						elem.style.bottom = "20px";
-					window.dispatchEvent(new Event('resize'));
-				}
-				// Screen Capture
-				this.screenCaptureDPI = editor.config.getKey('settings/captureDPI');
-				if (this.screenCaptureDPI === undefined) {
-					editor.config.setKey('settings/captureDPI', 2);
-				}
-			};
-			window.onload = function () {
-				var gui = new dat.GUI({ width: 260 }); // create dat.gui
-				var knobs = new VisualizerKnobs();
-				gui.remember(knobs);
+      this.showStats = function () {
+      var elem = document.getElementById("viewport");
+      if (elem.style.bottom=="20px")
+      elem.style.bottom="0px";
+      else
+      elem.style.bottom="20px";
+      window.dispatchEvent(new Event('resize'));
+      }
+      // Screen Capture
+      this.screenCaptureDPI =  editor.config.getKey('settings/captureDPI');
+      if (this.screenCaptureDPI === undefined){
+      editor.config.setKey('settings/captureDPI', 2);
+      }
+      };
+      window.onload = function () {
+          var gui = new dat.GUI({ width: 260 }); // create dat.gui
+      var knobs = new VisualizerKnobs();
+      gui.remember(knobs);
 
-				var backdrop = gui.addFolder('Backdrop');
-				var backdropColor = backdrop.addColor(knobs, 'backgroundColor').name('Background Color');
-				var backdropImage = backdrop.add(knobs, 'backdropImage', ['nobackground', 'sky', 'canyon', 'pastures', 'city']);
-				backdropColor.onChange(function (value) {
-					editor.updateBackgroundColor(value);
-					backdropImage.setValue('nobackground');
-					backdropImage.updateDisplay();
-				});
-				backdropImage.name('Image');
-				backdropImage.onChange(function (newImage) {
-					editor.updateBackground(newImage);
-					editor.refresh();
-				});
+      var backdrop = gui.addFolder('Backdrop');
+      var backdropColor = backdrop.addColor(knobs, 'backgroundColor').name('Background Color');
+      var backdropImage = backdrop.add(knobs, 'backdropImage', ['nobackground', 'sky', 'canyon', 'pastures', 'city']);
+      backdropColor.onChange(function (value) {
+		    editor.updateBackgroundColor(value);
+		    backdropImage.setValue('nobackground');
+		    backdropImage.updateDisplay();
+      });
+      backdropImage.name('Image');
+      backdropImage.onChange(function(newImage){
+      editor.updateBackground(newImage);
+      editor.refresh();
+      });
 
-				var ground = gui.addFolder('Floor');
-				var texture = ground.add(knobs, 'texture', ['nofloor', 'redbricks', 'graybricks', 'wood-floor', 'tile']);
-				texture.name('Texture');
-				var floorHeight = ground.add(knobs, 'height').min(-2.01).max(2.02).step(0.01).name('Height');
-				floorHeight.onChange(function (value) {
-					editor.setFloorHeight(value);
-				});
-				texture.onChange(function (value) {
-					editor.updateGroundPlane(value);
-				});
+      var ground = gui.addFolder('Floor');
+      var texture = ground.add(knobs, 'texture', ['nofloor', 'redbricks', 'graybricks', 'wood-floor', 'tile']);
+      texture.name('Texture');
+      var floorHeight = ground.add(knobs, 'height').min(-2.01).max(2.02).step(0.01).name('Height');
+      floorHeight.onChange(function (value) {
+      editor.setFloorHeight(value);
+      });
+      texture.onChange(function (value) {
+      editor.updateGroundPlane(value);
+      });
 
-				var lights = gui.addFolder('Lighting');
-				lights.add(knobs, 'sceneLightSelect').name('Select Scene Light');
+      var lights = gui.addFolder('Lighting');
+      lights.add(knobs, 'sceneLightSelect').name('Select Scene Light');
 
-				var modelLightIntensity = lights.add(knobs, 'modelLightIntensity');
-				modelLightIntensity.name('Model Light').onChange(function (value) {
-					editor.updateModelLightIntensity(value);
-				});;
-				if (getParameterByName('expert') === "1") {
-					gui.add(knobs, 'expertModeSelect').name('Expert Mode');
-					gui.add(knobs, 'showStats').name('FPS');
-				}
-				var captureControl = gui.add(knobs, 'screenCaptureDPI').name('Snapshot Quality').min(1).max(4).step(1);
-				captureControl.onChange(function (value) {
-					editor.setScreenCaptureScaleup(value);
-					editor.config.setKey('settings/captureDPI', value);
-					editor.refresh();
-				});
-				gui.closed = true;
-			}
+      var modelLightIntensity = lights.add(knobs, 'modelLightIntensity');
+      modelLightIntensity.name('Model Light').onChange(function(value){
+        editor.updateModelLightIntensity(value);
+      });
+      if (getParameterByName('expert') === "1"){
+        gui.add(knobs, 'expertModeSelect').name('Expert Mode');
+        gui.add(knobs, 'showStats').name('FPS');
+      }
+      var captureControl = gui.add(knobs, 'screenCaptureDPI').name('Snapshot Quality').min(1).max(4).step(1);
+      captureControl.onChange(function (value) {
+        editor.setScreenCaptureScaleup(value);
+		    editor.config.setKey('settings/captureDPI', value);
+		    editor.refresh();
+      });
+      gui.closed = true;
+      }
 
-			var viewport = new OpenSimViewport(editor);
-			document.body.appendChild(viewport.dom);
+      var viewport = new OpenSimViewport( editor );
+      document.body.appendChild( viewport.dom );
 
       //var script = new Script( editor );
 			//document.body.appendChild( script.dom );
@@ -313,7 +313,7 @@
 
 				} else {
 
-				editor.loader.loadFiles(event.dataTransfer.files);
+				  editor.loader.loadFiles( event.dataTransfer.files );
 
 				}
 
@@ -399,9 +399,9 @@
 
 			animate();
 			function animate() {
-				requestAnimationFrame(animate);
-				if (editor.recording)
-					editor.signals.captureFrame.dispatch();
+			    requestAnimationFrame(animate);
+          if (editor.recording)
+			        editor.signals.captureFrame.dispatch();
 			}
 				try {
 

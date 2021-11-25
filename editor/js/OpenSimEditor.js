@@ -15,11 +15,6 @@ _DEFAULT_CAMERA.name = 'Camera';
 _DEFAULT_CAMERA.position.set( 20, 10, 20 );
 _DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
 
-var dolly_camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10000);
-dolly_camera.name = 'DollyCamera';
-dolly_camera.position.set(0, 0, 0);
-dolly_camera.lookAt(new THREE.Vector3());
-
 function OpenSimEditor () {
 
 	this.dolly_object = new THREE.Object3D();
@@ -124,6 +119,7 @@ function OpenSimEditor () {
 		cameraRemoved: new Signal(),
 		rendererUpdated: new Signal(),
 		sceneRendered: new Signal(),
+		moveCameraTo: new Signal(),
 	};
 
 	this.config = new Config( 'threejs-editor' );
@@ -131,7 +127,7 @@ function OpenSimEditor () {
 	this.storage = new _Storage();
 	this.strings = new Strings( this.config );
 	this.loader = new OpenSimLoader();
-
+	
 	this.camera = _DEFAULT_CAMERA.clone();
 	this.scene = new THREE.Scene();
 		// Ortho Scene and Camera for Logo and text
@@ -150,6 +146,8 @@ function OpenSimEditor () {
 	this.materials = {};
 	this.textures = {};
 	this.scripts = {};
+	
+	this.mixer = new THREE.AnimationMixer( this.scene );
 
 	this.selected = null;
 	this.helpers = {};
@@ -167,7 +165,7 @@ function OpenSimEditor () {
 	//this.createDollyPath();
 	this.createModelsGroup();
 	this.createLogoSprite();
-
+	this.viewportCamera = this.camera;
 }
 
 OpenSimEditor.prototype = {
@@ -524,7 +522,6 @@ OpenSimEditor.prototype = {
 		this.storage.clear();
 
 		this.camera.copy( this._DEFAULT_CAMERA );
-		this.dolly_camera.copy(this._DEFAULT_CAMERA);
 		this.scene.background.setHex( 0xaaaaaa );
 		this.scene.fog = null;
 
@@ -777,6 +774,7 @@ OpenSimEditor.prototype = {
 		var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture1 } );
 		texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
 		texture1.repeat.set( 64, 64);
+		texture1.encoding = THREE.sRGBEncoding;
 		var geometry = new THREE.PlaneBufferGeometry( 100, 100 );
 		var groundPlane = new THREE.Mesh( geometry, material1 );
 		groundPlane.name = 'GroundPlane';
@@ -917,6 +915,7 @@ OpenSimEditor.prototype = {
             function (texture1) { 
 		        texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
 		        texture1.repeat.set(64, 64);
+		        texture1.encoding = THREE.sRGBEncoding;
 		        scope.groundPlane.material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture1 });
 		        scope.groundPlane.needsUpdate = true;
 		        scope.refresh();
@@ -992,7 +991,7 @@ OpenSimEditor.prototype = {
 
 		this.camera.position.set(newposition.x, newposition.y, newposition.z);
 		this.camera.lookAt(viewCenter);
-		this.sceneLight.position.copy(this.camera.position);
+		//this.sceneLight.position.copy(this.camera.position);
 		var changeEvent = { type: 'change' };
 		this.control.dispatchEvent( changeEvent );
 		this.signals.defaultCameraApplied.dispatch(viewCenter);

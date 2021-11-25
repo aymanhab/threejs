@@ -43,8 +43,9 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z) / 2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.x = bbox.max.x + distance;
-	    editor.updateCamera(newpos, center);
-	    
+		var targetQuat = new THREE.Quaternion().setFromEuler( new THREE.Euler( 0, Math.PI * 0.5, 0 ) );
+		editor.signals.moveCameraTo.dispatch(newpos, center, targetQuat);
+		//editor.sceneLight.position.copy(editor.camera.position);
     };
     // +Y
 	var viewplusy = createOpenSimToolbarButton('-Y', 'icons/topView_axes.png');
@@ -62,9 +63,10 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.x - bbox.min.x, bbox.max.z - bbox.min.z) / 2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.y = bbox.max.y + distance;
-	    editor.updateCamera(newpos, center);
-	    
-    };
+	    //editor.updateCamera(newpos, center);
+		var targetQuat = new THREE.Quaternion().setFromEuler( new THREE.Euler( - Math.PI * 0.5, 0, 0 ) );
+		editor.signals.moveCameraTo.dispatch(newpos, center, targetQuat);
+	};
     // +Z
 	var viewplusz = createOpenSimToolbarButton('-Z', 'icons/rightView_axes.png');
 	viewplusz.onClick(function() {
@@ -82,7 +84,8 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y)/2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.z = bbox.max.z + distance;
-	    editor.updateCamera(newpos, center);
+		var targetQuat = new THREE.Quaternion().setFromEuler( new THREE.Euler() );
+		editor.signals.moveCameraTo.dispatch(newpos, center, targetQuat);
 	    
     };
     // -X
@@ -101,8 +104,9 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z) / 2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.x = bbox.min.x - distance;
-	    editor.updateCamera(newpos, center);
-	    
+	    //editor.updateCamera(newpos, center);
+		var targetQuat = new THREE.Quaternion().setFromEuler( new THREE.Euler( 0, -Math.PI * 0.5, 0 ) );
+		editor.signals.moveCameraTo.dispatch(newpos, center, targetQuat);	    
     };
     // -Y
 	var viewminy = createOpenSimToolbarButton('+Y', 'icons/bottomView_axes.png');
@@ -120,7 +124,8 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.x - bbox.min.x, bbox.max.z - bbox.min.z) / 2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.y = bbox.min.y - distance;
-	    editor.updateCamera(newpos, center);
+		var targetQuat = new THREE.Quaternion().setFromEuler( new THREE.Euler( Math.PI * 0.5, 0, 0 ) );
+		editor.signals.moveCameraTo.dispatch(newpos, center, targetQuat);
 	    
     };
     // -Z
@@ -141,7 +146,8 @@ var OpenSimToolbar = function ( editor ) {
 	    var objectSize = Math.max(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y)/2;
 	    var distance = Math.abs(objectSize / Math.sin(fov / 2));
 	    newpos.z = bbox.min.z - distance;
-	    editor.updateCamera(newpos, center);
+		var targetQuat = new THREE.Quaternion().setFromEuler( new THREE.Euler(0, Math.PI, 0) );
+		editor.signals.moveCameraTo.dispatch(newpos, center, targetQuat);
 	    
 	};
 
